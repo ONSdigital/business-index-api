@@ -45,7 +45,7 @@ class InsertDemoData @Inject()(client: ElasticClient, appLifecycle: ApplicationL
   }
 
   def readResourceFile(p: String): List[String] =
-    Option(getClass.getResourceAsStream(p)).map(scala.io.Source.fromInputStream)
+    Option(getClass.getResourceAsStream(p)).map(Source.fromInputStream)
       .map(_.getLines.toList)
       .getOrElse(throw new FileNotFoundException(p))
 
