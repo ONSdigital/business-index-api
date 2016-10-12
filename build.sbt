@@ -1,17 +1,45 @@
-name := """ons-bi-api"""
+import sbtbuildinfo.BuildInfoPlugin.autoImport._
+import sbtassembly.AssemblyPlugin.autoImport._
 
-version := "1.0-SNAPSHOT"
+lazy val root = (project in file(".")).
+  enablePlugins(BuildInfoPlugin).
+  enablePlugins(PlayScala).
+  settings(
+    name := """ons-bi-api""",
+    scalaVersion := "2.11.7",
 
-lazy val root = (project in file(".")).enablePlugins(PlayScala)
+    buildInfoPackage := "controllers",
 
-scalaVersion := "2.11.7"
+    buildInfoKeys ++= Seq[BuildInfoKey](
+      resolvers,
+      libraryDependencies,
+      BuildInfoKey.action("gitRevision") {
+        ("git rev-parse --short HEAD" !!).trim
+      }
+    ),
 
-libraryDependencies ++= Seq(
-  cache,
-  ws,
-  "ch.qos.logback" %  "logback-classic" % "1.1.7",
-  "com.typesafe.scala-logging" %% "scala-logging" % "3.5.0",
-  "com.sksamuel.elastic4s" %% "elastic4s-streams" % "1.7.4",
-  "org.scalatestplus.play" %% "scalatestplus-play" % "1.5.1" % Test
-)
+    buildInfoOptions += BuildInfoOption.BuildTime,
+    buildInfoOptions += BuildInfoOption.ToJson,
 
+    // no javadoc for BuildInfo.scala
+    sources in(Compile, doc) <<= sources in(Compile, doc) map {
+      _.filterNot(_.getName endsWith ".scala")
+    },
+
+    assemblyJarName in assembly := "ons-bi-api.jar",
+    assemblyMergeStrategy in assembly := {
+      case PathList(ps@_*) if ps.last == "groovy-release-info.properties" => MergeStrategy.first
+      case x =>
+        val oldStrategy = (assemblyMergeStrategy in assembly).value
+        oldStrategy(x)
+    },
+
+    libraryDependencies ++= Seq(
+      cache,
+      ws,
+      "ch.qos.logback" % "logback-classic" % "1.1.7",
+      "com.typesafe.scala-logging" %% "scala-logging" % "3.5.0",
+      "com.sksamuel.elastic4s" %% "elastic4s-streams" % "1.7.4",
+      "org.scalatestplus.play" %% "scalatestplus-play" % "1.5.1" % Test
+    )
+  )
