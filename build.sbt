@@ -42,7 +42,8 @@ lazy val root = (project in file(".")).
       "ch.qos.logback" % "logback-classic" % "1.1.7",
       "com.splunk.logging" % "splunk-library-javalogging" % "1.5.2",
       "com.typesafe.scala-logging" %% "scala-logging" % "3.5.0",
-      "com.sksamuel.elastic4s" %% "elastic4s-streams" % "1.7.4",
+      "com.sksamuel.elastic4s" %% "elastic4s-streams" % "2.3.1",
+      "com.sksamuel.elastic4s" %% "elastic4s-jackson" % "2.3.1",
       "org.scalatestplus.play" %% "scalatestplus-play" % "1.5.1" % Test
     )
   )

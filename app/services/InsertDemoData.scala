@@ -7,6 +7,7 @@ import com.sksamuel.elastic4s._
 import com.sksamuel.elastic4s.ElasticDsl.{create, index}
 import play.api.inject.ApplicationLifecycle
 import com.sksamuel.elastic4s.ElasticDsl._
+import com.sksamuel.elastic4s.analyzers.{CustomAnalyzerDefinition, LowercaseTokenFilter, WhitespaceTokenizer}
 import com.sksamuel.elastic4s.mappings.FieldType._
 
 import scala.io.Source
