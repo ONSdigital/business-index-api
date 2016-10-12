@@ -1,5 +1,6 @@
 package services
 
+import java.io.FileNotFoundException
 import javax.inject._
 
 import com.sksamuel.elastic4s._
@@ -7,6 +8,8 @@ import com.sksamuel.elastic4s.ElasticDsl.{create, index}
 import play.api.inject.ApplicationLifecycle
 import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s.mappings.FieldType._
+
+import scala.io.Source
 
 @Singleton
 class InsertDemoData @Inject()(client: ElasticClient, appLifecycle: ApplicationLifecycle) {
@@ -26,17 +29,25 @@ class InsertDemoData @Inject()(client: ElasticClient, appLifecycle: ApplicationL
     ).analysis(CustomAnalyzerDefinition("BusinessNameAnalyzer", WhitespaceTokenizer, LowercaseTokenFilter))
   }
 
-  client.execute {
-    index into "bi" / "businesses" id "84676015" fields(
-      "BusinessName" -> "BIRKENSHAW DISTRIBUTORS LIMITED",
-      "UPRN" -> 643596572265L,
-      "IndustryCode" -> 94349,
-      "LegalStatus" -> 5,
-      "TradingStatus" -> 3,
-      "Turnover" -> "D",
-      "EmploymentBands" -> "K"
-      )
+  readResourceFile("/demo/sample.csv").filter(!_.contains("BusinessName")).foreach { line =>
+    val values = line.split(",")
+
+    client.execute {
+      index into "bi" / "businesses" id values(0) fields(
+        "BusinessName" -> values(1),
+        "UPRN" -> values(2).toLong,
+        "IndustryCode" -> values(3).toLong,
+        "LegalStatus" -> values(4).toInt,
+        "TradingStatus" -> values(5).toInt,
+        "Turnover" -> values(6),
+        "EmploymentBands" -> values(7))
+    }
   }
+
+  def readResourceFile(p: String): List[String] =
+    Option(getClass.getResourceAsStream(p)).map(scala.io.Source.fromInputStream)
+      .map(_.getLines.toList)
+      .getOrElse(throw new FileNotFoundException(p))
 
   println("Inserted DEMO data.")
 
