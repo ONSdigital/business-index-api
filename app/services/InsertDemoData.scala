@@ -31,7 +31,7 @@ class InsertDemoData @Inject()(client: ElasticClient, appLifecycle: ApplicationL
   }
 
   readResourceFile("/demo/sample.csv").filter(!_.contains("BusinessName")).foreach { line =>
-    val values = line.split(",")
+    val values = line.replace("\"", "").split(",")
 
     client.execute {
       index into "bi" / "businesses" id values(0) fields(
