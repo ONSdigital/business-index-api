@@ -5,7 +5,9 @@ import services.InsertDemoData
 
 class Module extends AbstractModule {
   override def configure() = {
-    val settings = Settings.settingsBuilder().put("cluster.name", "elasticsearch_mathias").build()
+    // TEMPORARY DEV SETUP - use brew install elasticsearch and then run elasticsearch (which will default to
+    // cluster name 'elasticsearch_username')
+    val settings = Settings.settingsBuilder().put("cluster.name", "elasticsearch_" + System.getProperty("user.name")).build()
     val uri = ElasticsearchClientUri("elasticsearch://localhost:9300")
     val client = ElasticClient.transport(settings, uri)
 
