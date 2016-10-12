@@ -18,3 +18,4 @@ lib_managed/
 src_managed/
 project/boot/
 project/plugins/project/
+data
