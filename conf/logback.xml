@@ -24,6 +24,14 @@
     <appender-ref ref="STDOUT" />
   </appender>
 
+  <appender name="SPLUNKSOCKET" class="com.splunk.logging.TcpAppender">
+    <RemoteHost>127.0.0.1</RemoteHost>
+    <Port>15000</Port>
+    <layout class="ch.qos.logback.classic.PatternLayout">
+      <pattern>%date{ISO8601} [%thread] %level: %msg%n</pattern>
+    </layout>
+  </appender>
+
   <logger name="play" level="INFO" />
   <logger name="application" level="DEBUG" />
 
@@ -34,7 +42,8 @@
   <logger name="com.gargoylesoftware.htmlunit.javascript" level="OFF" />
 
   <root level="WARN">
-    <appender-ref ref="ASYNCFILE" />
+    <!--<appender-ref ref="ASYNCFILE" />-->
+    <!--<appender-ref ref="SPLUNKSOCKET" />-->
     <appender-ref ref="ASYNCSTDOUT" />
   </root>
 
