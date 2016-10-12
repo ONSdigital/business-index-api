@@ -26,8 +26,7 @@ case class Business(id: Long,
                     employmentBands: String)
 
 object Business {
-  implicit val businessHitFormat: OFormat[Business]  = Json.format[Business]
-  implicit val b = Writes.list[Business]
+  implicit val businessHitFormat = Json.format[Business]
 }
 
 @Singleton
@@ -37,14 +36,14 @@ class SearchController @Inject()(actorSystem: ActorSystem, client: ElasticClient
   implicit object BusinessHitAs extends HitAs[Business] {
     override def as(hit: RichSearchHit): Business = {
       Business(
-        hit.sourceAsMap("id").toString.toLong,
-        hit.sourceAsMap("businessName").toString,
-        hit.sourceAsMap("uprn").toString.toLong,
-        hit.sourceAsMap("industryCode").toString.toLong,
-        hit.sourceAsMap("legalStatus").toString.toInt,
-        hit.sourceAsMap("tradingStatus").toString.toInt,
-        hit.sourceAsMap("turnover").toString,
-        hit.sourceAsMap("employmentBands").toString
+        hit.id.toLong,
+        hit.sourceAsMap("BusinessName").toString,
+        hit.sourceAsMap("UPRN").toString.toLong,
+        hit.sourceAsMap("IndustryCode").toString.toLong,
+        hit.sourceAsMap("LegalStatus").toString.toInt,
+        hit.sourceAsMap("TradingStatus").toString.toInt,
+        hit.sourceAsMap("Turnover").toString,
+        hit.sourceAsMap("EmploymentBands").toString
       )
     }
   }
@@ -58,7 +57,7 @@ class SearchController @Inject()(actorSystem: ActorSystem, client: ElasticClient
         search
           .in("bi" / "businesses")
           .query(req.getQueryString("query").get).start(start).limit(limit)
-      }.map(response => Ok(response.as[Business]))
+      }.map(queryResponse => Ok(Json.toJson(queryResponse.as[Business])))
     } catch {
       case NonFatal(e) =>
         logger.error("Error connecting to Elasticsearch", e)

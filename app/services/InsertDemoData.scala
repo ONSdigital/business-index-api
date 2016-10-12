@@ -24,7 +24,7 @@ class InsertDemoData @Inject()(client: ElasticClient, appLifecycle: ApplicationL
         "IndustryCode" typed LongType,
         "LegalStatus" typed IntegerType,
         "TradingStatus" typed IntegerType,
-        "TurnOver" typed StringType,
+        "Turnover" typed StringType,
         "EmploymentBands" typed StringType
         )
     ).analysis(CustomAnalyzerDefinition("BusinessNameAnalyzer", WhitespaceTokenizer, LowercaseTokenFilter))
