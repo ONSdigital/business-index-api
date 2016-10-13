@@ -64,7 +64,7 @@ class SearchController @Inject()(actorSystem: ActorSystem, client: ElasticClient
           Ok(Json.toJson(queryResponse.as[Business]))
         )
       case _ =>
-        Future(BadRequest(Json.obj("status" -> "400", "code" -> "missing_query", "message" -> "No query specified.")))
+        Future(BadRequest(Json.obj("status" -> "400", "code" -> "missing_query", "message_en" -> "No query specified.")))
     }
   }
 }
