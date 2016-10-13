@@ -19,8 +19,8 @@ import scala.io.Source
   * CSV file header: "ID","BusinessName","UPRN","IndustryCode","LegalStatus","TradingStatus","Turnover","EmploymentBands"
   */
 @Singleton
-class InsertDemoData @Inject()(environment: Environment, client: ElasticClient, appLifecycle: ApplicationLifecycle) {
-  client.execute {
+class InsertDemoData @Inject()(environment: Environment, elasticSearch: ElasticClient, applicationLifecycle: ApplicationLifecycle) {
+  elasticSearch.execute {
     // define the ElasticSearch index
     create.index("bi").mappings(
       mapping("business").fields(
@@ -41,10 +41,10 @@ class InsertDemoData @Inject()(environment: Environment, client: ElasticClient, 
   // if in dev mode, import the file sample.csv
   environment.mode match {
     case Mode.Dev =>
-      readResourceFile("/demo/sample.csv").filter(!_.contains("BusinessName")).foreach { line =>
+      readFile("/demo/sample.csv").filter(!_.contains("BusinessName")).foreach { line =>
         val values = line.replace("\"", "").split(",")
 
-        client.execute {
+        elasticSearch.execute {
           index into "bi" / "business" id values(0) fields(
             "BusinessName" -> values(1),
             "UPRN" -> values(2).toLong,
@@ -58,8 +58,8 @@ class InsertDemoData @Inject()(environment: Environment, client: ElasticClient, 
 
       println("Inserted DEMO data.")
 
-      appLifecycle.addStopHook { () =>
-        client.execute {
+      applicationLifecycle.addStopHook { () =>
+        elasticSearch.execute {
           delete index "bi"
         }
       }
@@ -67,7 +67,7 @@ class InsertDemoData @Inject()(environment: Environment, client: ElasticClient, 
     case Mode.Prod =>
   }
 
-  def readResourceFile(p: String): List[String] =
+  def readFile(p: String): List[String] =
     Option(getClass.getResourceAsStream(p)).map(Source.fromInputStream)
       .map(_.getLines.toList)
       .getOrElse(throw new FileNotFoundException(p))
