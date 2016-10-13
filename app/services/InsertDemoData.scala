@@ -7,7 +7,7 @@ import com.sksamuel.elastic4s._
 import com.sksamuel.elastic4s.ElasticDsl.{create, index}
 import play.api.inject.ApplicationLifecycle
 import com.sksamuel.elastic4s.ElasticDsl._
-import com.sksamuel.elastic4s.analyzers.{CustomAnalyzerDefinition, LowercaseTokenFilter, WhitespaceTokenizer}
+import com.sksamuel.elastic4s.analyzers._
 import com.sksamuel.elastic4s.mappings.FieldType._
 
 import scala.io.Source
@@ -17,17 +17,19 @@ class InsertDemoData @Inject()(client: ElasticClient, appLifecycle: ApplicationL
   client.execute {
     // "ID","BusinessName","UPRN","IndustryCode","LegalStatus","TradingStatus","Turnover","EmploymentBands"
     create.index("bi").mappings(
-      "businesses" as(
-        "id" typed LongType,
-        "BusinessName" typed StringType boost 4 analyzer "BusinessNameAnalyzer",
-        "UPRN" typed LongType,
-        "IndustryCode" typed LongType,
-        "LegalStatus" typed IntegerType,
-        "TradingStatus" typed IntegerType,
-        "Turnover" typed StringType,
-        "EmploymentBands" typed StringType
+      mapping("businesses").fields(
+        field("BusinessName", StringType) boost 4 analyzer "BusinessNameAnalyzer",
+        field("UPRN", LongType) analyzer KeywordAnalyzer,
+        field("IndustryCode", LongType) analyzer KeywordAnalyzer,
+        field("LegalStatus", IntegerType) index "not_analyzed" includeInAll false,
+        field("TradingStatus", IntegerType) index "not_analyzed" includeInAll false,
+        field("Turnover", StringType) index "not_analyzed" includeInAll false,
+        field("EmploymentBands", StringType) index "not_analyzed" includeInAll false
         )
-    ).analysis(CustomAnalyzerDefinition("BusinessNameAnalyzer", WhitespaceTokenizer, LowercaseTokenFilter))
+    ).analysis(CustomAnalyzerDefinition("BusinessNameAnalyzer",
+      StandardTokenizer("BusinessNameStandardTokenizer", 20),
+      LowercaseTokenFilter,
+      NGramTokenFilter("BusinessNameNgramFilter", minGram = 2, maxGram = 3)))
   }
 
   readResourceFile("/demo/sample.csv").filter(!_.contains("BusinessName")).foreach { line =>
