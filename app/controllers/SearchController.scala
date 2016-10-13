@@ -52,16 +52,17 @@ class SearchController @Inject()(actorSystem: ActorSystem, client: ElasticClient
     val start = Try(req.getQueryString("start").getOrElse("0").toInt).getOrElse(0)
     val limit = Try(req.getQueryString("limit").getOrElse("100").toInt).getOrElse(100)
 
-    try {
-      client.execute {
-        search
-          .in("bi" / "business")
-          .query(req.getQueryString("query").get).start(start).limit(limit)
-      }.map(queryResponse => Ok(Json.toJson(queryResponse.as[Business])))
-    } catch {
-      case NonFatal(e) =>
-        logger.error("Error connecting to Elasticsearch", e)
-        Future(InternalServerError("Error connecting to Elasticsearch."))
+    req.getQueryString("query") match {
+      case Some(queryString) =>
+        client.execute {
+          search
+            .in("bi" / "business")
+            .query(queryString).start(start).limit(limit)
+        }.map(queryResponse =>
+          Ok(Json.toJson(queryResponse.as[Business]))
+        )
+      case None =>
+        Future(BadRequest(Json.obj("status" -> "400", "code" -> "missing_query", "message" -> "No query specified.")))
     }
   }
 }
