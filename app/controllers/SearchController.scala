@@ -53,15 +53,17 @@ class SearchController @Inject()(actorSystem: ActorSystem, client: ElasticClient
     val limit = Try(req.getQueryString("limit").getOrElse("100").toInt).getOrElse(100)
 
     req.getQueryString("query") match {
-      case Some(queryString) =>
+      case Some(queryString) if queryString.length > 0 =>
         client.execute {
           search
             .in("bi" / "business")
-            .query(queryString).start(start).limit(limit)
+            .query(queryString)
+            .start(start)
+            .limit(limit)
         }.map(queryResponse =>
           Ok(Json.toJson(queryResponse.as[Business]))
         )
-      case None =>
+      case _ =>
         Future(BadRequest(Json.obj("status" -> "400", "code" -> "missing_query", "message" -> "No query specified.")))
     }
   }
