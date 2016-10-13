@@ -29,7 +29,7 @@ class InsertDemoData @Inject()(client: ElasticClient, appLifecycle: ApplicationL
     ).analysis(CustomAnalyzerDefinition("BusinessNameAnalyzer",
       StandardTokenizer("BusinessNameStandardTokenizer", 20),
       LowercaseTokenFilter,
-      NGramTokenFilter("BusinessNameNgramFilter", minGram = 2, maxGram = 3)))
+      NGramTokenFilter("BusinessNameNgramFilter", minGram = 1, maxGram = 3)))
   }
 
   readResourceFile("/demo/sample.csv").filter(!_.contains("BusinessName")).foreach { line =>
