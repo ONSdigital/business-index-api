@@ -59,7 +59,7 @@ class SearchController @Inject()(elasticSearch: ElasticClient)(implicit exec: Ex
           Ok(Json.toJson(elasticSearchResponse.as[Business]))
         )
       case _ =>
-        Future(BadRequest(Json.obj("status" -> "400", "code" -> "missing_query", "message_en" -> "No query specified.")))
+        Future.successful(BadRequest(Json.obj("status" -> "400", "code" -> "missing_query", "message_en" -> "No query specified.")))
     }
   }
 }
