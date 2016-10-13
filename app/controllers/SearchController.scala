@@ -55,7 +55,7 @@ class SearchController @Inject()(actorSystem: ActorSystem, client: ElasticClient
     try {
       client.execute {
         search
-          .in("bi" / "businesses")
+          .in("bi" / "business")
           .query(req.getQueryString("query").get).start(start).limit(limit)
       }.map(queryResponse => Ok(Json.toJson(queryResponse.as[Business])))
     } catch {

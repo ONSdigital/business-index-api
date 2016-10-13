@@ -17,7 +17,7 @@ class InsertDemoData @Inject()(client: ElasticClient, appLifecycle: ApplicationL
   client.execute {
     // "ID","BusinessName","UPRN","IndustryCode","LegalStatus","TradingStatus","Turnover","EmploymentBands"
     create.index("bi").mappings(
-      mapping("businesses").fields(
+      mapping("business").fields(
         field("BusinessName", StringType) boost 4 analyzer "BusinessNameAnalyzer",
         field("UPRN", LongType) analyzer KeywordAnalyzer,
         field("IndustryCode", LongType) analyzer KeywordAnalyzer,
@@ -36,7 +36,7 @@ class InsertDemoData @Inject()(client: ElasticClient, appLifecycle: ApplicationL
     val values = line.replace("\"", "").split(",")
 
     client.execute {
-      index into "bi" / "businesses" id values(0) fields(
+      index into "bi" / "business" id values(0) fields(
         "BusinessName" -> values(1),
         "UPRN" -> values(2).toLong,
         "IndustryCode" -> values(3).toLong,
