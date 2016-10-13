@@ -33,7 +33,7 @@ class InsertDemoData @Inject()(environment: Environment, elasticSearch: ElasticC
         field("EmploymentBands", StringType) index "not_analyzed" includeInAll false
       )
     ).analysis(CustomAnalyzerDefinition("BusinessNameAnalyzer",
-      StandardTokenizer("BusinessNameStandardTokenizer", 20),
+      StandardTokenizer("BusinessNameStandardTokenizer", 60),
       LowercaseTokenFilter,
       NGramTokenFilter("BusinessNameNgramFilter", minGram = 1, maxGram = 3)))
   }
