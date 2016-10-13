@@ -1,19 +1,15 @@
 package controllers
 
-import akka.actor.ActorSystem
 import javax.inject._
 
 import play.api._
 import play.api.mvc._
 
-import scala.concurrent.{ExecutionContext, Future, Promise}
+import scala.concurrent.{ExecutionContext, Future}
 import com.sksamuel.elastic4s._
-import com.sksamuel.elastic4s.source.Indexable
 import com.typesafe.scalalogging.StrictLogging
-import org.elasticsearch.action.get.GetResponse
 
 import scala.util.Try
-import scala.util.control.NonFatal
 import play.api.libs.json._
 
 case class Business(id: Long,
@@ -30,7 +26,7 @@ object Business {
 }
 
 @Singleton
-class SearchController @Inject()(actorSystem: ActorSystem, elasticSearch: ElasticClient)(implicit exec: ExecutionContext)
+class SearchController @Inject()(elasticSearch: ElasticClient)(implicit exec: ExecutionContext)
   extends Controller with ElasticDsl with StrictLogging {
 
   implicit object BusinessHitAs extends HitAs[Business] {
