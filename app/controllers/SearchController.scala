@@ -30,7 +30,7 @@ object Business {
 }
 
 @Singleton
-class SearchController @Inject()(actorSystem: ActorSystem, client: ElasticClient)(implicit exec: ExecutionContext)
+class SearchController @Inject()(actorSystem: ActorSystem, elasticSearch: ElasticClient)(implicit exec: ExecutionContext)
   extends Controller with ElasticDsl with StrictLogging {
 
   implicit object BusinessHitAs extends HitAs[Business] {
@@ -48,20 +48,19 @@ class SearchController @Inject()(actorSystem: ActorSystem, client: ElasticClient
     }
   }
 
-  def searchBusiness = Action.async { implicit req =>
-    val start = Try(req.getQueryString("start").getOrElse("0").toInt).getOrElse(0)
-    val limit = Try(req.getQueryString("limit").getOrElse("100").toInt).getOrElse(100)
+  def searchBusiness = Action.async { implicit request =>
+    val start = Try(request.getQueryString("start").getOrElse("0").toInt).getOrElse(0)
+    val limit = Try(request.getQueryString("limit").getOrElse("100").toInt).getOrElse(100)
 
-    req.getQueryString("query") match {
-      case Some(queryString) if queryString.length > 0 =>
-        client.execute {
-          search
-            .in("bi" / "business")
-            .query(queryString)
+    request.getQueryString("q").orElse(request.getQueryString("query")) match {
+      case Some(query) if query.length > 0 =>
+        elasticSearch.execute {
+          search.in("bi" / "business")
+            .query(query)
             .start(start)
             .limit(limit)
-        }.map(queryResponse =>
-          Ok(Json.toJson(queryResponse.as[Business]))
+        }.map(elasticSearchResponse =>
+          Ok(Json.toJson(elasticSearchResponse.as[Business]))
         )
       case _ =>
         Future(BadRequest(Json.obj("status" -> "400", "code" -> "missing_query", "message_en" -> "No query specified.")))
