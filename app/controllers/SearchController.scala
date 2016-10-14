@@ -56,7 +56,9 @@ class SearchController @Inject()(elasticSearch: ElasticClient)(implicit exec: Ex
             .start(start)
             .limit(limit)
         }.map { elasticSearchResponse =>
-          Ok(Json.toJson(elasticSearchResponse.as[Business]))
+          val businesses = elasticSearchResponse.as[Business]
+          if (businesses.length > 0) Ok(Json.toJson(businesses))
+          else NoContent
         }
       case _ =>
         Future.successful(BadRequest(Json.obj("status" -> "400", "code" -> "missing_query", "message_en" -> "No query specified.")))
