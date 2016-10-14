@@ -1,0 +1,43 @@
+swagger: "2.0"
+
+info:
+  version: 1.0.0
+  title: ONS BI API
+  description: ONS BI API
+
+schemes:
+  - http
+host: bi.api
+basePath: /
+
+paths:
+  /search:
+    get:
+      summary: Searches
+      description: Returns a list containing all persons. The list supports paging.
+      parameters:
+       - name: query
+         in: query
+         description: Number of persons returned
+         type: integer
+      responses:
+        200:
+          description: A list of Business
+          schema:
+            type: array
+            items:
+              required:
+                - businessName
+              properties:
+                businessName:
+                  type: string
+                uprn:
+                  type: int
+        500:
+          description: An unexpected error occured.
+          schema:
+            properties:
+              code:
+                type: string
+              message:
+                type: string
