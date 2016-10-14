@@ -15,18 +15,16 @@ class ApplicationSpec extends PlaySpec with OneAppPerTest {
 
       status(home) mustBe OK
       contentType(home) mustBe Some("text/html")
-      contentAsString(home).toLowerCase must include ("demo")
     }
   }
 
-  "CountController" should {
+  "SearchController" should {
+    "return 400 when no query" in {
+      val search = route(app, FakeRequest(GET, "/search")).get
 
-    "return an increasing count" in {
-      contentAsString(route(app, FakeRequest(GET, "/count")).get) mustBe "0"
-      contentAsString(route(app, FakeRequest(GET, "/count")).get) mustBe "1"
-      contentAsString(route(app, FakeRequest(GET, "/count")).get) mustBe "2"
+      status(search) mustBe BAD_REQUEST
+      contentType(search) mustBe Some("application/json")
+      contentAsString(search).toLowerCase must include ("missing_query")
     }
-
   }
-
 }
