@@ -35,7 +35,7 @@ class InsertDemoData @Inject()(environment: Environment, elasticSearch: ElasticC
     ).analysis(CustomAnalyzerDefinition("BusinessNameAnalyzer",
       StandardTokenizer("BusinessNameStandardTokenizer", 60),
       LowercaseTokenFilter,
-      NGramTokenFilter("BusinessNameNgramFilter", minGram = 1, maxGram = 3)))
+      NGramTokenFilter("BusinessNameNgramFilter", minGram = 1, maxGram = 5)))
   }
 
   // if in dev mode, import the file sample.csv
