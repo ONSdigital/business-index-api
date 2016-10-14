@@ -55,9 +55,13 @@ class SearchController @Inject()(elasticSearch: ElasticClient)(implicit exec: Ex
             .query(query)
             .start(start)
             .limit(limit)
-        }.map(elasticSearchResponse =>
-          Ok(Json.toJson(elasticSearchResponse.as[Business]))
-        )
+        }.map { elasticSearchResponse =>
+          val businesses = elasticSearchResponse.as[Business]
+          if (businesses.length > 0)
+            Ok(Json.toJson(businesses))
+          else
+            NotFound(Json.obj("status" -> "404", "code" -> "no_match", "message_en" -> s"No match found for '$query'"))
+        }
       case _ =>
         Future.successful(BadRequest(Json.obj("status" -> "400", "code" -> "missing_query", "message_en" -> "No query specified.")))
     }
