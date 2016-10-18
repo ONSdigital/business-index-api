@@ -1,16 +1,14 @@
-package controllers
+package controllers.v1
 
 import javax.inject._
 
-import play.api._
+import com.sksamuel.elastic4s._
+import com.typesafe.scalalogging.StrictLogging
+import play.api.libs.json._
 import play.api.mvc._
 
 import scala.concurrent.{ExecutionContext, Future}
-import com.sksamuel.elastic4s._
-import com.typesafe.scalalogging.StrictLogging
-
 import scala.util.Try
-import play.api.libs.json._
 
 case class Business(id: Long,
                     businessName: String,
@@ -52,7 +50,7 @@ class SearchController @Inject()(elasticSearch: ElasticClient)(implicit exec: Ex
       case Some(query) if query.length > 0 =>
         elasticSearch.execute {
           search.in("bi" / "business")
-            .query(query)
+            .query(mu("BusinessName" -> query))
             .start(start)
             .limit(limit)
         }.map { elasticSearchResponse =>

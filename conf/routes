@@ -3,7 +3,7 @@
 # ~~~~
 
 GET     /                           controllers.HomeController.index
-GET     /search                     controllers.SearchController.searchBusiness
+GET     /v1/search                  controllers.v1.SearchController.searchBusiness
 GET     /version                    controllers.VersionController.version
 
 # Map static resources from the /public folder to the /assets URL path
