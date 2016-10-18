@@ -28,7 +28,8 @@ lazy val root = (project in file(".")).
 
     assemblyJarName in assembly := "ons-bi-api.jar",
     assemblyMergeStrategy in assembly := {
-      case PathList(ps@_*) if ps.last == "groovy-release-info.properties" => MergeStrategy.first
+      case PathList("META-INF", "io.netty.versions.properties", xs@_ *) => MergeStrategy.last
+      case PathList("org", "joda", "time", "base", "BaseDateTime.class") => MergeStrategy.first // ES shades Joda
       case x =>
         val oldStrategy = (assemblyMergeStrategy in assembly).value
         oldStrategy(x)
@@ -37,10 +38,12 @@ lazy val root = (project in file(".")).
     resolvers += "splunk" at "http://splunk.artifactoryonline.com/splunk/ext-releases-local",
 
     libraryDependencies ++= Seq(
-      cache,
-      ws,
       "ch.qos.logback" % "logback-classic" % "1.1.7",
-      "com.splunk.logging" % "splunk-library-javalogging" % "1.5.2",
+      "com.splunk.logging" % "splunk-library-javalogging" % "1.5.2" excludeAll(
+        ExclusionRule("commons-logging", "commons-logging"),
+        ExclusionRule("org.apache.logging.log4j", "log4j-core"),
+        ExclusionRule("org.apache.logging.log4j", "log4j-api")
+        ),
       "com.typesafe.scala-logging" %% "scala-logging" % "3.5.0",
       "com.sksamuel.elastic4s" %% "elastic4s-streams" % "2.3.1",
       "com.sksamuel.elastic4s" %% "elastic4s-jackson" % "2.3.1",
