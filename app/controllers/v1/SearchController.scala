@@ -50,7 +50,7 @@ class SearchController @Inject()(elasticSearch: ElasticClient)(implicit exec: Ex
       case Some(query) if query.length > 0 =>
         elasticSearch.execute {
           search.in("bi" / "business")
-            .query(mu("BusinessName" -> query))
+            .query(query)
             .start(start)
             .limit(limit)
         }.map { elasticSearchResponse =>
