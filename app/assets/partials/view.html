@@ -1,0 +1,23 @@
+<div class="business view" ng-controller="ViewBusinessController">
+
+    <table class="table table-stripped table-bordered table-hover table-condensed">
+        <tr>
+            <th>UPRN</th>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Industry code</th>
+            <th>Employment Bands</th>
+            <th>Legal status</th>
+            <th>Trading status</th>
+            <th>Turnover</th>
+        </tr>
+
+        <tr>
+            <td ng-bind="item.uprn"></td>
+            <td ng-bind="item.id"></td>
+            <td ng-bind="item.businessName"></td>
+            <td ng-bind="item.industryCode"></td>
+            <td ng-bind="item.employmentBands"></td>
+        </tr>
+    </table>
+</div>

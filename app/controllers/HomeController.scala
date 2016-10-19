@@ -5,8 +5,8 @@ import play.api._
 import play.api.mvc._
 
 @Singleton
-class HomeController @Inject() extends Controller {
+class HomeController @Inject()(webJarAssets: WebJarAssets) extends Controller {
   def index = Action {
-    Ok(views.html.index())
+    Ok(views.html.index("ONS BI DEMO", webJarAssets))
   }
 }

@@ -1,0 +1,63 @@
+.topbar {
+    position: relative;
+    width: 100%;
+    height: 110px;
+    background-color: #EEE;
+}
+
+.no-padding {
+    padding: 0;
+}
+
+.topbar .topbar-logo {
+    position: relative;
+    width: 220px;
+    height: 110px;
+    padding: 0;
+    margin: 0;
+}
+
+#search-box {
+    position: relative;
+    width: 400px;
+    height: 45px;
+    margin-top: 27px;
+}
+
+.typeahead-demo .custom-popup-wrapper {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 1000;
+    display: none;
+    background-color: #f9f9f9;
+}
+
+.typeahead-demo .custom-popup-wrapper > .message {
+    padding: 10px 20px;
+    border-bottom: 1px solid #ddd;
+    color: #868686;
+}
+
+.typeahead-demo .custom-popup-wrapper > .dropdown-menu {
+    position: static;
+    float: none;
+    display: block;
+    min-width: 160px;
+    background-color: transparent;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+
+.typeahead-demo .large-search {
+    position: relative;
+    width: 400px;
+    height: 45px;
+    outline: none;
+    border-radius: 5px;
+    border: 0;
+    text-indent: 25px;
+    box-shadow: 0 0 0 1px #868686;
+}
