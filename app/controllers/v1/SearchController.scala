@@ -14,8 +14,8 @@ case class Business(id: Long,
                     businessName: String,
                     uprn: Long,
                     industryCode: Long,
-                    legalStatus: Int,
-                    tradingStatus: Int,
+                    legalStatus: String,
+                    tradingStatus: String,
                     turnover: String,
                     employmentBands: String)
 
@@ -34,8 +34,8 @@ class SearchController @Inject()(elasticSearch: ElasticClient)(implicit exec: Ex
         hit.sourceAsMap("BusinessName").toString,
         hit.sourceAsMap("UPRN").toString.toLong,
         hit.sourceAsMap("IndustryCode").toString.toLong,
-        hit.sourceAsMap("LegalStatus").toString.toInt,
-        hit.sourceAsMap("TradingStatus").toString.toInt,
+        hit.sourceAsMap("LegalStatus").toString,
+        hit.sourceAsMap("TradingStatus").toString,
         hit.sourceAsMap("Turnover").toString,
         hit.sourceAsMap("EmploymentBands").toString
       )
