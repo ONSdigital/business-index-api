@@ -96,7 +96,7 @@ testUi.controller("SearchController", [
 
 
     $scope.getBusiness = function(query) {
-      return $http.get('/search', {
+      return $http.get('/v1/search', {
         params: {
           "query": query
         }
