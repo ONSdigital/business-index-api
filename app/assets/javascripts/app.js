@@ -55,8 +55,8 @@ testUi.controller("MatchController", [
   "$scope",
   function($scope) {
 
-  $scope.encode = function(name) {
-    return encodeURIComponent(name);
+  $scope.encode = function(match) {
+    return encodeURIComponent(match.label);
   };
 
 }]);
