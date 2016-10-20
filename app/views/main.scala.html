@@ -8,6 +8,7 @@
         <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"/>
         <link rel="stylesheet" href="@routes.Assets.versioned("stylesheets/demo.css")"/>
         <script src="@routes.WebJarAssets.at(webJarAssets.locate("angular.js"))"></script>
+        <script src="@routes.WebJarAssets.at(webJarAssets.locate("angular-toggle-switch.js"))"></script>
         <script src="@routes.WebJarAssets.at(webJarAssets.locate("angular-ui-router.js"))"></script>
         <script src="@routes.WebJarAssets.at(webJarAssets.locate("ui-bootstrap-tpls.js"))"></script>
         <script src="@routes.Assets.versioned("/javascripts/app.js")" type="text/javascript"></script>
@@ -36,7 +37,7 @@
                         ng-model="asyncSelected"
                         placeholder="Search.."
                         typeahead-template-url="customTemplate.html"
-                        uib-typeahead="address for address in getBusiness($viewValue)"
+                        uib-typeahead="address for address in search($viewValue)"
                         typeahead-loading="loadingLocations"
                         typeahead-no-results="noResults" class="form-control">
 
@@ -45,11 +46,15 @@
                         <div ng-show="noResults">
                             <i class="glyphicon glyphicon-remove"></i> No Results Found
                         </div>
-
                     </div>
 
                 </div>
-            </div>
+                <toggle-switch ng-model="suggest"
+                    on-label="Suggest"
+                    off-label="Search"></toggle-switch>
+
+                </div>
+
         </div>
 
         <div ui-view="content"></div>

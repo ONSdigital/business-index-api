@@ -1,7 +1,8 @@
 var testUi = angular.module("test-ui", [
   "ui.router",
   "ui.bootstrap",
-  "ui.bootstrap.typeahead"
+  "ui.bootstrap.typeahead",
+  'toggle-switch'
 ]);
 
 testUi.config(["$stateProvider", "$urlRouterProvider",
@@ -12,8 +13,8 @@ testUi.config(["$stateProvider", "$urlRouterProvider",
   $stateProvider.state("view", {
       url: "/view/:id",
       views: {
-        "search": {
-          controller: "SearchController",
+        "content": {
+          controller: "ViewBusinessController",
           templateUrl: "/assets/partials/view.html"
         }
       }
@@ -69,7 +70,7 @@ testUi.controller("ViewBusinessController", [
 
   $scope.businessName = $stateParams.id;
 
-  $http.get('/search', {
+  $http.get('/v1/search', {
     params: {
       "query": "\"" + decodeURIComponent($scope.businessName) + "\""
     }
@@ -81,12 +82,15 @@ testUi.controller("ViewBusinessController", [
 testUi.controller("SearchController", [
   "$scope",
   "$http",
-  function($scope, $http) {
+  "$log",
+  function($scope, $http, $log) {
+
+    $scope.suggest = false;
 
     var _selected;
 
-    $scope.getBusiness = function(query) {
-      return $http.get('/v1/search', {
+    $scope.getResults = function(endpoint, query) {
+      return $http.get(endpoint, {
         params: {
           "query": query
         }
@@ -95,6 +99,24 @@ testUi.controller("SearchController", [
           return el.businessName || "";
         });
       });
+    };
+
+    $scope.searchBusiness = function(query) {
+      return $scope.getResults("/v1/search", query);
+    };
+
+    $scope.suggestBusiness = function(query) {
+      return $scope.getResults("/v1/suggest", query);
+    };
+
+    $scope.search = function(query) {
+      if ($scope.suggest) {
+        $log.info("Searching for a business", query);
+        return $scope.suggestBusiness(query);
+      } else {
+        $log.info("Suggesting a business", query);
+        return $scope.searchBusiness(query);
+      }
     };
 
     $scope.ngModelOptionsSelected = function(value) {
