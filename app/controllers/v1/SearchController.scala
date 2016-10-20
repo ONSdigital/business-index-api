@@ -42,6 +42,27 @@ class SearchController @Inject()(elasticSearch: ElasticClient)(implicit exec: Ex
     }
   }
 
+  def suggestBusiness = Action.async { implicit request =>
+    val start = Try(request.getQueryString("start").getOrElse("0").toInt).getOrElse(0)
+    val limit = Try(request.getQueryString("limit").getOrElse("100").toInt).getOrElse(100)
+
+    request.getQueryString("q").orElse(request.getQueryString("query")) match {
+      case Some(query) if query.length > 0 =>
+        elasticSearch.execute {
+          search.in("bi" / "business")
+            .query(matchQuery("BusinessName", query))
+            .start(start)
+            .limit(limit)
+        }.map { elasticSearchResponse =>
+          val businesses = elasticSearchResponse.as[Business]
+          if (businesses.length > 0) Ok(Json.toJson(businesses))
+          else NoContent
+        }
+      case _ =>
+        Future.successful(BadRequest(Json.obj("status" -> "400", "code" -> "missing_query", "message_en" -> "No query specified.")))
+    }
+  }
+
   def searchBusiness = Action.async { implicit request =>
     val start = Try(request.getQueryString("start").getOrElse("0").toInt).getOrElse(0)
     val limit = Try(request.getQueryString("limit").getOrElse("100").toInt).getOrElse(100)
