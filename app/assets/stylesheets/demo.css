@@ -61,3 +61,25 @@
     text-indent: 25px;
     box-shadow: 0 0 0 1px #868686;
 }
+
+.business .row {
+    position: relative;
+    padding: 0;
+    height: 50px;
+    line-height: 50px;
+    border-right: rgba(0,0,0,.05) solid 1px;
+    border-top: 1px solid #f5f1f1;
+}
+
+.business .row:nth-child(2n) {
+    background-color: #FAFBFC;
+}
+
+.business .row > .header {
+    position: relative;
+}
+
+
+.business .row > .col-md-6 {
+    float: none;
+}

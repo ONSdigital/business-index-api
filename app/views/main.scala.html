@@ -15,7 +15,7 @@
     <body>
 
         <script type="text/ng-template" id="customTemplate.html">
-            <a ng-href="{{'/#/view/'+ encode(match.label)}}" ng-controller="MatchController">
+            <a ng-href="{{'/#/view/'+ encode(match)}}" ng-controller="MatchController">
                 <span ng-bind-html="match.label | uibTypeaheadHighlight:query"></span>
             </a>
         </script>
@@ -52,6 +52,6 @@
             </div>
         </div>
 
-        @content
+        <div ui-view="content"></div>
     </body>
 </html>
