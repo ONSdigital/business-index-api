@@ -68,11 +68,14 @@ testUi.controller("ViewBusinessController", [
   "$stateParams",
   function($scope, $http, $stateParams) {
 
-  $scope.businessName = $stateParams.id;
+  $scope.businessName = decodeURIComponent($stateParams.id);
+
+  $scope.displayName = $scope.businessName.replace(/"/g, '');
+
 
   $http.get('/v1/search', {
     params: {
-      "query": "\"" + decodeURIComponent($scope.businessName) + "\""
+      "query": "\"" + $scope.businessName + "\""
     }
   }).then(function(response) {
     $scope.item = response.data[0];

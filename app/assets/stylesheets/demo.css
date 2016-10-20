@@ -24,6 +24,10 @@
     margin-top: 27px;
 }
 
+.topbar .suggest-toggle {
+    margin-top: 35px;
+}
+
 .typeahead-demo .custom-popup-wrapper {
     position: absolute;
     top: 100%;

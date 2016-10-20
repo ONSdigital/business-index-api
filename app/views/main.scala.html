@@ -21,14 +21,14 @@
             </a>
         </script>
 
-        <div class="topbar row no-padding">
+        <div class="topbar row no-padding"  ng-controller="SearchController">
             <div class="topbar-logo col-md-3">
                 <img src="/assets/images/ons.png"/>
             </div>
 
             <div class="spacer col-md-2"></div>
 
-            <div class="col-md-6" id="search-box" ng-controller="SearchController">
+            <div class="col-md-6" id="search-box">
 
                 <div class="search-box">
                     <div class='typeahead-demo'>
@@ -49,13 +49,13 @@
                     </div>
 
                 </div>
-                <toggle-switch ng-model="suggest"
-                    on-label="Suggest"
-                    off-label="Search"
-                ></toggle-switch>
 
-                </div>
+            </div>
 
+            <div class="col-md-1 spacer"></div>
+            <div class="col-md-2 suggest-toggle">
+                <toggle-switch ng-model="suggest" on-label="Suggest" off-label="Search"></toggle-switch>
+            </div>
         </div>
 
         <div ui-view="content"></div>
