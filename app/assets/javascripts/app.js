@@ -95,7 +95,9 @@ testUi.controller("SearchController", [
           "query": query
         }
       }).then(function(response) {
-        return response.data.map(function(el) {
+        var source = response.data || [];
+
+        return source.map(function(el) {
           return el.businessName || "";
         });
       });

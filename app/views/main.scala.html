@@ -28,10 +28,10 @@
 
             <div class="spacer col-md-2"></div>
 
-            <div class="col-md-6" id="search-box">
+            <div class="col-md-6" id="search-box" ng-controller="SearchController">
 
                 <div class="search-box">
-                    <div class='typeahead-demo' ng-controller="SearchController">
+                    <div class='typeahead-demo'>
                         <input type="text"
                         class="large-search"
                         ng-model="asyncSelected"
@@ -51,7 +51,8 @@
                 </div>
                 <toggle-switch ng-model="suggest"
                     on-label="Suggest"
-                    off-label="Search"></toggle-switch>
+                    off-label="Search"
+                ></toggle-switch>
 
                 </div>
 
