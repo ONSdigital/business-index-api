@@ -9,21 +9,12 @@ testUi.config(["$stateProvider", "$urlRouterProvider",
 
   $urlRouterProvider.otherwise("/");
 
-  $stateProvider
-    .state("search", {
-      url: "/",
-      views: {
-        "search": {
-          controller: "SearchController",
-          templateUrl: "/assets/partials/search.html"
-        }
-      }
-    }).state("search.view", {
+  $stateProvider.state("view", {
       url: "/view/:id",
       views: {
         "search": {
           controller: "SearchController",
-          templateUrl: "/assets/partials/search.html"
+          templateUrl: "/assets/partials/view.html"
         }
       }
     }).state("404", {
@@ -93,7 +84,6 @@ testUi.controller("SearchController", [
   function($scope, $http) {
 
     var _selected;
-
 
     $scope.getBusiness = function(query) {
       return $http.get('/v1/search', {
