@@ -1,5 +1,18 @@
-# ons-bi-api
+# business-index-api
 
+### Building
+
+To run the application:
+
+```shell
+sbt run
+```
+
+To package the project in a jar:
+
+```shell
+sbt assembly
+```
 
 ### Configuration Splunk Logging
 
