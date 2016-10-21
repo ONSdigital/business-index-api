@@ -1,7 +1,8 @@
 var testUi = angular.module("test-ui", [
   "ui.router",
   "ui.bootstrap",
-  "ui.bootstrap.typeahead"
+  "ui.bootstrap.typeahead",
+  'toggle-switch'
 ]);
 
 testUi.config(["$stateProvider", "$urlRouterProvider",
@@ -9,21 +10,12 @@ testUi.config(["$stateProvider", "$urlRouterProvider",
 
   $urlRouterProvider.otherwise("/");
 
-  $stateProvider
-    .state("search", {
-      url: "/",
-      views: {
-        "search": {
-          controller: "SearchController",
-          templateUrl: "/assets/partials/search.html"
-        }
-      }
-    }).state("search.view", {
+  $stateProvider.state("view", {
       url: "/view/:id",
       views: {
-        "search": {
-          controller: "SearchController",
-          templateUrl: "/assets/partials/search.html"
+        "content": {
+          controller: "ViewBusinessController",
+          templateUrl: "/assets/partials/view.html"
         }
       }
     }).state("404", {
@@ -64,8 +56,8 @@ testUi.controller("MatchController", [
   "$scope",
   function($scope) {
 
-  $scope.encode = function(name) {
-    return encodeURIComponent(name);
+  $scope.encode = function(match) {
+    return encodeURIComponent(match.label);
   };
 
 }]);
@@ -76,11 +68,14 @@ testUi.controller("ViewBusinessController", [
   "$stateParams",
   function($scope, $http, $stateParams) {
 
-  $scope.businessName = $stateParams.id;
+  $scope.businessName = decodeURIComponent($stateParams.id);
 
-  $http.get('/search', {
+  $scope.displayName = $scope.businessName.replace(/"/g, '');
+
+
+  $http.get('/v1/search', {
     params: {
-      "query": "\"" + decodeURIComponent($scope.businessName) + "\""
+      "query": "\"" + $scope.businessName + "\""
     }
   }).then(function(response) {
     $scope.item = response.data[0];
@@ -90,21 +85,43 @@ testUi.controller("ViewBusinessController", [
 testUi.controller("SearchController", [
   "$scope",
   "$http",
-  function($scope, $http) {
+  "$log",
+  function($scope, $http, $log) {
+
+    $scope.suggest = false;
 
     var _selected;
 
-
-    $scope.getBusiness = function(query) {
-      return $http.get('/v1/search', {
+    $scope.getResults = function(endpoint, query) {
+      return $http.get(endpoint, {
         params: {
           "query": query
         }
       }).then(function(response) {
-        return response.data.map(function(el) {
+        var source = response.data || [];
+
+        return source.map(function(el) {
           return el.businessName || "";
         });
       });
+    };
+
+    $scope.searchBusiness = function(query) {
+      return $scope.getResults("/v1/search", query);
+    };
+
+    $scope.suggestBusiness = function(query) {
+      return $scope.getResults("/v1/suggest", query);
+    };
+
+    $scope.search = function(query) {
+      if ($scope.suggest) {
+        $log.info("Searching for a business", query);
+        return $scope.suggestBusiness(query);
+      } else {
+        $log.info("Suggesting a business", query);
+        return $scope.searchBusiness(query);
+      }
     };
 
     $scope.ngModelOptionsSelected = function(value) {

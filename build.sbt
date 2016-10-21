@@ -52,6 +52,7 @@ lazy val root = (project in file(".")).
         val oldStrategy = (assemblyMergeStrategy in assembly).value
         oldStrategy(x)
     },
+    mainClass in assembly := Some("play.core.server.NettyServer"),
 
     resolvers += "splunk" at "http://splunk.artifactoryonline.com/splunk/ext-releases-local",
 
@@ -65,8 +66,8 @@ lazy val root = (project in file(".")).
       "org.webjars.bower" % "angular-bootstrap" % "1.1.0",
       "org.webjars.bower" % "angular-ui-router" % "0.2.15",
       "com.splunk.logging" % "splunk-library-javalogging" % "1.5.2",
-      "ch.qos.logback" %  "logback-classic" % "1.1.7",
-	"com.splunk.logging" % "splunk-library-javalogging" % "1.5.2" excludeAll(
+      "ch.qos.logback" % "logback-classic" % "1.1.7",
+      "com.splunk.logging" % "splunk-library-javalogging" % "1.5.2" excludeAll(
         ExclusionRule("commons-logging", "commons-logging"),
         ExclusionRule("org.apache.logging.log4j", "log4j-core"),
         ExclusionRule("org.apache.logging.log4j", "log4j-api")
