@@ -1,5 +1,6 @@
 <!-- https://www.playframework.com/documentation/latest/SettingsLogger -->
 <configuration>
+  <jmxConfigurator />
 
   <conversionRule conversionWord="coloredLevel" converterClass="play.api.libs.logback.ColoredLevel" />
 
