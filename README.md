@@ -1,20 +1,25 @@
 # business-index-api
 
+### Prerequisites
+
+* Java 8 or higher
+* SBT (http://www.scala-sbt.org/)
+
 ### Building
 
-To run the application:
+To compile, build and run the application:
 
 ```shell
 sbt run
 ```
 
-To package the project in a jar:
+To package the project in a runnable fat-jar:
 
 ```shell
 sbt assembly
 ```
 
-### Configuration Splunk Logging
+### Configuring Splunk Logging
 
 Edit `conf/logback.xml` and edit the `SPLUNKSOCKET` appender configuration. By default, 
 the configuration assumes that you have Splunk running on your local machine (127.0.0.1) with a TCP input configured
