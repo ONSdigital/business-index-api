@@ -20,8 +20,8 @@ import scala.util.control.NonFatal
   * CSV file header: "ID","BusinessName","UPRN","IndustryCode","LegalStatus","TradingStatus","Turnover","EmploymentBands"
   */
 @Singleton
-class InsertDemoData @Inject()(environment: Environment, elasticSearch: ElasticClient, applicationLifecycle: ApplicationLifecycle) {
-  elasticSearch.execute {
+class InsertDemoData @Inject()(environment: Environment, elasticSearchClient: ElasticClient, applicationLifecycle: ApplicationLifecycle) {
+  elasticSearchClient.execute {
     // define the ElasticSearch index
     create.index("bi").mappings(
       mapping("business").fields(
@@ -48,7 +48,7 @@ class InsertDemoData @Inject()(environment: Environment, elasticSearch: ElasticC
         val values = line.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)")
 
         try {
-          elasticSearch.execute {
+          elasticSearchClient.execute {
             index into "bi" / "business" id values(0) fields(
               "BusinessName" -> values(1),
               "UPRN" -> values(2).toLong,
@@ -69,7 +69,7 @@ class InsertDemoData @Inject()(environment: Environment, elasticSearch: ElasticC
       println(s"Inserted DEMO data ($imported entries).")
 
       applicationLifecycle.addStopHook { () =>
-        elasticSearch.execute {
+        elasticSearchClient.execute {
           delete index "bi"
         }
       }

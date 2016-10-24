@@ -61,6 +61,9 @@ class SearchController @Inject()(elasticSearch: ElasticClient)(implicit exec: Ex
           val businesses = elasticSearchResponse.as[Business]
           if (businesses.length > 0) Ok(Json.toJson(businesses))
           else NoContent
+        }.recover {
+          case e: NoNodeAvailableException => ServiceUnavailable(Json.obj("status" -> 503, "code" -> "es_down", "message_en" -> e.getMessage))
+          case NonFatal(e) => InternalServerError(Json.obj("status" -> 500, "code" -> "internal_error", "message_en" -> e.getMessage))
         }
       case _ =>
         Future.successful(BadRequest(Json.obj("status" -> "400", "code" -> "missing_query", "message_en" -> "No query specified.")))
@@ -83,6 +86,7 @@ class SearchController @Inject()(elasticSearch: ElasticClient)(implicit exec: Ex
           if (businesses.length > 0) Ok(Json.toJson(businesses))
           else NoContent
         }.recover {
+          case e: NoNodeAvailableException => ServiceUnavailable(Json.obj("status" -> 503, "code" -> "es_down", "message_en" -> e.getMessage))
           case NonFatal(e) => InternalServerError(Json.obj("status" -> 500, "code" -> "internal_error", "message_en" -> e.getMessage))
         }
       case _ =>

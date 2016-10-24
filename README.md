@@ -19,6 +19,16 @@ To package the project in a runnable fat-jar:
 sbt assembly
 ```
 
+### Development Setup
+
+To install/run on MacOS Sierra, use Homebrew (http://brew.sh/):
+
+- `brew install elasticsearch`
+- `elasticsearch`
+
+The last command runs an interactive Elasticsearch 2.4.1 session that the application can connect to using cluster name
+`elasticsearch_<your username>`. 
+
 #### Configuring Splunk Logging
 
 Edit [`conf/logback.xml`](conf/logback.xml) and edit the `SPLUNKSOCKET` appender configuration. By default, 
