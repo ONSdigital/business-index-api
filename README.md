@@ -29,6 +29,11 @@ To package the project in a runnable fat-jar:
 sbt assembly
 ```
 
+### Response Time
+
+Each request-response interaction carries a `X-Response-Time` header with a millisecond value indicating the server
+compute time.
+
 #### Configuring Splunk Logging
 
 Edit [`conf/logback.xml`](conf/logback.xml) and edit the `SPLUNKSOCKET` appender configuration. By default, 

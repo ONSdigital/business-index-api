@@ -57,8 +57,7 @@ lazy val root = (project in file(".")).
     resolvers += "splunk" at "http://splunk.artifactoryonline.com/splunk/ext-releases-local",
 
     libraryDependencies ++= Seq(
-      cache,
-      ws,
+      filters,
       "org.webjars" %% "webjars-play" % "2.5.0-3",
       "org.webjars.bower" % "angular" % "1.5.8",
       "org.webjars.bower" % "dali" % "1.3.2",
