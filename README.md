@@ -34,6 +34,10 @@ sbt assembly
 Each request-response interaction carries a `X-Response-Time` header with a millisecond value indicating the server
 compute time.
 
+### Dependencies
+
+A graph detailing all project dependencies can be found [here](dependencies.png).
+
 #### Configuring Splunk Logging
 
 Edit [`conf/logback.xml`](conf/logback.xml) and edit the `SPLUNKSOCKET` appender configuration. By default, 
