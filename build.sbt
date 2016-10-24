@@ -24,7 +24,7 @@ lazy val root = (project in file(".")).
   enablePlugins(PlayScala).
   settings(
     name := """ons-bi-api""",
-    scalaVersion := "2.11.7",
+    scalaVersion := "2.11.8",
 
     buildInfoPackage := "controllers",
 
@@ -71,8 +71,8 @@ lazy val root = (project in file(".")).
         ExclusionRule("org.apache.logging.log4j", "log4j-core"),
         ExclusionRule("org.apache.logging.log4j", "log4j-api")
         ),
-      "com.sksamuel.elastic4s" %% "elastic4s-streams" % "2.3.1",
-      "com.sksamuel.elastic4s" %% "elastic4s-jackson" % "2.3.1",
+      "com.sksamuel.elastic4s" %% "elastic4s-streams" % "2.4.0",
+      "com.sksamuel.elastic4s" %% "elastic4s-jackson" % "2.4.0",
       "org.scalatestplus.play" %% "scalatestplus-play" % "1.5.1" % Test
     )
   )
