@@ -5,9 +5,19 @@
 * Java 8 or higher
 * SBT (http://www.scala-sbt.org/)
 
-### Building
+### Development Setup
 
-To compile, build and run the application:
+To install/run ElasticSearch on MacOS Sierra, use Homebrew (http://brew.sh/):
+
+- `brew install elasticsearch`
+- `elasticsearch`
+
+The last command runs an interactive Elasticsearch 2.4.1 session that the application can connect to using cluster name
+`elasticsearch_<your username>`. 
+
+### Running
+
+To compile, build and run the application (by default it will connect to your local ElasticSearch):
 
 ```shell
 sbt run
@@ -18,16 +28,6 @@ To package the project in a runnable fat-jar:
 ```shell
 sbt assembly
 ```
-
-### Development Setup
-
-To install/run on MacOS Sierra, use Homebrew (http://brew.sh/):
-
-- `brew install elasticsearch`
-- `elasticsearch`
-
-The last command runs an interactive Elasticsearch 2.4.1 session that the application can connect to using cluster name
-`elasticsearch_<your username>`. 
 
 #### Configuring Splunk Logging
 
