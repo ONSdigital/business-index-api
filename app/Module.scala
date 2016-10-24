@@ -8,18 +8,16 @@ class Module(environment: Environment,
              configuration: Configuration) extends AbstractModule {
 
   override def configure() = {
-    val elasticSearchClient = environment.mode match {
+    val (settings, uri) = environment.mode match {
       case Mode.Dev =>
-        val settings = Settings.settingsBuilder().put("cluster.name", "elasticsearch_" + System.getProperty("user.name")).build()
-        val uri = ElasticsearchClientUri("elasticsearch://localhost:9300")
-        ElasticClient.transport(settings, uri)
+        (Settings.settingsBuilder().put("cluster.name", "elasticsearch_" + System.getProperty("user.name")).build(),
+        ElasticsearchClientUri("elasticsearch://localhost:9300"))
       case _ =>
-        val settings = Settings.settingsBuilder().put("cluster.name", configuration.getString("elasticsearch.cluster.name").get).build()
-        val uri = ElasticsearchClientUri(configuration.getString("elasticsearch.uri").get)
-        ElasticClient.transport(settings, uri)
+        (Settings.settingsBuilder().put("cluster.name", configuration.getString("elasticsearch.cluster.name").get).build(),
+        ElasticsearchClientUri(configuration.getString("elasticsearch.uri").get))
     }
 
-    bind(classOf[ElasticClient]).toInstance(elasticSearchClient)
+    bind(classOf[ElasticClient]).toInstance(ElasticClient.transport(settings, uri))
     bind(classOf[InsertDemoData]).asEagerSingleton()
   }
 }
