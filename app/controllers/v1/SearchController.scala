@@ -4,22 +4,24 @@ import javax.inject._
 
 import com.sksamuel.elastic4s._
 import com.typesafe.scalalogging.StrictLogging
+import org.elasticsearch.client.transport.NoNodeAvailableException
 import play.api.libs.json._
 import play.api.mvc._
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
+import scala.util.control.NonFatal
 
 case class Business(
-  id: Long,
-  businessName: String,
-  uprn: Long,
-  industryCode: Long,
-  legalStatus: String,
-  tradingStatus: String,
-  turnover: String,
-  employmentBands: String
-)
+                     id: Long,
+                     businessName: String,
+                     uprn: Long,
+                     industryCode: Long,
+                     legalStatus: String,
+                     tradingStatus: String,
+                     turnover: String,
+                     employmentBands: String
+                   )
 
 object Business {
   implicit val businessHitFormat = Json.format[Business]
@@ -80,9 +82,11 @@ class SearchController @Inject()(elasticSearch: ElasticClient)(implicit exec: Ex
           val businesses = elasticSearchResponse.as[Business]
           if (businesses.length > 0) Ok(Json.toJson(businesses))
           else NoContent
+        }.recover {
+          case NonFatal(e) => InternalServerError(Json.obj("status" -> 500, "code" -> "internal_error", "message_en" -> e.getMessage))
         }
       case _ =>
-        Future.successful(BadRequest(Json.obj("status" -> "400", "code" -> "missing_query", "message_en" -> "No query specified.")))
+        Future.successful(BadRequest(Json.obj("status" -> 400, "code" -> "missing_query", "message_en" -> "No query specified.")))
     }
   }
 }
