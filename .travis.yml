@@ -3,15 +3,12 @@ dist: trusty
 language: scala
 scala:
   - 2.11.8
-env:
-  - JDK=oraclejdk8
-  - JDK=openjdk8
+jdk:
+  - oraclejdk8
 addons:
   # https://github.com/travis-ci/travis-ci/issues/5227#issuecomment-165131913
   hosts:
     - ons-bi
   hostname: ons-bi
-before_script:
-  - jdk_switcher use $JDK
 notifications:
   slack: valtech-ons:nLeAGETA8HsuIi5fMQCaLe2G
