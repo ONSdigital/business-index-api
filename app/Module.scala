@@ -24,16 +24,22 @@ class Module(environment: Environment,
              configuration: Configuration) extends AbstractModule {
 
   override def configure() = {
-    val (settings, uri) = environment.mode match {
+    val elasticSearchClient = environment.mode match {
       case Mode.Dev =>
-        (Settings.settingsBuilder().put("cluster.name", "elasticsearch_" + System.getProperty("user.name")).build(),
-          ElasticsearchClientUri("elasticsearch://localhost:9300"))
+        ElasticClient.transport(
+          Settings.settingsBuilder().put("cluster.name", "elasticsearch_" + System.getProperty("user.name")).build(),
+          ElasticsearchClientUri("elasticsearch://localhost:9300")
+        )
+      case Mode.Test =>
+        ElasticClient.local(Settings.settingsBuilder().put("path.home", System.getProperty("java.io.tmpdir")).build())
       case _ =>
-        (Settings.settingsBuilder().put("cluster.name", configuration.getString("elasticsearch.cluster.name").get).build(),
-          ElasticsearchClientUri(configuration.getString("elasticsearch.uri").get))
+        ElasticClient.transport(
+          Settings.settingsBuilder().put("cluster.name", configuration.getString("elasticsearch.cluster.name").get).build(),
+          ElasticsearchClientUri(configuration.getString("elasticsearch.uri").get)
+        )
     }
 
-    bind(classOf[ElasticClient]).toInstance(ElasticClient.transport(settings, uri))
+    bind(classOf[ElasticClient]).toInstance(elasticSearchClient)
     bind(classOf[InsertDemoData]).asEagerSingleton()
     bind(classOf[AvoidLogbackMemoryLeak]).asEagerSingleton()
   }
