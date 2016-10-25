@@ -44,6 +44,9 @@
   <logger name="com.avaje.ebeaninternal.server.lib.BackgroundThread" level="OFF" />
   <logger name="com.gargoylesoftware.htmlunit.javascript" level="OFF" />
 
+  <!-- Shut up local ES warning "[Missing Link] max file descriptors..." -->
+  <logger name="org.elasticsearch.env" level="OFF"/>
+
   <root level="WARN">
     <!--<appender-ref ref="ASYNCFILE" />-->
     <!--<appender-ref ref="SPLUNKSOCKET" />-->
