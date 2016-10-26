@@ -19,9 +19,11 @@ class XResponseTimeHeader @Inject()(implicit val mat: Materializer) extends Filt
     nextFilter(requestHeader).map { result =>
       val endTime = System.currentTimeMillis
       val responseTime = endTime - startTime
-      result
-        .withHeaders("X-Response-Time" -> responseTime.toString)
-        .withHeaders("Server" -> (BuildInfo.name + "/" + BuildInfo.version))
+
+      result.withHeaders(
+        "X-Response-Time" -> responseTime.toString,
+        "Server" -> (BuildInfo.name + "/" + BuildInfo.version)
+      )
     }
   }
 }
