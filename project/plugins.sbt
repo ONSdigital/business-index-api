@@ -1,11 +1,9 @@
 resolvers += Resolver.typesafeRepo("releases")
 
-addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.5.9")
+addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.5.9" exclude("org.slf4j", "slf4j-simple"))
 
 // Build + Deployments
-addSbtPlugin("com.typesafe.sbt" % "sbt-native-packager" % "1.1.1")
-
-addSbtPlugin("com.typesafe.sbt" % "sbt-jshint" % "1.0.3")
+addSbtPlugin("com.typesafe.sbt" % "sbt-jshint" % "1.0.4")
 
 addSbtPlugin("com.typesafe.sbt" % "sbt-less" % "1.1.0")
 
