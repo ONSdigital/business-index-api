@@ -3,6 +3,7 @@ package filters
 import javax.inject.Inject
 
 import akka.stream.Materializer
+import controllers.BuildInfo
 import play.api.http.DefaultHttpFilters
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.mvc.{Filter, RequestHeader, Result}
@@ -18,7 +19,9 @@ class XResponseTimeHeader @Inject()(implicit val mat: Materializer) extends Filt
     nextFilter(requestHeader).map { result =>
       val endTime = System.currentTimeMillis
       val responseTime = endTime - startTime
-      result.withHeaders("X-Response-Time" -> responseTime.toString)
+      result
+        .withHeaders("X-Response-Time" -> responseTime.toString)
+        .withHeaders("Server" -> (BuildInfo.name + "/" + BuildInfo.version))
     }
   }
 }
