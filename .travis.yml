@@ -12,7 +12,6 @@ branches:
     # We're only building these branches and pull requests.
     - master
     - develop
-    - /RC-([0-9]+\.){2}[0-9]+(-.*)?/
 before_cache:
   # Tricks to avoid unnecessary cache updates
   - find $HOME/.ivy2 -name "ivydata-*.properties" -delete
