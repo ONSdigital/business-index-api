@@ -12,16 +12,14 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 import scala.util.control.NonFatal
 
-case class Business(
-                     id: Long,
-                     businessName: String,
-                     uprn: Long,
-                     industryCode: Long,
-                     legalStatus: String,
-                     tradingStatus: String,
-                     turnover: String,
-                     employmentBands: String
-                   )
+case class Business(id: Long,
+                    businessName: String,
+                    uprn: Long,
+                    industryCode: Long,
+                    legalStatus: String,
+                    tradingStatus: String,
+                    turnover: String,
+                    employmentBands: String)
 
 object Business {
   implicit val businessHitFormat = Json.format[Business]
