@@ -9,8 +9,12 @@ import play.api.inject.ApplicationLifecycle
 import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s.analyzers._
 import com.sksamuel.elastic4s.mappings.FieldType._
+import com.typesafe.scalalogging.StrictLogging
+import org.elasticsearch.indices.IndexAlreadyExistsException
+import org.elasticsearch.transport.RemoteTransportException
 import play.api.{Environment, Mode}
 
+import scala.concurrent.ExecutionContext
 import scala.io.Source
 import scala.util.control.NonFatal
 
@@ -20,10 +24,14 @@ import scala.util.control.NonFatal
   * CSV file header: "ID","BusinessName","UPRN","IndustryCode","LegalStatus","TradingStatus","Turnover","EmploymentBands"
   */
 @Singleton
-class InsertDemoData @Inject()(environment: Environment, elasticSearchClient: ElasticClient, applicationLifecycle: ApplicationLifecycle) {
+class InsertDemoData @Inject()(environment: Environment,
+                               elasticSearchClient: ElasticClient,
+                               applicationLifecycle: ApplicationLifecycle)
+                              (implicit exec: ExecutionContext) extends StrictLogging {
+
   elasticSearchClient.execute {
     // define the ElasticSearch index
-    create.index("bi").mappings(
+    create.index(s"bi-${environment.mode.toString.toLowerCase}").mappings(
       mapping("business").fields(
         field("BusinessName", StringType) boost 4 analyzer "BusinessNameAnalyzer",
         field("BusinessName_suggest", CompletionType),
@@ -38,18 +46,28 @@ class InsertDemoData @Inject()(environment: Environment, elasticSearchClient: El
       StandardTokenizer,
       LowercaseTokenFilter,
       edgeNGramTokenFilter("BusinessNameNGramFilter") minGram 2 maxGram 24))
+  }.recover {
+    case _: IndexAlreadyExistsException => // Ok, ignore
+    case _: RemoteTransportException => // Ok, ignore
+  }.await
+
+  if (environment.mode != Mode.Prod) {
+    applicationLifecycle.addStopHook { () =>
+      elasticSearchClient.execute {
+        delete index s"bi-${environment.mode.toString.toLowerCase}"
+      }
+    }
   }
 
   // if in dev mode, import the file sample.csv
   environment.mode match {
-    case Mode.Dev =>
+    case Mode.Dev | Mode.Test =>
       var imported = 0
-      readCSVFile("/demo/sample.csv").foreach { case (line, lineNum) =>
-        val values = line.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)")
-
+      readCSVFile(s"/${environment.mode.toString.toLowerCase}/sample.csv").foreach { case (line, lineNum) =>
+        val values = line.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)", -1).map(_.replace("\"", ""))
         try {
           elasticSearchClient.execute {
-            index into "bi" / "business" id values(0) fields(
+            index into s"bi-${environment.mode.toString.toLowerCase}" / "business" id values(0) fields(
               "BusinessName" -> values(1),
               "UPRN" -> values(2).toLong,
               "IndustryCode" -> values(3).toLong,
@@ -57,7 +75,7 @@ class InsertDemoData @Inject()(environment: Environment, elasticSearchClient: El
               "TradingStatus" -> values(5),
               "Turnover" -> values(6),
               "EmploymentBands" -> values(7))
-          }
+          }.await
 
           imported += 1
         }
@@ -66,14 +84,7 @@ class InsertDemoData @Inject()(environment: Environment, elasticSearchClient: El
         }
       }
 
-      println(s"Inserted DEMO data ($imported entries).")
-
-      applicationLifecycle.addStopHook { () =>
-        elasticSearchClient.execute {
-          delete index "bi"
-        }
-      }
-    case Mode.Test =>
+      logger.warn(s"Inserted ${environment.mode.toString.toLowerCase} data ($imported entries).")
     case Mode.Prod =>
   }
 

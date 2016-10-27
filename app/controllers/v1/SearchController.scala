@@ -5,6 +5,7 @@ import javax.inject._
 import com.sksamuel.elastic4s._
 import com.typesafe.scalalogging.StrictLogging
 import org.elasticsearch.client.transport.NoNodeAvailableException
+import play.api.Environment
 import play.api.libs.json._
 import play.api.mvc._
 
@@ -26,7 +27,7 @@ object Business {
 }
 
 @Singleton
-class SearchController @Inject()(elasticSearch: ElasticClient)(implicit exec: ExecutionContext)
+class SearchController @Inject()(environment: Environment, elasticSearch: ElasticClient)(implicit exec: ExecutionContext)
   extends Controller with ElasticDsl with StrictLogging {
 
   implicit object BusinessHitAs extends HitAs[Business] {
@@ -51,7 +52,7 @@ class SearchController @Inject()(elasticSearch: ElasticClient)(implicit exec: Ex
     request.getQueryString("q").orElse(request.getQueryString("query")) match {
       case Some(query) if query.length > 0 =>
         elasticSearch.execute {
-          search.in("bi" / "business")
+          search.in(s"bi-${environment.mode.toString.toLowerCase}" / "business")
             .query(matchQuery("BusinessName", query))
             .start(start)
             .limit(limit)
@@ -75,7 +76,7 @@ class SearchController @Inject()(elasticSearch: ElasticClient)(implicit exec: Ex
     request.getQueryString("q").orElse(request.getQueryString("query")) match {
       case Some(query) if query.length > 0 =>
         elasticSearch.execute {
-          search.in("bi" / "business")
+          search.in(s"bi-${environment.mode.toString.toLowerCase}" / "business")
             .query(query)
             .start(start)
             .limit(limit)
