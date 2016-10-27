@@ -19,7 +19,7 @@
 
 #search-box {
     position: relative;
-    width: 400px;
+    width: 200px;
     height: 45px;
     margin-top: 27px;
 }
@@ -47,7 +47,7 @@
     position: static;
     float: none;
     display: block;
-    min-width: 160px;
+    min-width: 130px;
     background-color: transparent;
     border: none;
     border-radius: 0;
@@ -57,7 +57,7 @@
 
 .typeahead-demo .large-search {
     position: relative;
-    width: 400px;
+    width: 200px;
     height: 45px;
     outline: none;
     border-radius: 5px;
