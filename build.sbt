@@ -24,7 +24,7 @@ lazy val root = (project in file(".")).
   enablePlugins(PlayScala).
   settings(
     name := """ons-bi-api""",
-    scalaVersion := "2.11.7",
+    scalaVersion := "2.11.8",
 
     buildInfoPackage := "controllers",
 
@@ -57,24 +57,22 @@ lazy val root = (project in file(".")).
     resolvers += "splunk" at "http://splunk.artifactoryonline.com/splunk/ext-releases-local",
 
     libraryDependencies ++= Seq(
-      cache,
-      ws,
+      filters,
       "org.webjars" %% "webjars-play" % "2.5.0-3",
       "org.webjars.bower" % "angular" % "1.5.8",
       "org.webjars.bower" % "dali" % "1.3.2",
       "org.webjars.bower" % "angular-toggle-switch" % "1.3.0",
       "org.webjars.bower" % "angular-bootstrap" % "1.1.0",
       "org.webjars.bower" % "angular-ui-router" % "0.2.15",
-      "com.splunk.logging" % "splunk-library-javalogging" % "1.5.2",
+      "com.typesafe.scala-logging" %% "scala-logging" % "3.5.0",
       "ch.qos.logback" % "logback-classic" % "1.1.7",
       "com.splunk.logging" % "splunk-library-javalogging" % "1.5.2" excludeAll(
         ExclusionRule("commons-logging", "commons-logging"),
         ExclusionRule("org.apache.logging.log4j", "log4j-core"),
         ExclusionRule("org.apache.logging.log4j", "log4j-api")
         ),
-      "com.typesafe.scala-logging" %% "scala-logging" % "3.5.0",
-      "com.sksamuel.elastic4s" %% "elastic4s-streams" % "2.3.1",
-      "com.sksamuel.elastic4s" %% "elastic4s-jackson" % "2.3.1",
-      "org.scalatestplus.play" %% "scalatestplus-play" % "1.5.1" % Test
+      "com.sksamuel.elastic4s" %% "elastic4s-streams" % "2.4.0",
+      "com.sksamuel.elastic4s" %% "elastic4s-jackson" % "2.4.0",
+      "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.0-M1" % Test
     )
   )

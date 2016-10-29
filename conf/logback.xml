@@ -1,5 +1,6 @@
 <!-- https://www.playframework.com/documentation/latest/SettingsLogger -->
 <configuration>
+  <jmxConfigurator />
 
   <conversionRule conversionWord="coloredLevel" converterClass="play.api.libs.logback.ColoredLevel" />
 
@@ -17,6 +18,8 @@
   </appender>
 
   <appender name="ASYNCFILE" class="ch.qos.logback.classic.AsyncAppender">
+    <queueSize>500</queueSize>
+    <discardingThreshold>0</discardingThreshold>
     <appender-ref ref="FILE" />
   </appender>
 
@@ -40,6 +43,9 @@
   <logger name="com.avaje.ebeaninternal.server.core.XmlConfigLoader" level="OFF" />
   <logger name="com.avaje.ebeaninternal.server.lib.BackgroundThread" level="OFF" />
   <logger name="com.gargoylesoftware.htmlunit.javascript" level="OFF" />
+
+  <!-- Shut up local ES warning "[Missing Link] max file descriptors..." -->
+  <logger name="org.elasticsearch.env" level="OFF"/>
 
   <root level="WARN">
     <!--<appender-ref ref="ASYNCFILE" />-->
