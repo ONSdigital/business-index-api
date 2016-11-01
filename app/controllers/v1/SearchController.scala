@@ -46,7 +46,7 @@ class SearchController @Inject()(environment: Environment, elasticSearch: Elasti
   }
 
   def searchBusiness(suggest: Boolean) = Action.async { implicit request =>
-    val start = Try(request.getQueryString("start").getOrElse("0").toInt).getOrElse(0)
+    val offset = Try(request.getQueryString("offset").getOrElse("0").toInt).getOrElse(0)
     val limit = Try(request.getQueryString("limit").getOrElse("100").toInt).getOrElse(100)
 
     request.getQueryString("q").orElse(request.getQueryString("query")) match {
@@ -55,7 +55,7 @@ class SearchController @Inject()(environment: Environment, elasticSearch: Elasti
         elasticSearch.execute {
           search.in(s"bi-${environment.mode.toString.toLowerCase}" / "business")
             .query(definition)
-            .start(start)
+            .start(offset)
             .limit(limit)
         }.map { elasticSearchResponse =>
           val businesses = elasticSearchResponse.as[Business]

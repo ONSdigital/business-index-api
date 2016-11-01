@@ -27,14 +27,25 @@ class Module(environment: Environment,
     val elasticSearchClient = environment.mode match {
       case Mode.Dev =>
         ElasticClient.transport(
-          Settings.settingsBuilder().put("cluster.name", "elasticsearch_" + System.getProperty("user.name")).build(),
+          Settings.settingsBuilder()
+            .put("cluster.name", "elasticsearch_" + System.getProperty("user.name"))
+            .put("client.transport.sniff", true)
+            .build(),
           ElasticsearchClientUri("elasticsearch://localhost:9300")
         )
       case Mode.Test =>
-        ElasticClient.local(Settings.settingsBuilder().put("path.home", System.getProperty("java.io.tmpdir")).build())
+        ElasticClient.local(
+          Settings.settingsBuilder()
+            .put("path.home", System.getProperty("java.io.tmpdir"))
+            .put("client.transport.sniff", true)
+            .build()
+        )
       case _ =>
         ElasticClient.transport(
-          Settings.settingsBuilder().put("cluster.name", configuration.getString("elasticsearch.cluster.name").get).build(),
+          Settings.settingsBuilder()
+            .put("cluster.name", configuration.getString("elasticsearch.cluster.name").get)
+            .put("client.transport.sniff", configuration.getBoolean("elasticsearch.client.transport.sniff").getOrElse(true))
+            .build(),
           ElasticsearchClientUri(configuration.getString("elasticsearch.uri").get)
         )
     }

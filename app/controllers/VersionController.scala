@@ -14,7 +14,7 @@ class VersionController @Inject()(implicit exec: ExecutionContext)
 
   def version = Action {
     Ok(ListMap(BuildInfo.toMap.toSeq.sortBy(_._1):_*)
-      .map(i => "\"" + i._1 + "\":\"" + i._2 + "\"").mkString("{", ", ", "}")
+      .map(i => '"' + i._1 + "\":\"" + i._2 + '"').mkString("{", ", ", "}")
     ).as("application/json")
   }
 }

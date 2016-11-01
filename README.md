@@ -5,9 +5,9 @@
 * Java 8 or higher
 * SBT (http://www.scala-sbt.org/)
 
-### Development Setup
+### Development Setup (MacOS)
 
-To install/run ElasticSearch on MacOS Sierra, use Homebrew (http://brew.sh/):
+To install/run ElasticSearch on MacOS, use Homebrew (http://brew.sh):
 
 - `brew install elasticsearch`
 - `elasticsearch`
