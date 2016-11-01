@@ -39,11 +39,6 @@ lazy val root = (project in file(".")).
     buildInfoOptions += BuildInfoOption.BuildTime,
     buildInfoOptions += BuildInfoOption.ToJson,
 
-    // no javadoc for BuildInfo.scala
-    sources in(Compile, doc) <<= sources in(Compile, doc) map {
-      _.filterNot(_.getName endsWith ".scala")
-    },
-
     assemblyJarName in assembly := "ons-bi-api.jar",
     assemblyMergeStrategy in assembly := {
       case PathList("META-INF", "io.netty.versions.properties", xs@_ *) => MergeStrategy.last
