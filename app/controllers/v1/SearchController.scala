@@ -62,7 +62,7 @@ class SearchController @Inject()(environment: Environment, elasticSearch: Elasti
           if (businesses.length > 0)
             Ok(Json.toJson(businesses)).withHeaders("X-Total-Count" -> elasticSearchResponse.totalHits.toString)
           else
-            Ok("{}").as("application/json")
+            Ok("{}").as(JSON)
         }.recover {
           case e: NoNodeAvailableException => ServiceUnavailable(Json.obj("status" -> 503, "code" -> "es_down", "message_en" -> e.getMessage))
           case NonFatal(e) => InternalServerError(Json.obj("status" -> 500, "code" -> "internal_error", "message_en" -> e.getMessage))
