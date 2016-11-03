@@ -25,11 +25,11 @@ import scala.util.control.NonFatal
   */
 @Singleton
 class InsertDemoData @Inject()(environment: Environment,
-                               elasticSearchClient: ElasticClient,
+                               elasticsearchClient: ElasticClient,
                                applicationLifecycle: ApplicationLifecycle)
                               (implicit exec: ExecutionContext) extends StrictLogging {
 
-  elasticSearchClient.execute {
+  elasticsearchClient.execute {
     // define the ElasticSearch index
     create.index(s"bi-${environment.mode.toString.toLowerCase}").mappings(
       mapping("business").fields(
@@ -53,7 +53,7 @@ class InsertDemoData @Inject()(environment: Environment,
 
   if (environment.mode != Mode.Prod) {
     applicationLifecycle.addStopHook { () =>
-      elasticSearchClient.execute {
+      elasticsearchClient.execute {
         delete index s"bi-${environment.mode.toString.toLowerCase}"
       }
     }
@@ -66,7 +66,7 @@ class InsertDemoData @Inject()(environment: Environment,
       readCSVFile(s"/${environment.mode.toString.toLowerCase}/sample.csv").foreach { case (line, lineNum) =>
         val values = line.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)", -1).map(_.replace("\"", ""))
         try {
-          elasticSearchClient.execute {
+          elasticsearchClient.execute {
             index into s"bi-${environment.mode.toString.toLowerCase}" / "business" id values(0) fields(
               "BusinessName" -> values(1),
               "UPRN" -> values(2).toLong,

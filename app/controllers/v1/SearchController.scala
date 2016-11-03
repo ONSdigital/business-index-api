@@ -26,10 +26,18 @@ object Business {
   implicit val businessHitFormat = Json.format[Business]
 }
 
+/**
+  * Contains action for the /v1/search route.
+  *
+  * @param environment
+  * @param elasticsearchClient
+  * @param exec
+  */
 @Singleton
-class SearchController @Inject()(environment: Environment, elasticSearch: ElasticClient)(implicit exec: ExecutionContext)
+class SearchController @Inject()(environment: Environment, elasticsearchClient: ElasticClient)(implicit exec: ExecutionContext)
   extends Controller with ElasticDsl with StrictLogging {
 
+  // mapper from Elasticsearch result to Business case class
   implicit object BusinessHitAs extends HitAs[Business] {
     override def as(hit: RichSearchHit): Business = {
       Business(
@@ -51,18 +59,23 @@ class SearchController @Inject()(environment: Environment, elasticSearch: Elasti
 
     request.getQueryString("q").orElse(request.getQueryString("query")) match {
       case Some(query) if query.length > 0 =>
+        // if suggest, match on the BusinessName only, else assume it's an Elasticsearch query
         val definition = if (suggest) matchQuery("BusinessName", query) else QueryStringQueryDefinition(query)
-        elasticSearch.execute {
+        elasticsearchClient.execute {
           search.in(s"bi-${environment.mode.toString.toLowerCase}" / "business")
             .query(definition)
             .start(offset)
             .limit(limit)
-        }.map { elasticSearchResponse =>
-          val businesses = elasticSearchResponse.as[Business]
-          if (businesses.length > 0)
-            Ok(Json.toJson(businesses)).withHeaders("X-Total-Count" -> elasticSearchResponse.totalHits.toString)
-          else
-            Ok("{}").as(JSON)
+        }.map { elasticsearchResponse =>
+          elasticsearchResponse.as[Business] match {
+            case businesses if businesses.length > 0 =>
+              Ok(Json.toJson(businesses))
+                .withHeaders(
+                  "X-Total-Count" -> elasticsearchResponse.totalHits.toString,
+                  "X-Max-Score" -> elasticsearchResponse.maxScore.toString
+                )
+            case _ => Ok("{}").as(JSON)
+          }
         }.recover {
           case e: NoNodeAvailableException => ServiceUnavailable(Json.obj("status" -> 503, "code" -> "es_down", "message_en" -> e.getMessage))
           case NonFatal(e) => InternalServerError(Json.obj("status" -> 500, "code" -> "internal_error", "message_en" -> e.getMessage))
