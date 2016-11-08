@@ -4,6 +4,7 @@ import javax.inject._
 
 import com.sksamuel.elastic4s._
 import com.typesafe.scalalogging.StrictLogging
+import nl.grons.metrics.scala.DefaultInstrumented
 import org.elasticsearch.client.transport.NoNodeAvailableException
 import play.api.Environment
 import play.api.libs.json._
@@ -35,7 +36,11 @@ object Business {
   */
 @Singleton
 class SearchController @Inject()(environment: Environment, elasticsearchClient: ElasticClient)(implicit exec: ExecutionContext)
-  extends Controller with ElasticDsl with StrictLogging {
+  extends Controller with ElasticDsl with DefaultInstrumented with StrictLogging {
+
+  // metrics
+  private[this] val requestMeter = metrics.meter("search-requests", "requests")
+  private[this] val totalHitsHistogram = metrics.histogram("totalHits", "es-searches")
 
   // mapper from Elasticsearch result to Business case class
   implicit object BusinessHitAs extends HitAs[Business] {
@@ -54,6 +59,8 @@ class SearchController @Inject()(environment: Environment, elasticsearchClient: 
   }
 
   def searchBusiness(suggest: Boolean) = Action.async { implicit request =>
+    requestMeter.mark()
+
     val offset = Try(request.getQueryString("offset").getOrElse("0").toInt).getOrElse(0)
     val limit = Try(request.getQueryString("limit").getOrElse("100").toInt).getOrElse(100)
 
@@ -69,6 +76,8 @@ class SearchController @Inject()(environment: Environment, elasticsearchClient: 
         }.map { elasticsearchResponse =>
           elasticsearchResponse.as[Business] match {
             case businesses if businesses.length > 0 =>
+              totalHitsHistogram += elasticsearchResponse.totalHits
+
               Ok(Json.toJson(businesses))
                 .withHeaders(
                   "X-Total-Count" -> elasticsearchResponse.totalHits.toString,

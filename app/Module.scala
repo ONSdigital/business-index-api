@@ -1,9 +1,11 @@
 import javax.inject.Inject
 
 import ch.qos.logback.classic.LoggerContext
+import com.codahale.metrics.JmxReporter
 import com.google.inject.AbstractModule
 import com.sksamuel.elastic4s.{ElasticClient, ElasticsearchClientUri}
 import com.typesafe.scalalogging.StrictLogging
+import nl.grons.metrics.scala.DefaultInstrumented
 import org.elasticsearch.common.settings.Settings
 import org.slf4j.LoggerFactory
 import play.api.inject.ApplicationLifecycle
@@ -21,7 +23,7 @@ class AvoidLogbackMemoryLeak @Inject()(lifecycle: ApplicationLifecycle) extends 
 }
 
 class Module(environment: Environment,
-             configuration: Configuration) extends AbstractModule {
+             configuration: Configuration) extends AbstractModule with DefaultInstrumented {
 
   override def configure() = {
     val elasticSearchClient = environment.mode match {
@@ -53,5 +55,8 @@ class Module(environment: Environment,
     bind(classOf[ElasticClient]).toInstance(elasticSearchClient)
     bind(classOf[InsertDemoData]).asEagerSingleton()
     bind(classOf[AvoidLogbackMemoryLeak]).asEagerSingleton()
+
+    val reporter = JmxReporter.forRegistry(metricRegistry).build()
+    reporter.start()
   }
 }
