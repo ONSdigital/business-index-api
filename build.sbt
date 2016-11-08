@@ -66,6 +66,7 @@ lazy val root = (project in file(".")).
         ExclusionRule("org.apache.logging.log4j", "log4j-core"),
         ExclusionRule("org.apache.logging.log4j", "log4j-api")
         ),
+      "nl.grons" %% "metrics-scala" % "3.5.5",
       "com.sksamuel.elastic4s" %% "elastic4s-streams" % "2.4.0",
       "com.sksamuel.elastic4s" %% "elastic4s-jackson" % "2.4.0",
       "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.0-M1" % Test

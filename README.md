@@ -9,7 +9,7 @@
 
 To install/run ElasticSearch on MacOS, use Homebrew (http://brew.sh):
 
-- `brew install elasticsearch`
+- `brew install homebrew/versions/elasticsearch24`
 - `elasticsearch`
 
 The last command runs an interactive Elasticsearch 2.4.1 session that the application can connect to using cluster name
