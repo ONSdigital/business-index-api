@@ -20,13 +20,22 @@ class HealthController extends Controller with DefaultInstrumented {
 
     val body = healthChecks.map {
       case (key, result) if result.isHealthy =>
-        s"\042$key\042:\042${Option(result.getMessage).getOrElse("HEALTHY")}\042"
+        healthBody(key, Option(result.getMessage).getOrElse("HEALTY"))
       case (key, result) if !result.isHealthy && result.getError == null =>
-        s"\042$key\042:\042${Option(result.getMessage).getOrElse("UNHEALTHY")}\042"
+        healthBody(key, Option(result.getMessage).getOrElse("UNHEALTY"))
       case (key, result) if !result.isHealthy && result.getError != null =>
-        s"\042$key\042:{\042message\042:\042${Option(result.getMessage).getOrElse("UNHEALTHY")}\042,\042error\042:\042${Option(Throwables.getStackTraceAsString(result.getError))}\042}"
+        healthBody(key, Option(result.getMessage).getOrElse("UNHEALTY"), Option(result.getError))
     }.mkString("{", ", ", "}")
 
     if (hasUnhealthyCheck) Ok(body).as(JSON) else ServiceUnavailable(body).as(JSON)
+  }
+
+  private def healthBody(key: String, message: String, error: Option[Throwable] = None): String = {
+    error match {
+      case Some(exception) =>
+        s"\042$key\042:{\042message\042:\042$message\042,\042error\042:\042${Throwables.getStackTraceAsString(exception)}\042}"
+      case None =>
+        s"\042$key\042:\042$message\042"
+    }
   }
 }
