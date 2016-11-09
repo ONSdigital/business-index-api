@@ -4,6 +4,8 @@ import com.outworkers.phantom.builder.serializers.KeySpaceSerializer
 import com.outworkers.phantom.connectors.ContactPoint
 import com.outworkers.phantom.dsl._
 
+import scala.concurrent.Future
+
 class AppDatabase(override val connector: KeySpaceDef) extends Database[AppDatabase](connector) {
   object feedbackEntries extends ConcreteFeedbackEntries with connector.Connector
 }
