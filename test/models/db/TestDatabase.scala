@@ -1,8 +1,7 @@
 package models.db
 
-import com.datastax.driver.core.Session
 import com.outworkers.phantom.builder.serializers.KeySpaceSerializer
-import com.outworkers.phantom.connectors.{ContactPoint, KeySpace}
+import com.outworkers.phantom.connectors.ContactPoint
 import com.outworkers.phantom.dsl._
 
 object TestConnector {
@@ -14,7 +13,10 @@ object TestConnector {
       .and(durable_writes eqs true)
       .qb
 
-  val connector = ContactPoint.local.keySpace("business-index-test", (session, keySpace) => initQuery.queryString)
+  val connector = ContactPoint.local.keySpace(
+    space,
+    (session, keySpace) => initQuery.queryString
+  )
 }
 
 object TestDatabase extends AppDatabase(TestConnector.connector)
