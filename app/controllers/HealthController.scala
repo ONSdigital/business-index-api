@@ -22,7 +22,7 @@ class HealthController extends Controller with DefaultInstrumented {
       case (key, result) if result.isHealthy =>
         s"\042$key\042:\042${Option(result.getMessage).getOrElse("HEALTHY")}\042"
       case (key, result) if !result.isHealthy && result.getError == null =>
-        s"\042$key\042  :\042${Option(result.getMessage).getOrElse("UNHEALTHY")}\042"
+        s"\042$key\042:\042${Option(result.getMessage).getOrElse("UNHEALTHY")}\042"
       case (key, result) if !result.isHealthy && result.getError != null =>
         s"\042$key\042:{\042message\042:\042${Option(result.getMessage).getOrElse("UNHEALTHY")}\042,\042error\042:\042${Option(Throwables.getStackTraceAsString(result.getError))}\042}"
     }.mkString("{", ", ", "}")
