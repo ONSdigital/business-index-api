@@ -11,12 +11,12 @@ import play.api.mvc._
 import scala.collection.JavaConverters._
 
 class HealthController extends Controller with DefaultInstrumented {
-  val healthExecutor = Executors.newFixedThreadPool(3,
+  val healthCheckExecutor = Executors.newFixedThreadPool(3,
     new ThreadFactoryBuilder().setNameFormat("health-check-%d").setDaemon(true).build())
 
   def health = Action {
-    val healthChecks = registry.runHealthChecks(healthExecutor).asScala
-    val hasFailure = healthChecks.forall(_._2.isHealthy)
+    val healthChecks = registry.runHealthChecks(healthCheckExecutor).asScala
+    val hasUnhealthyCheck = healthChecks.forall(_._2.isHealthy)
 
     val body = healthChecks.map {
       case (key, result) if result.isHealthy =>
@@ -27,6 +27,6 @@ class HealthController extends Controller with DefaultInstrumented {
         s"\042$key\042:{\042message\042:\042${Option(result.getMessage).getOrElse("UNHEALTHY")}\042,\042error\042:\042${Option(Throwables.getStackTraceAsString(result.getError))}\042}"
     }.mkString("{", ", ", "}")
 
-    if (hasFailure) Ok(body).as(JSON) else ServiceUnavailable(body).as(JSON)
+    if (hasUnhealthyCheck) Ok(body).as(JSON) else ServiceUnavailable(body).as(JSON)
   }
 }
