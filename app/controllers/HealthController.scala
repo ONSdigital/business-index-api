@@ -11,7 +11,7 @@ import play.api.mvc._
 import scala.collection.JavaConverters._
 
 class HealthController extends Controller with DefaultInstrumented {
-  val healthCheckExecutor = Executors.newFixedThreadPool(3,
+  private[this] val healthCheckExecutor = Executors.newFixedThreadPool(3,
     new ThreadFactoryBuilder().setNameFormat("health-check-%d").setDaemon(true).build())
 
   def health = Action {
