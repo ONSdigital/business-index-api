@@ -13,7 +13,6 @@ import play.api.inject.ApplicationLifecycle
 import play.api.{Configuration, Environment, Mode}
 import services.InsertDemoData
 import com.sksamuel.elastic4s._
-import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse
 import org.elasticsearch.cluster.health.ClusterHealthStatus._
 
 import scala.concurrent.Future
