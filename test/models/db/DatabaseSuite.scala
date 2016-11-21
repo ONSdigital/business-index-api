@@ -2,9 +2,12 @@ package models.db
 
 import java.util.concurrent.TimeUnit
 
+import com.outworkers.phantom.dsl.{DateTime, UUID}
+import com.outworkers.util.testing.Sample
 import org.scalatest.{FlatSpec, Matchers, OptionValues}
 import org.scalatest.concurrent.{PatienceConfiguration, ScalaFutures}
 import org.scalatest.time.{Millis, Seconds, Span}
+import com.outworkers.util.testing._
 
 trait DatabaseSuite extends FlatSpec with Matchers with OptionValues with ScalaFutures with TestDbProvider {
 
@@ -22,4 +25,14 @@ trait DatabaseSuite extends FlatSpec with Matchers with OptionValues with ScalaF
     timeout = defaultTimeoutSpan,
     interval = Span(defaultScalaInterval, Millis)
   )
+
+  implicit object FeedbackSampler extends Sample[FeedbackEntry] {
+    override def sample: FeedbackEntry = FeedbackEntry(
+      gen[UUID],
+      gen[String],
+      genOpt[String],
+      gen[String],
+      gen[DateTime]
+    )
+  }
 }

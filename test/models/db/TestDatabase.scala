@@ -21,9 +21,6 @@ object TestConnector {
 
 object TestDatabase extends AppDatabase(TestConnector.connector)
 
-
-trait AppDbProvider extends DatabaseProvider[AppDatabase]
-
-trait TestDbProvider extends AppDbProvider {
+trait TestDbProvider extends BusinessDbProvider {
   override val database: AppDatabase = TestDatabase
 }

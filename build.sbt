@@ -3,6 +3,7 @@ import sbtassembly.AssemblyPlugin.autoImport._
 
 lazy val Versions = new {
   val phantom = "2.0.5"
+  val util = "0.23.1"
   val elastic4s = "2.4.0"
 }
 
@@ -82,9 +83,10 @@ lazy val businessIndex = (project in file(".")).
         ExclusionRule("commons-logging", "commons-logging"),
         ExclusionRule("org.apache.logging.log4j", "log4j-core"),
         ExclusionRule("org.apache.logging.log4j", "log4j-api")
-        ),
+      ),
       "com.sksamuel.elastic4s" %% "elastic4s-streams" % Versions.elastic4s,
       "com.sksamuel.elastic4s" %% "elastic4s-jackson" % Versions.elastic4s,
+      "com.outworkers" %% "util-testing" % Versions.util % Test,
       "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.0-M1" % Test
     )
   )
