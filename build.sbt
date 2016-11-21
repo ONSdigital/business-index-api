@@ -1,6 +1,11 @@
 import sbtbuildinfo.BuildInfoPlugin.autoImport._
 import sbtassembly.AssemblyPlugin.autoImport._
 
+lazy val Versions = new {
+  val phantom = "2.0.3"
+  val elastic4s = "2.4.0"
+}
+
 scalacOptions in ThisBuild ++= Seq(
   "-target:jvm-1.8",
   "-encoding", "UTF-8",
@@ -19,11 +24,11 @@ scalacOptions in ThisBuild ++= Seq(
   "-Ywarn-numeric-widen" // Warn when numerics are widened
 )
 
-lazy val root = (project in file(".")).
+lazy val businessIndex = (project in file(".")).
   enablePlugins(BuildInfoPlugin).
   enablePlugins(PlayScala).
   settings(
-    name := """ons-bi-api""",
+    name := "ons-bi-api",
     scalaVersion := "2.11.8",
 
     buildInfoPackage := "controllers",
@@ -39,11 +44,6 @@ lazy val root = (project in file(".")).
     buildInfoOptions += BuildInfoOption.BuildTime,
     buildInfoOptions += BuildInfoOption.ToJson,
 
-    // no javadoc for BuildInfo.scala
-    sources in(Compile, doc) <<= sources in(Compile, doc) map {
-      _.filterNot(_.getName endsWith ".scala")
-    },
-
     assemblyJarName in assembly := "ons-bi-api.jar",
     assemblyMergeStrategy in assembly := {
       case PathList("META-INF", "io.netty.versions.properties", xs@_ *) => MergeStrategy.last
@@ -54,10 +54,13 @@ lazy val root = (project in file(".")).
     },
     mainClass in assembly := Some("play.core.server.NettyServer"),
 
-    resolvers += "splunk" at "http://splunk.artifactoryonline.com/splunk/ext-releases-local",
-
+    resolvers ++= Seq(
+      "splunk" at "http://splunk.artifactoryonline.com/splunk/ext-releases-local",
+      Resolver.bintrayRepo("outworkers", "oss-releases")
+    ),
     libraryDependencies ++= Seq(
       filters,
+      "com.outworkers" %% "phantom-dsl" % Versions.phantom,
       "org.webjars" %% "webjars-play" % "2.5.0-3",
       "org.webjars.bower" % "angular" % "1.5.8",
       "org.webjars.bower" % "dali" % "1.3.2",
@@ -71,8 +74,8 @@ lazy val root = (project in file(".")).
         ExclusionRule("org.apache.logging.log4j", "log4j-core"),
         ExclusionRule("org.apache.logging.log4j", "log4j-api")
         ),
-      "com.sksamuel.elastic4s" %% "elastic4s-streams" % "2.4.0",
-      "com.sksamuel.elastic4s" %% "elastic4s-jackson" % "2.4.0",
+      "com.sksamuel.elastic4s" %% "elastic4s-streams" % Versions.elastic4s,
+      "com.sksamuel.elastic4s" %% "elastic4s-jackson" % Versions.elastic4s,
       "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.0-M1" % Test
     )
   )

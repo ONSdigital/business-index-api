@@ -3,8 +3,8 @@
 # ~~~~
 
 GET     /                           controllers.HomeController.index
-GET     /v1/search                  controllers.v1.SearchController.searchBusiness
-GET     /v1/suggest                 controllers.v1.SearchController.suggestBusiness
+GET     /v1/search                  controllers.v1.SearchController.searchBusiness(suggest:Boolean ?= false)
+GET     /v1/suggest                 controllers.v1.SearchController.searchBusiness(suggest:Boolean ?= true)
 
 # Access this route for deployed version information (in JSON).
 GET     /version                    controllers.VersionController.version

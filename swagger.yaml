@@ -36,13 +36,11 @@ paths:
          description: Number of items to retrieve (defaults to 100, 1000 max).
       responses:
         200:
-          description: An array of businesses
+          description: An array of businesses, or an empty array if no business matched.
           schema:
             type: array
             items:
               $ref: '#/definitions/Business'
-        204:
-          description: When no match.
         default:
           description: Unexpected error
           schema:
