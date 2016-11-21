@@ -1,6 +1,7 @@
 package models.db
 
 import com.outworkers.phantom.dsl._
+import play.api.libs.json.Json
 
 import scala.concurrent.Future
 
@@ -18,7 +19,11 @@ case class FeedbackEntry(
   timestamp: DateTime
 )
 
-class FeedbackEntries extends CassandraTable[ConcreteFeedbackEntries, FeedbackEntry] {
+object FeedbackEntry {
+  implicit val format = Json.format[FeedbackEntry]
+}
+
+abstract class FeedbackEntries extends CassandraTable[FeedbackEntries, FeedbackEntry] with RootConnector {
   object id extends TimeUUIDColumn(this) with PartitionKey[UUID]
   object query extends StringColumn(this)
   object specificResult extends OptionalStringColumn(this)
@@ -34,9 +39,7 @@ class FeedbackEntries extends CassandraTable[ConcreteFeedbackEntries, FeedbackEn
       timestamp = timestamp(row)
     )
   }
-}
 
-abstract class ConcreteFeedbackEntries extends FeedbackEntries with RootConnector {
   def store(entry: FeedbackEntry): Future[ResultSet] = {
     insert.value(_.id, entry.id)
       .value(_.query, entry.query)
@@ -46,8 +49,8 @@ abstract class ConcreteFeedbackEntries extends FeedbackEntries with RootConnecto
       .future()
   }
 
-  def findById(id: UUID): Future[Option[FeedbackEntry]] = {
-    select.where(_.id eqs id).one()
-  }
+  def findById(id: UUID): Future[Option[FeedbackEntry]] = select.where(_.id eqs id).one()
+
+  def listEntries(): Future[List[FeedbackEntry]] = select.limit(100).fetch
 }
 

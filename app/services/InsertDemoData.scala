@@ -14,9 +14,8 @@ import org.elasticsearch.indices.IndexAlreadyExistsException
 import org.elasticsearch.transport.RemoteTransportException
 import play.api.{Environment, Mode}
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 import scala.io.Source
-import scala.util.control.NonFatal
 
 /**
   * Class that imports sample.csv.
@@ -24,12 +23,13 @@ import scala.util.control.NonFatal
   * CSV file header: "ID","BusinessName","UPRN","IndustryCode","LegalStatus","TradingStatus","Turnover","EmploymentBands"
   */
 @Singleton
-class InsertDemoData @Inject()(environment: Environment,
-                               elasticsearchClient: ElasticClient,
-                               applicationLifecycle: ApplicationLifecycle)
-                              (implicit exec: ExecutionContext) extends StrictLogging {
+class InsertDemoData @Inject()(
+  environment: Environment,
+  elasticSearchClient: ElasticClient,
+  applicationLifecycle: ApplicationLifecycle
+)(implicit exec: ExecutionContext) extends StrictLogging {
 
-  elasticsearchClient.execute {
+  elasticSearchClient.execute {
     // define the ElasticSearch index
     create.index(s"bi-${environment.mode.toString.toLowerCase}").mappings(
       mapping("business").fields(
@@ -53,7 +53,7 @@ class InsertDemoData @Inject()(environment: Environment,
 
   if (environment.mode != Mode.Prod) {
     applicationLifecycle.addStopHook { () =>
-      elasticsearchClient.execute {
+      elasticSearchClient.execute {
         delete index s"bi-${environment.mode.toString.toLowerCase}"
       }
     }
@@ -61,34 +61,30 @@ class InsertDemoData @Inject()(environment: Environment,
 
   // if in dev mode, import the file sample.csv
   environment.mode match {
-    case Mode.Dev | Mode.Test =>
-      var imported = 0
-      readCSVFile(s"/${environment.mode.toString.toLowerCase}/sample.csv").foreach { case (line, lineNum) =>
+    case Mode.Dev | Mode.Test => {
+      val futures = readCSVFile(s"/${environment.mode.toString.toLowerCase}/sample.csv").map { case (line, lineNum) =>
         val values = line.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)", -1).map(_.replace("\"", ""))
-        try {
-          elasticsearchClient.execute {
-            index into s"bi-${environment.mode.toString.toLowerCase}" / "business" id values(0) fields(
-              "BusinessName" -> values(1),
-              "UPRN" -> values(2).toLong,
-              "IndustryCode" -> values(3).toLong,
-              "LegalStatus" -> values(4),
-              "TradingStatus" -> values(5),
-              "Turnover" -> values(6),
-              "EmploymentBands" -> values(7))
-          }.await
 
-          imported += 1
-        }
-        catch {
-          case NonFatal(ex) => println(s"Failed importing line $lineNum: $line - ${ex}")
+        elasticSearchClient.execute {
+          index into s"bi-${environment.mode.toString.toLowerCase}" / "business" id values(0) fields(
+            "BusinessName" -> values(1),
+            "UPRN" -> values(2).toLong,
+            "IndustryCode" -> values(3).toLong,
+            "LegalStatus" -> values(4),
+            "TradingStatus" -> values(5),
+            "Turnover" -> values(6),
+            "EmploymentBands" -> values(7))
         }
       }
+      Future.sequence(futures) map {
+        _ => logger.warn(s"Inserted ${environment.mode.toString.toLowerCase} data entries.")
+      }
+    }
 
-      logger.warn(s"Inserted ${environment.mode.toString.toLowerCase} data ($imported entries).")
-    case Mode.Prod =>
+    case Mode.Prod => Future.successful(List.empty[IndexResult])
   }
 
-  private def readCSVFile(p: String): List[(String, Int)] =
+  private[this] def readCSVFile(p: String): List[(String, Int)] =
     Option(getClass.getResourceAsStream(p)).map(Source.fromInputStream)
       .map(_.getLines.filterNot(_.contains("BusinessName")).zipWithIndex.toList)
       .getOrElse(throw new FileNotFoundException(p))

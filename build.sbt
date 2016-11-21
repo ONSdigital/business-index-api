@@ -2,13 +2,15 @@ import sbtbuildinfo.BuildInfoPlugin.autoImport._
 import sbtassembly.AssemblyPlugin.autoImport._
 
 lazy val Versions = new {
-  val phantom = "2.0.3"
+  val phantom = "2.0.5"
   val elastic4s = "2.4.0"
 }
 
 scalacOptions in ThisBuild ++= Seq(
   "-target:jvm-1.8",
   "-encoding", "UTF-8",
+  "-language:reflectiveCalls",
+  "-language:implicits",
   "-deprecation", // warning and location for usages of deprecated APIs
   "-feature", // warning and location for usages of features that should be imported explicitly
   "-unchecked", // additional warnings where generated code depends on assumptions
@@ -44,6 +46,11 @@ lazy val businessIndex = (project in file(".")).
     buildInfoOptions += BuildInfoOption.BuildTime,
     buildInfoOptions += BuildInfoOption.ToJson,
 
+    // no javadoc for BuildInfo.scala
+    sources in(Compile, doc) <<= sources in(Compile, doc) map {
+      _.filterNot(_.getName endsWith ".scala")
+    },
+
     assemblyJarName in assembly := "ons-bi-api.jar",
     assemblyMergeStrategy in assembly := {
       case PathList("META-INF", "io.netty.versions.properties", xs@_ *) => MergeStrategy.last
@@ -58,6 +65,7 @@ lazy val businessIndex = (project in file(".")).
       "splunk" at "http://splunk.artifactoryonline.com/splunk/ext-releases-local",
       Resolver.bintrayRepo("outworkers", "oss-releases")
     ),
+
     libraryDependencies ++= Seq(
       filters,
       "com.outworkers" %% "phantom-dsl" % Versions.phantom,
@@ -69,6 +77,7 @@ lazy val businessIndex = (project in file(".")).
       "org.webjars.bower" % "angular-ui-router" % "0.2.15",
       "com.typesafe.scala-logging" %% "scala-logging" % "3.5.0",
       "ch.qos.logback" % "logback-classic" % "1.1.7",
+      "com.outworkers" %% "phantom-dsl" % "2.0.5",
       "com.splunk.logging" % "splunk-library-javalogging" % "1.5.2" excludeAll(
         ExclusionRule("commons-logging", "commons-logging"),
         ExclusionRule("org.apache.logging.log4j", "log4j-core"),
