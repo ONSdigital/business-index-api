@@ -2,7 +2,7 @@ import sbtbuildinfo.BuildInfoPlugin.autoImport._
 import sbtassembly.AssemblyPlugin.autoImport._
 
 lazy val Versions = new {
-  val phantom = "2.0.5"
+  val phantom = "2.0.6"
   val util = "0.23.1"
   val elastic4s = "2.4.0"
 }
@@ -11,6 +11,7 @@ scalacOptions in ThisBuild ++= Seq(
   "-target:jvm-1.8",
   "-encoding", "UTF-8",
   "-language:reflectiveCalls",
+  "-language:experimental.macros",
   "-language:implicits",
   "-deprecation", // warning and location for usages of deprecated APIs
   "-feature", // warning and location for usages of features that should be imported explicitly
@@ -69,6 +70,8 @@ lazy val businessIndex = (project in file(".")).
 
     libraryDependencies ++= Seq(
       filters,
+      "org.typelevel" %% "macro-compat" % "1.1.1",
+      "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
       "com.outworkers" %% "phantom-dsl" % Versions.phantom,
       "org.webjars" %% "webjars-play" % "2.5.0-3",
       "org.webjars.bower" % "angular" % "1.5.8",
