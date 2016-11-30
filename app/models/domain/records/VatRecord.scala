@@ -1,0 +1,68 @@
+package models.domain.records
+
+import models.domain.parsers._
+import org.joda.time.DateTime
+
+/**
+  * LVO code	1	3
+  * VAT registration number	4	12
+  *Trade class 	13	17
+  *Effective date of registration	18	23
+  *VAT 1 date	24	29
+  *Deregistration indicator	30	30
+  *Deregistration date	31	36
+  *VAT 30 date	37	42
+  *Insolvency indicator	43	43
+  *Insolvency date	44	49
+  *Group-Division indicator	50	50
+  *Voluntary registration indicator	51	51
+  *Intending trader indicator	52	52
+  *Status	53	53
+  *Part-Exempt indicator	54	54
+  *Stagger	55	56
+  *Repayment indicator	57	57
+  *Total turnover	58	66
+  *Trading name  	67	84
+  *Full name	85	189
+  *Address 1  	190	219
+  *Address 2   	220	249
+  *Address 3 	250	279
+  *Address 4  	280	309
+  *Address 5	310	339
+  *Postcode 	340	347
+*/
+
+case class VatRecord(
+  lov_code: String,
+  vat_registration_number: String,
+  trade_class: String,
+  effective_date_of_registration: DateTime,
+  vat_1_date: DateTime,
+  insolvency_indicator: String,
+  insolvency_date: DateTime,
+  group_division_indicator: String,
+  voluntary_registration_indicator: String,
+  intending_trader_indicator: String,
+  status: String,
+  `part-exempt indicator`: String,
+  stagger: Int,
+  repayment_indicator: Int,
+  total_turnover: Long,
+  trading_name: String,
+  full_name: String,
+  address_1: String,
+  address_2: String,
+  address_3: String,
+  address_4: String,
+  address_5: String,
+  postcode: String
+)
+
+object VatRecord {
+  implicit object VatRecordDelimiter extends OffsetProvider[VatRecord] {
+    override def parser: OffsetParser = OffsetParser(
+      "LOV code" offset 1 --> 3,
+      "LOV code" offset 1 --> 3
+    )
+  }
+}

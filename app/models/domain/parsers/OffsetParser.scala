@@ -1,30 +1,4 @@
-package models.domain
-
-import com.outworkers.phantom.dsl.UUID
-
-import scala.util.Try
-
-case class CharitiesCommissionEntry(
-  id: UUID
-)
-
-object Hmrc {
-  case class VatRecord(
-    id: String,
-    vat_category: String
-  )
-}
-
-
-case class Business(
-  charitiesCommission: Option[CharitiesCommissionEntry]
-)
-
-
-case class OffsetDelimiter(
-  start: Int,
-  end: Int
-)
+package models.domain.parsers
 
 case class OffsetParser(
   config: Map[String, OffsetDelimiter]
@@ -42,3 +16,8 @@ case class OffsetParser(
   }
 }
 
+object OffsetParser {
+  def apply(objects: (String, OffsetDelimiter)*): OffsetParser = {
+    OffsetParser(config = objects.toMap)
+  }
+}
