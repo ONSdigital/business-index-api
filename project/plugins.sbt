@@ -1,6 +1,6 @@
 resolvers += Resolver.typesafeRepo("releases")
 
-addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.5.9" exclude("org.slf4j", "slf4j-simple"))
+addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.5.10" exclude("org.slf4j", "slf4j-simple"))
 
 // Build + Deployments
 addSbtPlugin("com.typesafe.sbt" % "sbt-jshint" % "1.0.4")
@@ -18,3 +18,6 @@ addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.8.2")
 addSbtPlugin("com.eed3si9n" % "sbt-buildinfo" % "0.6.1")
 
 addSbtPlugin("com.timushev.sbt" % "sbt-updates" % "0.2.0")
+
+// https://github.com/sbt/sbt/issues/1931
+libraryDependencies += "org.slf4j" % "slf4j-nop" % "1.7.21"
