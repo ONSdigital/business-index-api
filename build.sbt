@@ -47,7 +47,8 @@ lazy val root = (project in file(".")).
         val oldStrategy = (assemblyMergeStrategy in assembly).value
         oldStrategy(x)
     },
-    mainClass in assembly := Some("play.core.server.NettyServer"),
+    mainClass in assembly := Some("play.core.server.ProdServerStart"),
+    fullClasspath in assembly += Attributed.blank(PlayKeys.playPackageAssets.value),
 
     resolvers += "splunk" at "http://splunk.artifactoryonline.com/splunk/ext-releases-local",
 
