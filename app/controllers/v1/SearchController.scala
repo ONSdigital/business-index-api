@@ -119,7 +119,23 @@ class SearchController @Inject()(
     searchTerm match {
       case Some(query) if query.length > 0 =>
         // if suggest, match on the BusinessName only, else assume it's an Elasticsearch query
-        businessSearch(query, offset, limit, suggest) map response
+        businessSearch(query, offset, limit, suggest) map response recover {
+          case e: NoNodeAvailableException => ServiceUnavailable(
+            Json.obj(
+              "status" -> 503,
+              "code" -> "es_down",
+              "message_en" -> e.getMessage
+            )
+          )
+
+          case NonFatal(e) => InternalServerError(
+            Json.obj(
+              "status" -> 500,
+              "code" -> "internal_error",
+              "message_en" -> e.getMessage
+            )
+          )
+        }
       case _ =>
         Future.successful(
           BadRequest(Json.obj("status" -> 400, "code" -> "missing_query", "message_en" -> "No query specified."))
