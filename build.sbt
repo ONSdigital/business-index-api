@@ -12,7 +12,7 @@ scalacOptions in ThisBuild ++= Seq(
   "-encoding", "UTF-8",
   "-language:reflectiveCalls",
   "-language:experimental.macros",
-  "-language:implicits",
+  "-language:implicitConversions",
   "-deprecation", // warning and location for usages of deprecated APIs
   "-feature", // warning and location for usages of features that should be imported explicitly
   "-unchecked", // additional warnings where generated code depends on assumptions
@@ -34,7 +34,6 @@ lazy val businessIndex = (project in file(".")).
   settings(
     name := "ons-bi-api",
     scalaVersion := "2.11.8",
-
     buildInfoPackage := "controllers",
 
     buildInfoKeys ++= Seq[BuildInfoKey](
