@@ -47,14 +47,15 @@ lazy val root = (project in file(".")).
         val oldStrategy = (assemblyMergeStrategy in assembly).value
         oldStrategy(x)
     },
-    mainClass in assembly := Some("play.core.server.NettyServer"),
+    mainClass in assembly := Some("play.core.server.ProdServerStart"),
+    fullClasspath in assembly += Attributed.blank(PlayKeys.playPackageAssets.value),
 
     resolvers += "splunk" at "http://splunk.artifactoryonline.com/splunk/ext-releases-local",
 
     libraryDependencies ++= Seq(
       filters,
       "org.webjars" %% "webjars-play" % "2.5.0-3",
-      "org.webjars.bower" % "angular" % "1.5.8",
+      "org.webjars.bower" % "angular" % "1.5.9",
       "org.webjars.bower" % "dali" % "1.3.2",
       "org.webjars.bower" % "angular-toggle-switch" % "1.3.0",
       "org.webjars.bower" % "angular-bootstrap" % "1.1.0",
