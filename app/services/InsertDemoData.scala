@@ -58,9 +58,6 @@ class InsertDemoData @Inject()(
           }
         }
       }
-    } recoverWith {
-      case _: IndexAlreadyExistsException => Future.successful(())
-      case e: RemoteTransportException => Future.failed(e)
     }
   }
 
@@ -87,10 +84,17 @@ class InsertDemoData @Inject()(
     }
   }
 
-  def init: Future[List[IndexResult]] = for {
-    index <- initialiseIndex
-    data <- importData(generateData())
-  } yield data
+  def init: Future[List[IndexResult]] = {
+    val future = for {
+      index <- initialiseIndex
+      data <- importData(generateData())
+    } yield data
+
+    future recoverWith {
+      case _: IndexAlreadyExistsException => Future.successful(Nil)
+      case e: RemoteTransportException => Future.failed(e)
+    }
+  }
 
   logger.info("Importing sample data in all modes.")
   environment.mode match {
