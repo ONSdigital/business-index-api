@@ -24,7 +24,7 @@ object FeedbackEntry {
 }
 
 abstract class FeedbackEntries extends CassandraTable[FeedbackEntries, FeedbackEntry] with RootConnector {
-  object id extends TimeUUIDColumn(this) with PartitionKey[UUID]
+  object id extends TimeUUIDColumn(this) with PartitionKey
   object query extends StringColumn(this)
   object specificResult extends OptionalStringColumn(this)
   object comments extends StringColumn(this)

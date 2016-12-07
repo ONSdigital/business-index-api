@@ -29,14 +29,20 @@ class Module(environment: Environment,
              configuration: Configuration) extends AbstractModule with DefaultInstrumented with ElasticDsl {
 
   override def configure() = {
+    //val esUri = configuration.getString("elasticsearch.uri").getOrElse("elasticsearch://localhost:9300")
+    //Testing change 06/12/2016
+    val esUri = configuration.getString("elasticsearch.uri").getOrElse("elasticsearch://10.50.33.20:9300")
+
+    val esCluster = configuration.getString("elasticsearch.cluster.name").getOrElse("elasticsearch_" + System.getProperty("user.name"))
+
     val elasticSearchClient = environment.mode match {
       case Mode.Dev =>
         ElasticClient.transport(
           Settings.settingsBuilder()
-            .put("cluster.name", "elasticsearch_" + System.getProperty("user.name"))
+            .put("cluster.name", esCluster)
             .put("client.transport.sniff", true)
             .build(),
-          ElasticsearchClientUri("elasticsearch://localhost:9300")
+          ElasticsearchClientUri(esUri)
         )
       case Mode.Test =>
         ElasticClient.local(
@@ -48,10 +54,10 @@ class Module(environment: Environment,
       case _ =>
         ElasticClient.transport(
           Settings.settingsBuilder()
-            .put("cluster.name", configuration.getString("elasticsearch.cluster.name").get)
+            .put("cluster.name", esCluster)
             .put("client.transport.sniff", configuration.getBoolean("elasticsearch.client.transport.sniff").getOrElse(true))
             .build(),
-          ElasticsearchClientUri(configuration.getString("elasticsearch.uri").get)
+          ElasticsearchClientUri(esUri)
         )
     }
 

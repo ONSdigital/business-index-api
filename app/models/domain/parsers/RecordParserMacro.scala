@@ -50,7 +50,7 @@ class RecordParserMacro(val c: scala.reflect.macros.blackbox.Context) {
     }
 
     val tree = q"""
-      for (..${extractors.map(_.parser)}) yield $source.apply(..${extractors.map(_.term)}
+      for (..${extractors.map(_.parser)}) yield $source.apply(..${extractors.map(_.term)})
     """
 
     Console.println(showCode(tree))

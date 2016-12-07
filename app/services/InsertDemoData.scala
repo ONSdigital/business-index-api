@@ -14,8 +14,9 @@ import org.elasticsearch.indices.IndexAlreadyExistsException
 import org.elasticsearch.transport.RemoteTransportException
 import play.api.{Environment, Mode}
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.io.Source
+import scala.concurrent.duration._
 
 /**
   * Class that imports sample.csv.
@@ -25,47 +26,51 @@ import scala.io.Source
 @Singleton
 class InsertDemoData @Inject()(
   environment: Environment,
-  elasticSearchClient: ElasticClient,
+  elasticsearchClient: ElasticClient,
   applicationLifecycle: ApplicationLifecycle
-)(implicit exec: ExecutionContext) extends StrictLogging {
+)(
+  implicit exec: ExecutionContext
+) extends StrictLogging {
 
-  elasticSearchClient.execute {
-    // define the ElasticSearch index
-    create.index(s"bi-${environment.mode.toString.toLowerCase}").mappings(
-      mapping("business").fields(
-        field("BusinessName", StringType) boost 4 analyzer "BusinessNameAnalyzer",
-        field("BusinessName_suggest", CompletionType),
-        field("UPRN", LongType) analyzer KeywordAnalyzer,
-        field("IndustryCode", LongType) analyzer KeywordAnalyzer,
-        field("LegalStatus", StringType) index "not_analyzed" includeInAll false,
-        field("TradingStatus", StringType) index "not_analyzed" includeInAll false,
-        field("Turnover", StringType) index "not_analyzed" includeInAll false,
-        field("EmploymentBands", StringType) index "not_analyzed" includeInAll false
-      )
-    ).analysis(CustomAnalyzerDefinition("BusinessNameAnalyzer",
-      StandardTokenizer,
-      LowercaseTokenFilter,
-      edgeNGramTokenFilter("BusinessNameNGramFilter") minGram 2 maxGram 24))
-  }.recover {
-    case _: IndexAlreadyExistsException => // Ok, ignore
-    case _: RemoteTransportException => // Ok, ignore
-  }.await
-
-  if (environment.mode != Mode.Prod) {
-    applicationLifecycle.addStopHook { () =>
-      elasticSearchClient.execute {
-        delete index s"bi-${environment.mode.toString.toLowerCase}"
+  def initialiseIndex: Future[Unit] = {
+    elasticsearchClient.execute {
+      // define the ElasticSearch index
+      create.index(s"bi-${environment.mode.toString.toLowerCase}").mappings(
+        mapping("business").fields(
+          field("BusinessName", StringType) boost 4 analyzer "BusinessNameAnalyzer",
+          field("BusinessName_suggest", CompletionType),
+          field("UPRN", LongType) analyzer KeywordAnalyzer,
+          field("IndustryCode", LongType) analyzer KeywordAnalyzer,
+          field("LegalStatus", StringType) index "not_analyzed" includeInAll false,
+          field("TradingStatus", StringType) index "not_analyzed" includeInAll false,
+          field("Turnover", StringType) index "not_analyzed" includeInAll false,
+          field("EmploymentBands", StringType) index "not_analyzed" includeInAll false
+        )
+      ).analysis(CustomAnalyzerDefinition("BusinessNameAnalyzer",
+        StandardTokenizer,
+        LowercaseTokenFilter,
+        edgeNGramTokenFilter("BusinessNameNGramFilter") minGram 2 maxGram 24))
+    } map { res =>
+      if (environment.mode != Mode.Prod) {
+        applicationLifecycle.addStopHook { () =>
+          elasticsearchClient.execute {
+            delete index s"bi-${environment.mode.toString.toLowerCase}"
+          }
+        }
       }
     }
   }
 
-  // if in dev mode, import the file sample.csv
-  environment.mode match {
-    case Mode.Dev | Mode.Test => {
-      val futures = readCSVFile(s"/${environment.mode.toString.toLowerCase}/sample.csv").map { case (line, lineNum) =>
-        val values = line.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)", -1).map(_.replace("\"", ""))
+  def generateData(): List[Array[String]] = {
+    readCSVFile(s"/${environment.mode.toString.toLowerCase}/sample.csv") map { case (line, lineNum) =>
+      line.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)", -1).map(_.replace("\"", ""))
+    }
+  }
 
-        elasticSearchClient.execute {
+  def importData(source: List[Array[String]]): Future[List[IndexResult]] = {
+    Future.sequence {
+      source map { values =>
+        elasticsearchClient.execute {
           index into s"bi-${environment.mode.toString.toLowerCase}" / "business" id values(0) fields(
             "BusinessName" -> values(1),
             "UPRN" -> values(2).toLong,
@@ -76,12 +81,25 @@ class InsertDemoData @Inject()(
             "EmploymentBands" -> values(7))
         }
       }
-      Future.sequence(futures) map {
-        _ => logger.warn(s"Inserted ${environment.mode.toString.toLowerCase} data entries.")
-      }
     }
+  }
 
-    case Mode.Prod => Future.successful(List.empty[IndexResult])
+  def init: Future[List[IndexResult]] = {
+    val future = for {
+      index <- initialiseIndex
+      data <- importData(generateData())
+    } yield data
+
+    future recoverWith {
+      case _: IndexAlreadyExistsException => Future.successful(Nil)
+      case e: RemoteTransportException => Future.failed(e)
+    }
+  }
+
+  logger.info("Importing sample data in all modes.")
+  environment.mode match {
+    case Mode.Dev | Mode.Test => Await.result(init, 5.minutes)
+    case Mode.Prod => Await.result(init, 5.minutes)
   }
 
   private[this] def readCSVFile(p: String): List[(String, Int)] =

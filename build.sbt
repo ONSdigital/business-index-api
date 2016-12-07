@@ -60,7 +60,8 @@ lazy val businessIndex = (project in file(".")).
         val oldStrategy = (assemblyMergeStrategy in assembly).value
         oldStrategy(x)
     },
-    mainClass in assembly := Some("play.core.server.NettyServer"),
+    mainClass in assembly := Some("play.core.server.ProdServerStart"),
+    fullClasspath in assembly += Attributed.blank(PlayKeys.playPackageAssets.value),
 
     resolvers ++= Seq(
       "splunk" at "http://splunk.artifactoryonline.com/splunk/ext-releases-local",
@@ -73,7 +74,7 @@ lazy val businessIndex = (project in file(".")).
       "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
       "com.outworkers" %% "phantom-dsl" % Versions.phantom,
       "org.webjars" %% "webjars-play" % "2.5.0-3",
-      "org.webjars.bower" % "angular" % "1.5.8",
+      "org.webjars.bower" % "angular" % "1.5.9",
       "org.webjars.bower" % "dali" % "1.3.2",
       "org.webjars.bower" % "angular-toggle-switch" % "1.3.0",
       "org.webjars.bower" % "angular-bootstrap" % "1.1.0",
@@ -86,6 +87,7 @@ lazy val businessIndex = (project in file(".")).
         ExclusionRule("org.apache.logging.log4j", "log4j-core"),
         ExclusionRule("org.apache.logging.log4j", "log4j-api")
       ),
+      "nl.grons" %% "metrics-scala" % "3.5.5",
       "com.sksamuel.elastic4s" %% "elastic4s-streams" % Versions.elastic4s,
       "com.sksamuel.elastic4s" %% "elastic4s-jackson" % Versions.elastic4s,
       "com.outworkers" %% "util-testing" % Versions.util % Test,
