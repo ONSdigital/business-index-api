@@ -17,6 +17,7 @@ import play.api.{Environment, Mode}
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.io.Source
 import scala.concurrent.duration._
+import scala.util.Try
 
 /**
   * Class that imports sample.csv.
@@ -85,21 +86,19 @@ class InsertDemoData @Inject()(
   }
 
   def init: Future[List[IndexResult]] = {
-    val future = for {
-      index <- initialiseIndex
+    for {
+      index <- initialiseIndex recoverWith {
+        case _: IndexAlreadyExistsException => Future.successful(Nil)
+        case e: RemoteTransportException => Future.failed(e)
+      }
       data <- importData(generateData())
     } yield data
-
-    future recoverWith {
-      case _: IndexAlreadyExistsException => Future.successful(Nil)
-      case e: RemoteTransportException => Future.failed(e)
-    }
   }
 
   logger.info("Importing sample data in all modes.")
   environment.mode match {
-    case Mode.Dev | Mode.Test => Await.result(init, 5.minutes)
-    case Mode.Prod => Await.result(init, 5.minutes)
+    case Mode.Dev | Mode.Test => Try(Await.result(init, 5.minutes))
+    case Mode.Prod => Try(Await.result(init, 5.minutes))
   }
 
   private[this] def readCSVFile(p: String): List[(String, Int)] =
