@@ -1,8 +1,9 @@
 package models.domain.parsers
 
+import scala.collection.immutable.NumericRange
 import scala.util.Try
 
-trait RecordParser[T <: Product with Serializable] {
+trait RecordParser[T] {
   def parse(fields: Map[String, String]): Try[T]
 }
 

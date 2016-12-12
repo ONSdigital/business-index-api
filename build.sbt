@@ -2,8 +2,8 @@ import sbtbuildinfo.BuildInfoPlugin.autoImport._
 import sbtassembly.AssemblyPlugin.autoImport._
 
 lazy val Versions = new {
-  val phantom = "2.0.6"
-  val util = "0.23.1"
+  val phantom = "2.0.11"
+  val util = "0.25.0"
   val elastic4s = "2.4.0"
 }
 
@@ -27,6 +27,15 @@ scalacOptions in ThisBuild ++= Seq(
   "-Ywarn-unused-import", //  Warn when imports are unused (don't want IntelliJ to do it automatically)
   "-Ywarn-numeric-widen" // Warn when numerics are widened
 )
+
+lazy val parsers = (project in file("parsers"))
+  .settings(
+    libraryDependencies ++= Seq(
+      "org.typelevel" %% "macro-compat" % "1.1.1",
+      "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
+      compilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
+    )
+  )
 
 lazy val businessIndex = (project in file(".")).
   enablePlugins(BuildInfoPlugin).
@@ -70,8 +79,6 @@ lazy val businessIndex = (project in file(".")).
 
     libraryDependencies ++= Seq(
       filters,
-      "org.typelevel" %% "macro-compat" % "1.1.1",
-      "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
       "com.outworkers" %% "phantom-dsl" % Versions.phantom,
       "org.webjars" %% "webjars-play" % "2.5.0-3",
       "org.webjars.bower" % "angular" % "1.5.9",
@@ -93,4 +100,4 @@ lazy val businessIndex = (project in file(".")).
       "com.outworkers" %% "util-testing" % Versions.util % Test,
       "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.0-M1" % Test
     )
-  )
+  ).dependsOn(parsers)

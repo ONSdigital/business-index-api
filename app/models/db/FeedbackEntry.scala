@@ -30,16 +30,6 @@ abstract class FeedbackEntries extends CassandraTable[FeedbackEntries, FeedbackE
   object comments extends StringColumn(this)
   object timestamp extends DateTimeColumn(this)
 
-  def fromRow(row: Row): FeedbackEntry = {
-    FeedbackEntry(
-      id = id(row),
-      query = query(row),
-      specificResult = specificResult(row),
-      comments = comments(row),
-      timestamp = timestamp(row)
-    )
-  }
-
   def store(entry: FeedbackEntry): Future[ResultSet] = {
     insert.value(_.id, entry.id)
       .value(_.query, entry.query)
