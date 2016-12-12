@@ -27,6 +27,13 @@ scalacOptions in ThisBuild ++= Seq(
   "-Ywarn-unused-import", //  Warn when imports are unused (don't want IntelliJ to do it automatically)
   "-Ywarn-numeric-widen" // Warn when numerics are widened
 )
+lazy val businessIndex = (project in file("."))
+  .settings(
+    name := "business-index"
+  ).aggregate(
+    parsers,
+    api
+  )
 
 lazy val parsers = (project in file("parsers"))
   .settings(
@@ -37,10 +44,10 @@ lazy val parsers = (project in file("parsers"))
     )
   )
 
-lazy val businessIndex = (project in file(".")).
-  enablePlugins(BuildInfoPlugin).
-  enablePlugins(PlayScala).
-  settings(
+lazy val api = (project in file("api"))
+  .enablePlugins(BuildInfoPlugin)
+  .enablePlugins(PlayScala)
+  .settings(
     name := "ons-bi-api",
     scalaVersion := "2.11.8",
     buildInfoPackage := "controllers",
