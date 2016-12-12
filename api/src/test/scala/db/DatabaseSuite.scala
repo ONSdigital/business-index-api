@@ -1,4 +1,4 @@
-package models.db
+package scala.db
 
 import java.util.concurrent.TimeUnit
 

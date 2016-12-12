@@ -1,4 +1,4 @@
-package models.db
+package scala.db
 
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FlatSpec, Matchers, OptionValues}

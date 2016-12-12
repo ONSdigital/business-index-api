@@ -29,7 +29,8 @@ scalacOptions in ThisBuild ++= Seq(
 )
 lazy val businessIndex = (project in file("."))
   .settings(
-    name := "business-index"
+    name := "ons-bi",
+    moduleName := "ons-bi"
   ).aggregate(
     parsers,
     api

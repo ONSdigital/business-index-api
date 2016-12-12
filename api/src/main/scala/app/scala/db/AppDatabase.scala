@@ -1,4 +1,4 @@
-package models.db
+package scala.db
 
 import com.outworkers.phantom.builder.serializers.KeySpaceSerializer
 import com.outworkers.phantom.connectors.ContactPoint

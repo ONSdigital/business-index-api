@@ -3,7 +3,7 @@ package controllers.v1
 import javax.inject._
 
 import controllers.WebJarAssets
-import models.db.{BusinessDbProvider, FeedbackEntry}
+import scala.db.{BusinessDbProvider, FeedbackEntry}
 import play.api.mvc._
 
 import scala.concurrent.Future

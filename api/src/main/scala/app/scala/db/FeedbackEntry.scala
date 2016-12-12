@@ -1,4 +1,4 @@
-package models.db
+package scala.db
 
 import com.outworkers.phantom.dsl._
 import play.api.libs.json.Json
