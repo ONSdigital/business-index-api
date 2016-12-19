@@ -1,0 +1,56 @@
+<div class="business view" ng-controller="ViewBusinessController">
+
+    <div class="container-fluid business-view">
+        <div class="container center-block business col-md-6 center-block">
+            <div class="row">
+                <div class="col-md-3 header">UPRN</div>
+                <div class="col-md-9 info"><span ng-bind="item.uprn"></span></div>
+                <div class="clearfix"></div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-3 header">ID</div>
+                <div class="col-md-9 info"><span ng-bind="item.id"></span></div>
+                <div class="clearfix"></div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-3 header">Business name</div>
+                <div class="col-md-9 info"><span ng-bind="displayName"></span></div>
+                <div class="clearfix"></div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-3 header">Industry code</div>
+                <div class="col-md-9 info"><span ng-bind="item.industryCode"></span></div>
+                <div class="clearfix"></div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-3 header">Employment bands</div>
+                <div class="col-md-9 info"><span ng-bind="item.employmentBands"></span></div>
+                <div class="clearfix"></div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-3 header">Legal status</div>
+                <div class="col-md-9 info"><span ng-bind="item.legalStatus"></span></div>
+                <div class="clearfix"></div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-3 header">Trading status</div>
+                <div class="col-md-9 info"><span ng-bind="item.tradingStatus"></span></div>
+                <div class="clearfix"></div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-3 header">Turnover</div>
+                <div class="col-md-9 info"><span ng-bind="item.turnover"></span></div>
+                <div class="clearfix"></div>
+            </div>
+
+        </div>
+
+    </div>
+</div>

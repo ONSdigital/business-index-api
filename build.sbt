@@ -76,7 +76,7 @@ lazy val api = (project in file("api"))
         ("git rev-parse --short HEAD" !!).trim
       }
     ),
-
+    routesGenerator := InjectedRoutesGenerator,
     buildInfoOptions += BuildInfoOption.BuildTime,
     buildInfoOptions += BuildInfoOption.ToJson,
 
