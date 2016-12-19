@@ -1,4 +1,4 @@
-@(title: String, webJarAssets: WebJarAssets)(content: Html)
+@(title: String, webJarAssets: WebJarAssets)(content: Html, scripts: Html = Html(""), css: Html = Html(""))
 
 <!DOCTYPE html>
 <html lang="en" ng-app="test-ui">
@@ -7,11 +7,14 @@
         <link rel="shortcut icon" type="image/png" href="@routes.Assets.versioned("images/favicon.png")">
         <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"/>
         <link rel="stylesheet" href="@routes.Assets.versioned("stylesheets/demo.css")"/>
+        @css
+
         <script src="@routes.WebJarAssets.at(webJarAssets.locate("angular.js"))"></script>
         <script src="@routes.WebJarAssets.at(webJarAssets.locate("angular-toggle-switch.js"))"></script>
         <script src="@routes.WebJarAssets.at(webJarAssets.locate("angular-ui-router.js"))"></script>
         <script src="@routes.WebJarAssets.at(webJarAssets.locate("ui-bootstrap-tpls.js"))"></script>
         <script src="@routes.Assets.versioned("/javascripts/app.js")" type="text/javascript"></script>
+        @scripts
     </head>
     <body>
 

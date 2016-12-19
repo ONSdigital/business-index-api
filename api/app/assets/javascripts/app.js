@@ -18,6 +18,14 @@ testUi.config(["$stateProvider", "$urlRouterProvider",
           templateUrl: "/assets/partials/view.html"
         }
       }
+    }).state("import", {
+      url: "/import",
+      views: {
+        "content": {
+          controller: "ImportDataController",
+          templateUrl: "/assets/partials/importer.html"
+        }
+      }
     }).state("404", {
       url: "/404",
       templateUrl: "/assets/partials/404.html"
@@ -48,97 +56,4 @@ testUi.run(["$rootScope", "$state", "$log", function($rootScope, $state, $log) {
     $log.debug("Previous state:" + $rootScope.previousState);
     $log.debug("Current state:" + $rootScope.currentState);
   });
-
 }]);
-
-
-testUi.controller("MatchController", [
-  "$scope",
-  function($scope) {
-
-  $scope.encode = function(match) {
-    return encodeURIComponent(match.label);
-  };
-
-}]);
-
-testUi.controller("ViewBusinessController", [
-  "$scope",
-  "$http",
-  "$stateParams",
-  function($scope, $http, $stateParams) {
-
-  $scope.businessName = decodeURIComponent($stateParams.id);
-
-  $scope.displayName = $scope.businessName.replace(/"/g, '');
-
-
-  $http.get('/v1/search', {
-    params: {
-      "query": "\"" + $scope.businessName + "\""
-    }
-  }).then(function(response) {
-    $scope.item = response.data[0];
-  });
-}]);
-
-testUi.controller("SearchController", [
-  "$scope",
-  "$http",
-  "$log",
-  function($scope, $http, $log) {
-
-    $scope.suggest = false;
-
-    var _selected;
-
-    $scope.getResults = function(endpoint, query) {
-      return $http.get(endpoint, {
-        params: {
-          "query": query
-        }
-      }).then(function(response) {
-        var source = response.data || [];
-
-        return source.map(function(el) {
-          return el.businessName || "";
-        });
-      });
-    };
-
-    $scope.searchBusiness = function(query) {
-      return $scope.getResults("/v1/search", query);
-    };
-
-    $scope.suggestBusiness = function(query) {
-      return $scope.getResults("/v1/suggest", query);
-    };
-
-    $scope.search = function(query) {
-      if ($scope.suggest) {
-        $log.info("Searching for a business", query);
-        return $scope.suggestBusiness(query);
-      } else {
-        $log.info("Suggesting a business", query);
-        return $scope.searchBusiness(query);
-      }
-    };
-
-    $scope.ngModelOptionsSelected = function(value) {
-      if (arguments.length) {
-        _selected = value;
-      } else {
-        return _selected;
-      }
-    };
-
-    $scope.modelOptions = {
-      debounce: {
-        default: 500,
-        blur: 250
-      },
-      getterSetter: true
-    };
-
-  }
-]);
