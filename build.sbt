@@ -2,32 +2,38 @@ import sbtbuildinfo.BuildInfoPlugin.autoImport._
 import sbtassembly.AssemblyPlugin.autoImport._
 
 lazy val Versions = new {
-  val phantom = "2.0.11"
-  val util = "0.25.0"
+  val phantom = "2.0.12"
+  val util = "0.26.4"
   val elastic4s = "2.4.0"
 }
 
-scalacOptions in ThisBuild ++= Seq(
-  "-target:jvm-1.8",
-  "-encoding", "UTF-8",
-  "-language:reflectiveCalls",
-  "-language:experimental.macros",
-  "-language:implicitConversions",
-  "-deprecation", // warning and location for usages of deprecated APIs
-  "-feature", // warning and location for usages of features that should be imported explicitly
-  "-unchecked", // additional warnings where generated code depends on assumptions
-  "-Xlint", // recommended additional warnings
-  "-Xcheckinit", // runtime error when a val is not initialized due to trait hierarchies (instead of NPE somewhere else)
-  "-Ywarn-adapted-args", // Warn if an argument list is modified to match the receiver
-  //"-Yno-adapted-args", // Do not adapt an argument list (either by inserting () or creating a tuple) to match the receiver
-  "-Ywarn-value-discard", // Warn when non-Unit expression results are unused
-  "-Ywarn-inaccessible", // Warn about inaccessible types in method signatures
-  "-Ywarn-dead-code", // Warn when dead code is identified
-  "-Ywarn-unused", // Warn when local and private vals, vars, defs, and types are unused
-  "-Ywarn-unused-import", //  Warn when imports are unused (don't want IntelliJ to do it automatically)
-  "-Ywarn-numeric-widen" // Warn when numerics are widened
+lazy val commonSettings = Seq(
+  scalaVersion := "2.11.8",
+  scalacOptions in ThisBuild ++= Seq(
+    "-target:jvm-1.8",
+    "-encoding", "UTF-8",
+    "-language:reflectiveCalls",
+    "-language:experimental.macros",
+    "-language:implicitConversions",
+    "-deprecation", // warning and location for usages of deprecated APIs
+    "-feature", // warning and location for usages of features that should be imported explicitly
+    "-unchecked", // additional warnings where generated code depends on assumptions
+    "-Xlint", // recommended additional warnings
+    "-Xcheckinit", // runtime error when a val is not initialized due to trait hierarchies (instead of NPE somewhere else)
+    "-Ywarn-adapted-args", // Warn if an argument list is modified to match the receiver
+    //"-Yno-adapted-args", // Do not adapt an argument list (either by inserting () or creating a tuple) to match the receiver
+    "-Ywarn-value-discard", // Warn when non-Unit expression results are unused
+    "-Ywarn-inaccessible", // Warn about inaccessible types in method signatures
+    "-Ywarn-dead-code", // Warn when dead code is identified
+    "-Ywarn-unused", // Warn when local and private vals, vars, defs, and types are unused
+    "-Ywarn-unused-import", //  Warn when imports are unused (don't want IntelliJ to do it automatically)
+    "-Ywarn-numeric-widen" // Warn when numerics are widened
+  )
 )
+
+
 lazy val businessIndex = (project in file("."))
+  .settings(commonSettings: _*)
   .settings(
     name := "ons-bi",
     moduleName := "ons-bi"
@@ -37,7 +43,9 @@ lazy val businessIndex = (project in file("."))
   )
 
 lazy val parsers = (project in file("parsers"))
+  .settings(commonSettings: _*)
   .settings(
+    moduleName := "parsers",
     libraryDependencies ++= Seq(
       "org.typelevel" %% "macro-compat" % "1.1.1",
       "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
@@ -48,6 +56,7 @@ lazy val parsers = (project in file("parsers"))
 lazy val api = (project in file("api"))
   .enablePlugins(BuildInfoPlugin)
   .enablePlugins(PlayScala)
+  .settings(commonSettings: _*)
   .settings(
     name := "ons-bi-api",
     scalaVersion := "2.11.8",
@@ -89,7 +98,7 @@ lazy val api = (project in file("api"))
       filters,
       "com.outworkers" %% "phantom-dsl" % Versions.phantom,
       "org.webjars" %% "webjars-play" % "2.5.0-3",
-      "org.webjars.bower" % "angular" % "1.5.9",
+      "org.webjars.bower" % "angular" % "1.6.0",
       "org.webjars.bower" % "dali" % "1.3.2",
       "org.webjars.bower" % "angular-toggle-switch" % "1.3.0",
       "org.webjars.bower" % "angular-bootstrap" % "1.1.0",
