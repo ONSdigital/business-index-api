@@ -31,7 +31,14 @@ lazy val commonSettings = Seq(
   )
 )
 
-
+/**
+  * The multi-module separation is necessary because the parsers module uses macros.
+  * In order to use macros, they cannot be part of the same compilation unit that defines them,
+  * meaning you cannot define and use a macro in the same module.
+  *
+  * This is why we separate parsers in their own entity, to make sure they are not compiled together
+  * with any module that attempts to use them.
+  */
 lazy val businessIndex = (project in file("."))
   .settings(commonSettings: _*)
   .settings(
