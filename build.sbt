@@ -53,6 +53,18 @@ lazy val parsers = (project in file("parsers"))
   .settings(commonSettings: _*)
   .settings(
     moduleName := "parsers",
+    scalacOptions ++= Seq(
+      "-language:experimental.macros",
+      "-language:postfixOps",
+      "-language:implicitConversions",
+      "-language:reflectiveCalls",
+      "-language:higherKinds",
+      "-language:existentials",
+      "-Xlint",
+      "-deprecation",
+      "-feature",
+      "-unchecked"
+    ),
     libraryDependencies ++= Seq(
       "org.typelevel" %% "macro-compat" % "1.1.1",
       "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
