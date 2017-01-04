@@ -2,7 +2,7 @@ import sbtbuildinfo.BuildInfoPlugin.autoImport._
 import sbtassembly.AssemblyPlugin.autoImport._
 
 lazy val Versions = new {
-  val phantom = "2.0.12"
+  val phantom = "2.0.13"
   val util = "0.26.4"
   val elastic4s = "2.4.0"
 }
