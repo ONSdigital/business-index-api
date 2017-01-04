@@ -9,6 +9,10 @@ lazy val Versions = new {
 
 lazy val commonSettings = Seq(
   scalaVersion := "2.11.8",
+  resolvers ++= Seq(
+    "splunk" at "http://splunk.artifactoryonline.com/splunk/ext-releases-local",
+    Resolver.bintrayRepo("outworkers", "oss-releases")
+  ),
   scalacOptions in ThisBuild ++= Seq(
     "-language:experimental.macros",
     "-target:jvm-1.8",
@@ -96,24 +100,17 @@ lazy val api = (project in file("api"))
     },
     mainClass in assembly := Some("play.core.server.ProdServerStart"),
     fullClasspath in assembly += Attributed.blank(PlayKeys.playPackageAssets.value),
-
-    resolvers ++= Seq(
-      "splunk" at "http://splunk.artifactoryonline.com/splunk/ext-releases-local",
-      Resolver.bintrayRepo("outworkers", "oss-releases")
-    ),
-
     libraryDependencies ++= Seq(
       filters,
       "com.outworkers" %% "phantom-dsl" % Versions.phantom,
       "org.webjars" %% "webjars-play" % "2.5.0-3",
-      "org.webjars.bower" % "angular" % "1.6.0",
+      "org.webjars.bower" % "angular" % "1.6.1",
       "org.webjars.bower" % "dali" % "1.3.2",
       "org.webjars.bower" % "angular-toggle-switch" % "1.3.0",
       "org.webjars.bower" % "angular-bootstrap" % "1.1.0",
       "org.webjars.bower" % "angular-ui-router" % "0.2.15",
       "com.typesafe.scala-logging" %% "scala-logging" % "3.5.0",
       "ch.qos.logback" % "logback-classic" % "1.1.7",
-      "com.outworkers" %% "phantom-dsl" % "2.0.5",
       "com.splunk.logging" % "splunk-library-javalogging" % "1.5.2" excludeAll(
         ExclusionRule("commons-logging", "commons-logging"),
         ExclusionRule("org.apache.logging.log4j", "log4j-core"),
