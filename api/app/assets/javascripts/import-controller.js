@@ -13,6 +13,6 @@ testUi.controller("ImportController", [
       },
       payload: obj
     });
-  }
+  };
 
 }]);

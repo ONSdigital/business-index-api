@@ -1,5 +1,4 @@
-package models.domain.parsers
-
+package uk.ons.bi.parsers
 
 @macrocompat.bundle
 class RecordParserMacro(val c: scala.reflect.macros.blackbox.Context) {
