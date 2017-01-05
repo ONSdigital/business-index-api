@@ -17,6 +17,7 @@ import play.api.{Environment, Mode}
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.io.Source
 import scala.concurrent.duration._
+import scala.util.Try
 
 /**
   * Class that imports sample.csv.
@@ -31,6 +32,11 @@ class InsertDemoData @Inject()(
 )(
   implicit exec: ExecutionContext
 ) extends StrictLogging {
+
+  private[this] def readCSVFile(p: String): List[(String, Int)] =
+    Option(getClass.getResourceAsStream(p)).map(Source.fromInputStream)
+      .map(_.getLines.filterNot(_.contains("BusinessName")).zipWithIndex.toList)
+      .getOrElse(throw new FileNotFoundException(p))
 
   def initialiseIndex: Future[Unit] = {
     elasticsearchClient.execute {
@@ -85,25 +91,22 @@ class InsertDemoData @Inject()(
   }
 
   def init: Future[List[IndexResult]] = {
-    val future = for {
-      index <- initialiseIndex
+    for {
+      _ <- initialiseIndex recoverWith {
+        case _: IndexAlreadyExistsException => Future.successful(Nil)
+        case e: RemoteTransportException => Future.failed(e)
+      }
       data <- importData(generateData())
     } yield data
-
-    future recoverWith {
-      case _: IndexAlreadyExistsException => Future.successful(Nil)
-      case e: RemoteTransportException => Future.failed(e)
-    }
   }
 
   logger.info("Importing sample data in all modes.")
+  /* The behaviour is currently the same for all modes, match not required.
+  // Leaving this here to be uncommented once we have real data to look at.
   environment.mode match {
-    case Mode.Dev | Mode.Test => Await.result(init, 5.minutes)
-    case Mode.Prod => Await.result(init, 5.minutes)
-  }
+    case Mode.Dev | Mode.Test => Try(Await.result(init, 5.minutes))
+    case Mode.Prod =>
+  }*/
 
-  private[this] def readCSVFile(p: String): List[(String, Int)] =
-    Option(getClass.getResourceAsStream(p)).map(Source.fromInputStream)
-      .map(_.getLines.filterNot(_.contains("BusinessName")).zipWithIndex.toList)
-      .getOrElse(throw new FileNotFoundException(p))
+  Try(Await.result(init, 5.minutes))
 }
