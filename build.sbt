@@ -66,8 +66,7 @@ lazy val parsers = (project in file("parsers"))
   )
 
 lazy val api = (project in file("api"))
-  .enablePlugins(BuildInfoPlugin)
-  .enablePlugins(PlayScala)
+  .enablePlugins(BuildInfoPlugin, PlayScala)
   .settings(commonSettings: _*)
   .settings(
     name := "ons-bi-api",
