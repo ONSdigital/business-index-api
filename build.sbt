@@ -2,7 +2,7 @@ import sbtbuildinfo.BuildInfoPlugin.autoImport._
 import sbtassembly.AssemblyPlugin.autoImport._
 
 lazy val Versions = new {
-  val phantom = "2.0.13"
+  val phantom = "2.0.0"
   val util = "0.26.4"
   val elastic4s = "2.4.0"
 }
@@ -10,8 +10,7 @@ lazy val Versions = new {
 lazy val commonSettings = Seq(
   scalaVersion := "2.11.8",
   resolvers ++= Seq(
-    "splunk" at "http://splunk.artifactoryonline.com/splunk/ext-releases-local",
-    Resolver.bintrayRepo("outworkers", "oss-releases")
+    "splunk" at "http://splunk.artifactoryonline.com/splunk/ext-releases-local"
   ),
   scalacOptions in ThisBuild ++= Seq(
     "-language:experimental.macros",
