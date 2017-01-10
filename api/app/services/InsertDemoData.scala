@@ -92,7 +92,7 @@ class InsertDemoData @Inject()(
 
   def init: Future[List[IndexResult]] = {
     for {
-      index <- initialiseIndex recoverWith {
+      _ <- initialiseIndex recoverWith {
         case _: IndexAlreadyExistsException => Future.successful(Nil)
         case e: RemoteTransportException => Future.failed(e)
       }
