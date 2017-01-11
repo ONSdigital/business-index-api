@@ -33,15 +33,17 @@ class InsertDemoData @Inject()(
   implicit exec: ExecutionContext
 ) extends StrictLogging {
 
-  private[this] def readCSVFile(p: String): List[(String, Int)] =
+  private[this] val envString = environment.mode.toString.toLowerCase
+
+  private[this] def csv(p: String): Option[Iterator[String]] =
     Option(getClass.getResourceAsStream(p)).map(Source.fromInputStream)
-      .map(_.getLines.filterNot(_.contains("BusinessName")).zipWithIndex.toList)
-      .getOrElse(throw new FileNotFoundException(p))
+      .map(_.getLines.filterNot(_.contains("BusinessName")))
+
 
   def initialiseIndex: Future[Unit] = {
     elasticsearchClient.execute {
       // define the ElasticSearch index
-      create.index(s"bi-${environment.mode.toString.toLowerCase}").mappings(
+      create.index(s"bi-$envString").mappings(
         mapping("business").fields(
           field("BusinessName", StringType) boost 4 analyzer "BusinessNameAnalyzer",
           field("BusinessName_suggest", CompletionType),
@@ -56,28 +58,34 @@ class InsertDemoData @Inject()(
         StandardTokenizer,
         LowercaseTokenFilter,
         edgeNGramTokenFilter("BusinessNameNGramFilter") minGram 2 maxGram 24))
-    } map { res =>
+    } map { _ =>
       if (environment.mode != Mode.Prod) {
         applicationLifecycle.addStopHook { () =>
-          elasticsearchClient.execute {
-            delete index s"bi-${environment.mode.toString.toLowerCase}"
-          }
+          elasticsearchClient.execute { delete index s"bi-$envString"}
         }
       }
     }
   }
 
-  def generateData(): List[Array[String]] = {
-    readCSVFile(s"/${environment.mode.toString.toLowerCase}/sample.csv") map { case (line, lineNum) =>
-      line.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)", -1).map(_.replace("\"", ""))
+  def generateData(): Iterator[Array[String]] = {
+
+    val dataSource = (csv(s"/$envString/sample.csv") orElse csv("/sample.csv")) getOrElse {
+      val error = new FileNotFoundException("sample.csv")
+      logger.error("Unable to find any sample.csv file in the classpath", error)
+      throw error
+    }
+
+    dataSource map {
+      _.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)", -1).map(_.replace("\"", ""))
     }
   }
 
-  def importData(source: List[Array[String]]): Future[List[IndexResult]] = {
+  def importData(source: Iterator[Array[String]]): Future[Iterator[IndexResult]] = {
+
     Future.sequence {
       source map { values =>
         elasticsearchClient.execute {
-          index into s"bi-${environment.mode.toString.toLowerCase}" / "business" id values(0) fields(
+          index into s"bi-$envString" / "business" id values(0) fields(
             "BusinessName" -> values(1),
             "UPRN" -> values(2).toLong,
             "IndustryCode" -> values(3).toLong,
@@ -90,13 +98,20 @@ class InsertDemoData @Inject()(
     }
   }
 
-  def init: Future[List[IndexResult]] = {
+  def init: Future[Iterator[IndexResult]] = {
+
+    val sourceCsvData = generateData()
+
+    if (sourceCsvData.isEmpty) {
+      logger.error("The CSV data file was empty or missing completely")
+    }
+
     for {
       _ <- initialiseIndex recoverWith {
         case _: IndexAlreadyExistsException => Future.successful(Nil)
         case e: RemoteTransportException => Future.failed(e)
       }
-      data <- importData(generateData())
+      data <- importData(sourceCsvData)
     } yield data
   }
 
