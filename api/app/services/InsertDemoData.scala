@@ -116,5 +116,7 @@ class InsertDemoData @Inject()(
     case Mode.Prod =>
   }*/
 
+  Console.println("Is this shit running")
+
   Try(Await.result(init, 5.minutes))
 }
