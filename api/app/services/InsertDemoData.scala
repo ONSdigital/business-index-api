@@ -98,20 +98,13 @@ class InsertDemoData @Inject()(
     }
   }
 
-  def init: Future[Iterator[IndexResult]] = {
-
-    val sourceCsvData = generateData()
-
-    if (sourceCsvData.isEmpty) {
-      logger.error("The CSV data file was empty or missing completely")
-    }
-
+  def init: Future[List[IndexResult]] = {
     for {
       _ <- initialiseIndex recoverWith {
         case _: IndexAlreadyExistsException => Future.successful(Nil)
         case e: RemoteTransportException => Future.failed(e)
       }
-      data <- importData(sourceCsvData)
+      data <- importData(generateData())
     } yield data
   }
 
