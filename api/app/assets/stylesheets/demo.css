@@ -1,0 +1,237 @@
+.topbar {
+    position: relative;
+    width: 100%;
+    height: 110px;
+    background-color: #EEE;
+}
+
+.no-padding {
+    padding: 0;
+}
+
+.topbar .topbar-logo {
+    position: relative;
+    width: 220px;
+    height: 110px;
+    padding: 0;
+    margin: 0;
+}
+
+#search-box {
+    position: relative;
+    width: 400px;
+    height: 45px;
+    margin-top: 27px;
+}
+
+.topbar .suggest-toggle {
+    margin-top: 35px;
+}
+
+.typeahead-demo .custom-popup-wrapper {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 1000;
+    display: none;
+    background-color: #f9f9f9;
+}
+
+.typeahead-demo .custom-popup-wrapper > .message {
+    padding: 10px 20px;
+    border-bottom: 1px solid #ddd;
+    color: #868686;
+}
+
+.typeahead-demo .custom-popup-wrapper > .dropdown-menu {
+    position: static;
+    float: none;
+    display: block;
+    min-width: 160px;
+    background-color: transparent;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+
+.typeahead-demo .large-search {
+    position: relative;
+    width: 300px;
+    height: 45px;
+    outline: none;
+    border-radius: 5px;
+    border: 0;
+    text-indent: 25px;
+    box-shadow: 0 0 0 1px #868686;
+}
+
+.business {
+    border: 1px solid rgba(0, 0, 0, .05);
+}
+
+.business .row {
+    position: relative;
+    padding: 0;
+    height: 50px;
+    line-height: 50px;
+    border-right: rgba(0, 0, 0, .05) solid 1px;
+    border-top: 1px solid #f5f1f1;
+    overflow: visible;
+}
+
+.business .row:nth-child(2n) {
+    background-color: #FAFBFC;
+}
+
+.business .row > .header {
+    position: relative;
+    color: #1072a7;
+}
+
+
+.business .row > .col-md-6 {
+    float: none;
+}
+
+html,body,div,h1,h2,h3,h4,h5,h6,p,img,dl,dt,dd,ol,ul,li,table,tr,td,form,object,embed,article,aside,canvas, details, fieldset,figcaption,figure,footer,header,hgroup,legend,mark,menu,nav,
+progress,section,summary,time,audio,video {
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+a, a:link, a:visited, a:hover, a:active {
+    text-decoration: none;
+}
+
+article,aside,details,figcaption,figure,footer,header,menu,nav,section {
+    display: block;
+}
+
+html, body {
+    direction:ltr;
+    margin: 0;
+    padding: 0;
+    height: 100%;
+}
+
+.alert-holder {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: auto;
+    max-height: 50px;
+    z-index: 500;
+}
+
+.toggle-switch {
+    border: 1px solid;
+    cursor: pointer;
+    display: inline-block;
+    text-align: left;
+    overflow: hidden;
+    line-height: 8px;
+    min-width: 100px;
+}
+
+.toggle-switch.disabled > div > span.knob {
+    background: #AAA;
+}
+
+.toggle-switch span {
+    cursor: pointer;
+    display: inline-block;
+    float: left;
+    height: 100%;
+    line-height: 20px;
+    padding: 4px;
+    text-align: center;
+    width: 33%;
+    white-space: nowrap;
+
+    box-sizing: border-box;
+    -o-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+}
+
+.toggle-switch > div {
+    position: relative;
+    width: 150%;
+}
+
+.toggle-switch .knob {
+    background: red;
+    border-left: 1px solid #ccc;
+    border-right: 1px solid #ccc;
+    background-color: #f5f5f5;
+    width: 34%;
+    z-index: 100;
+}
+
+.toggle-switch .switch-on {
+    left: 0%;
+}
+
+.toggle-switch .switch-off {
+    left: -50%
+}
+
+.toggle-switch .switch-left, .toggle-switch .switch-right {
+    z-index: 1;
+}
+
+.toggle-switch .switch-left {
+    color: #fff;
+    background: #005fcc;
+}
+
+.toggle-switch .switch-right {
+    color: #333;
+    background: #f0f0f0;
+}
+
+.toggle-switch-animate {
+    transition: left 0.5s;
+    -o-transition: left 0.5s;
+    -moz-transition: left 0.5s;
+    -webkit-transition: left 0.5s;
+}
+
+.toggle-switch {
+    display: inline-block;
+    cursor: pointer;
+    border-radius: 4px;
+    border: 1px solid;
+    border-color: #cccccc;
+    position: relative;
+    text-align: left;
+    overflow: hidden;
+    line-height: 8px;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    vertical-align: middle;
+    min-width: 100px;
+    -webkit-transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
+    transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
+}
+
+.toggle-switch .knob {
+    color: #333333;
+    background: #ffffff;
+    border: 3px;
+}
+
+.toggle-switch .switch-left {
+    color: #fff;
+    background: #428bca;
+}
+
+.toggle-switch .switch-right {
+    color: #000;
+    background: #eeeeee;
+}

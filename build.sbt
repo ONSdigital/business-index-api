@@ -1,31 +1,76 @@
 import sbtbuildinfo.BuildInfoPlugin.autoImport._
 import sbtassembly.AssemblyPlugin.autoImport._
 
-scalacOptions in ThisBuild ++= Seq(
-  "-target:jvm-1.8",
-  "-encoding", "UTF-8",
-  "-deprecation", // warning and location for usages of deprecated APIs
-  "-feature", // warning and location for usages of features that should be imported explicitly
-  "-unchecked", // additional warnings where generated code depends on assumptions
-  "-Xlint", // recommended additional warnings
-  "-Xcheckinit", // runtime error when a val is not initialized due to trait hierarchies (instead of NPE somewhere else)
-  "-Ywarn-adapted-args", // Warn if an argument list is modified to match the receiver
-  //"-Yno-adapted-args", // Do not adapt an argument list (either by inserting () or creating a tuple) to match the receiver
-  "-Ywarn-value-discard", // Warn when non-Unit expression results are unused
-  "-Ywarn-inaccessible", // Warn about inaccessible types in method signatures
-  "-Ywarn-dead-code", // Warn when dead code is identified
-  "-Ywarn-unused", // Warn when local and private vals, vars, defs, and types are unused
-  "-Ywarn-unused-import", //  Warn when imports are unused (don't want IntelliJ to do it automatically)
-  "-Ywarn-numeric-widen" // Warn when numerics are widened
+lazy val Versions = new {
+  val phantom = "2.0.0"
+  val util = "0.26.8"
+  val elastic4s = "2.4.0"
+}
+
+lazy val commonSettings = Seq(
+  scalaVersion := "2.11.8",
+  resolvers ++= Seq(
+    Resolver.bintrayRepo("outworkers", "oss-releases"),
+    "splunk" at "http://splunk.artifactoryonline.com/splunk/ext-releases-local"
+  ),
+  scalacOptions in ThisBuild ++= Seq(
+    "-language:experimental.macros",
+    "-target:jvm-1.8",
+    "-encoding", "UTF-8",
+    "-language:reflectiveCalls",
+    "-language:experimental.macros",
+    "-language:implicitConversions",
+    "-deprecation", // warning and location for usages of deprecated APIs
+    "-feature", // warning and location for usages of features that should be imported explicitly
+    "-unchecked", // additional warnings where generated code depends on assumptions
+    "-Xlint", // recommended additional warnings
+    "-Xcheckinit", // runtime error when a val is not initialized due to trait hierarchies (instead of NPE somewhere else)
+    "-Ywarn-adapted-args", // Warn if an argument list is modified to match the receiver
+    //"-Yno-adapted-args", // Do not adapt an argument list (either by inserting () or creating a tuple) to match the receiver
+    "-Ywarn-value-discard", // Warn when non-Unit expression results are unused
+    "-Ywarn-inaccessible", // Warn about inaccessible types in method signatures
+    "-Ywarn-dead-code", // Warn when dead code is identified
+    "-Ywarn-unused", // Warn when local and private vals, vars, defs, and types are unused
+    "-Ywarn-unused-import", //  Warn when imports are unused (don't want IntelliJ to do it automatically)
+    "-Ywarn-numeric-widen" // Warn when numerics are widened
+  )
 )
 
-lazy val root = (project in file(".")).
-  enablePlugins(BuildInfoPlugin).
-  enablePlugins(PlayScala).
-  settings(
-    name := """ons-bi-api""",
-    scalaVersion := "2.11.8",
+/**
+  * The multi-module separation is necessary because the parsers module uses macros.
+  * In order to use macros, they cannot be part of the same compilation unit that defines them,
+  * meaning you cannot define and use a macro in the same module.
+  *
+  * This is why we separate parsers in their own entity, to make sure they are not compiled together
+  * with any module that attempts to use them.
+  */
+lazy val businessIndex = (project in file("."))
+  .settings(commonSettings: _*)
+  .settings(
+    name := "ons-bi",
+    moduleName := "ons-bi"
+  ).aggregate(
+    parsers,
+    api
+  )
 
+lazy val parsers = (project in file("parsers"))
+  .settings(commonSettings: _*)
+  .settings(
+    moduleName := "parsers",
+    addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full),
+    libraryDependencies ++= Seq(
+      "org.typelevel" %% "macro-compat" % "1.1.1",
+      "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided"
+    )
+  )
+
+lazy val api = (project in file("api"))
+  .enablePlugins(BuildInfoPlugin, PlayScala)
+  .settings(commonSettings: _*)
+  .settings(
+    name := "ons-bi-api",
+    scalaVersion := "2.11.8",
     buildInfoPackage := "controllers",
 
     buildInfoKeys ++= Seq[BuildInfoKey](
@@ -35,9 +80,14 @@ lazy val root = (project in file(".")).
         ("git rev-parse --short HEAD" !!).trim
       }
     ),
-
+    routesGenerator := InjectedRoutesGenerator,
     buildInfoOptions += BuildInfoOption.BuildTime,
     buildInfoOptions += BuildInfoOption.ToJson,
+
+    // no javadoc for BuildInfo.scala
+    sources in(Compile, doc) <<= sources in(Compile, doc) map {
+      _.filterNot(_.getName endsWith ".scala")
+    },
 
     assemblyJarName in assembly := "ons-bi-api.jar",
     assemblyMergeStrategy in assembly := {
@@ -49,13 +99,11 @@ lazy val root = (project in file(".")).
     },
     mainClass in assembly := Some("play.core.server.ProdServerStart"),
     fullClasspath in assembly += Attributed.blank(PlayKeys.playPackageAssets.value),
-
-    resolvers += "splunk" at "http://splunk.artifactoryonline.com/splunk/ext-releases-local",
-
     libraryDependencies ++= Seq(
       filters,
+      "com.outworkers" %% "phantom-dsl" % Versions.phantom,
       "org.webjars" %% "webjars-play" % "2.5.0-3",
-      "org.webjars.bower" % "angular" % "1.5.9",
+      "org.webjars.bower" % "angular" % "1.6.1",
       "org.webjars.bower" % "dali" % "1.3.2",
       "org.webjars.bower" % "angular-toggle-switch" % "1.3.0",
       "org.webjars.bower" % "angular-bootstrap" % "1.1.0",
@@ -66,10 +114,11 @@ lazy val root = (project in file(".")).
         ExclusionRule("commons-logging", "commons-logging"),
         ExclusionRule("org.apache.logging.log4j", "log4j-core"),
         ExclusionRule("org.apache.logging.log4j", "log4j-api")
-        ),
+      ),
       "nl.grons" %% "metrics-scala" % "3.5.5",
-      "com.sksamuel.elastic4s" %% "elastic4s-streams" % "2.4.0",
-      "com.sksamuel.elastic4s" %% "elastic4s-jackson" % "2.4.0",
+      "com.sksamuel.elastic4s" %% "elastic4s-streams" % Versions.elastic4s,
+      "com.sksamuel.elastic4s" %% "elastic4s-jackson" % Versions.elastic4s,
+      "com.outworkers" %% "util-testing" % Versions.util % Test,
       "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.0-M1" % Test
     )
-  )
+  ).dependsOn(parsers)
