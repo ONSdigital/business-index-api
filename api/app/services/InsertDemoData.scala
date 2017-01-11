@@ -98,7 +98,7 @@ class InsertDemoData @Inject()(
     }
   }
 
-  def init: Future[List[IndexResult]] = {
+  def init: Future[Iterator[IndexResult]] = {
     for {
       _ <- initialiseIndex recoverWith {
         case _: IndexAlreadyExistsException => Future.successful(Nil)
