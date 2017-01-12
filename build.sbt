@@ -58,6 +58,7 @@ lazy val parsers = (project in file("parsers"))
   .settings(commonSettings: _*)
   .settings(
     moduleName := "parsers",
+
     addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full),
     libraryDependencies ++= Seq(
       "org.typelevel" %% "macro-compat" % "1.1.1",

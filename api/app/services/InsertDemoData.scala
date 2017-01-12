@@ -35,6 +35,8 @@ class InsertDemoData @Inject()(
 
   private[this] val envString = environment.mode.toString.toLowerCase
 
+  private[this] val businessIndex = s"bi-$envString"
+
   private[this] def csv(p: String): Option[Iterator[String]] =
     Option(getClass.getResourceAsStream(p)).map(Source.fromInputStream)
       .map(_.getLines.filterNot(_.contains("BusinessName")))
@@ -43,7 +45,7 @@ class InsertDemoData @Inject()(
   def initialiseIndex: Future[Unit] = {
     elasticsearchClient.execute {
       // define the ElasticSearch index
-      create.index(s"bi-$envString").mappings(
+      create.index(businessIndex).mappings(
         mapping("business").fields(
           field("BusinessName", StringType) boost 4 analyzer "BusinessNameAnalyzer",
           field("BusinessName_suggest", CompletionType),
@@ -81,14 +83,16 @@ class InsertDemoData @Inject()(
   }
 
   def importData(source: Iterator[Array[String]]): Future[Iterator[IndexResult]] = {
+    Console.println(s"Starting to import the data, found ${source.size} elements to import")
 
     Future.sequence {
       source map { values =>
         elasticsearchClient.execute {
 
-          logger.debug("Indexing entry in Elastic")
+          logger.debug("Indexing entry in ElasticSearch")
+          Console.println(s"Indexing an entry into ElasticSearch index $businessIndex/business")
 
-          index into s"bi-$envString" / "business" id values(0) fields(
+          index into businessIndex / "business" id values(0) fields(
             "BusinessName" -> values(1),
             "UPRN" -> values(2).toLong,
             "IndustryCode" -> values(3).toLong,
@@ -104,8 +108,15 @@ class InsertDemoData @Inject()(
   def init: Future[Iterator[IndexResult]] = {
     for {
       _ <- initialiseIndex recoverWith {
-        case _: IndexAlreadyExistsException => Future.successful(Nil)
-        case e: RemoteTransportException => Future.failed(e)
+        case _: IndexAlreadyExistsException => {
+          Console.println(s"Index $businessIndex already found in ")
+          Future.successful(Nil)
+        }
+        case e: RemoteTransportException => {
+          Console.println("Failed to connect to ElasticSearch ")
+          Console.println(e.getStackTraceString)
+          Future.failed(e)
+        }
       }
       data <- importData(generateData())
     } yield data
@@ -119,7 +130,7 @@ class InsertDemoData @Inject()(
     case Mode.Prod =>
   }*/
 
-  Console.println("Is this shit running")
+  Console.println("InsertDemo Data service triggered")
 
   Try(Await.result(init, 5.minutes))
 }

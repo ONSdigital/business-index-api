@@ -13,6 +13,7 @@ import play.api.mvc._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 import scala.util.control.NonFatal
+import scala.collection.JavaConverters._
 
 case class Business(
   id: Long,
@@ -110,31 +111,36 @@ class SearchController @Inject()(
 
   def searchTerm(term: String, suggest: Boolean = false) = searchBusiness(Some(term), suggest)
 
-  def findById(id: Long): Future[Option[Business]] = {
+  protected[this] def resultAsBusiness(businessId: Long, resp: RichGetResponse): Option[Business] = {
+
+    val source = resp.source.asScala.toMap[String, AnyRef]
+
+    for {
+      name <- source.get("BusinessName")
+      uprn <- source.get("UPRN")
+      code <- source.get("IndustryCode")
+      legalStatus <- source.get("LegalStatus")
+      tradingStatus <- source.get("TradingStatus")
+      turnover <- source.get("Turnover")
+      bands <- source.get("EmploymentBands")
+    } yield {
+      Business(
+        id = businessId,
+        businessName = name.toString,
+        uprn = uprn.toString.toLong,
+        industryCode = code.toString.toLong,
+        legalStatus = legalStatus.toString,
+        tradingStatus = tradingStatus.toString,
+        turnover = turnover.toString,
+        employmentBands = bands.toString
+      )
+    }
+  }
+
+  def findById(businessId: Long): Future[Option[Business]] = {
     elastic.execute {
       get id id from index
-    } map { resp =>
-      for {
-        name <- resp.fieldOpt("BusinessName")
-        uprn <- resp.fieldOpt("UPRN")
-        code <- resp.fieldOpt("IndustryCode")
-        legalStatus <- resp.fieldOpt("LegalStatus")
-        tradingStatus <- resp.fieldOpt("TradingStatus")
-        turnover <- resp.fieldOpt("Turnover")
-        bands <- resp.fieldOpt("EmploymentBands")
-      } yield {
-        Business(
-          id = id,
-          businessName = name.getValue.toString,
-          uprn = uprn.getValue.toString.toLong,
-          industryCode = code.getValue.toString.toLong,
-          legalStatus = legalStatus.getValue.toString,
-          tradingStatus = tradingStatus.getValue.toString,
-          turnover = turnover.getValue.toString,
-          employmentBands = bands.getValue.toString
-        )
-      }
-    }
+    } map(resultAsBusiness(businessId, _))
   }
 
   def searchBusinessById(id: String): Action[AnyContent] = Action.async {
