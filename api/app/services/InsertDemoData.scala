@@ -17,7 +17,7 @@ import play.api.{Environment, Mode}
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.io.Source
 import scala.concurrent.duration._
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
 
 /**
   * Class that imports sample.csv.
@@ -83,7 +83,7 @@ class InsertDemoData @Inject()(
   }
 
   def importData(source: Iterator[Array[String]]): Future[Iterator[IndexResult]] = {
-    Console.println(s"Starting to import the data, found ${source.size} elements to import")
+    Console.println(s"Starting to import the data, found elements to import: ${source.nonEmpty}")
 
     Future.sequence {
       source map { values =>
@@ -132,5 +132,11 @@ class InsertDemoData @Inject()(
 
   Console.println("InsertDemo Data service triggered")
 
-  Await.result(init, 10.minutes)
+  Try(Await.result(initialiseIndex, 2.minutes)) match {
+    case Success(_) => Console.println(s"Initialised index $businessIndex")
+    case Failure(err) => Console.println(err.getStackTraceString)
+  }
+
+  Console.println("Stating to import generated data")
+  importData(generateData())
 }
