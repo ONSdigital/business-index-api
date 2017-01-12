@@ -132,5 +132,5 @@ class InsertDemoData @Inject()(
 
   Console.println("InsertDemo Data service triggered")
 
-  Try(Await.result(init, 5.minutes))
+  Await.result(init, 10.minutes)
 }
