@@ -27,7 +27,7 @@ case class Business(
 )
 
 object Business {
-  implicit val businessHitFormat = Json.format[Business]
+  implicit val businessHitFormat: OFormat[Business] = Json.format[Business]
 }
 
 /**
@@ -113,7 +113,7 @@ class SearchController @Inject()(
 
   protected[this] def resultAsBusiness(businessId: Long, resp: RichGetResponse): Option[Business] = {
 
-    val source = resp.source.asScala.toMap[String, AnyRef]
+    val source = Option(resp.source).map(_.asScala.toMap[String, AnyRef]).getOrElse(Map.empty[String, AnyRef])
 
     for {
       name <- source.get("BusinessName")
@@ -138,9 +138,7 @@ class SearchController @Inject()(
   }
 
   def findById(businessId: Long): Future[Option[Business]] = {
-    elastic.execute {
-      get id id from index
-    } map(resultAsBusiness(businessId, _))
+    elastic.execute { get id id from index } map(resultAsBusiness(businessId, _))
   }
 
   def searchBusinessById(id: String): Action[AnyContent] = Action.async {
@@ -153,38 +151,40 @@ class SearchController @Inject()(
     }
   }
 
-  def searchBusiness(term: Option[String], suggest: Boolean = false) = Action.async { implicit request =>
-    requestMeter.mark()
+  def searchBusiness(term: Option[String], suggest: Boolean = false): Action[AnyContent] = {
+    Action.async { implicit request =>
+      requestMeter.mark()
 
-    val searchTerm = term.orElse(request.getQueryString("q")).orElse(request.getQueryString("query"))
+      val searchTerm = term.orElse(request.getQueryString("q")).orElse(request.getQueryString("query"))
 
-    val offset = Try(request.getQueryString("offset").getOrElse("0").toInt).getOrElse(0)
-    val limit = Try(request.getQueryString("limit").getOrElse("100").toInt).getOrElse(100)
+      val offset = Try(request.getQueryString("offset").getOrElse("0").toInt).getOrElse(0)
+      val limit = Try(request.getQueryString("limit").getOrElse("100").toInt).getOrElse(100)
 
-    searchTerm match {
-      case Some(query) if query.length > 0 =>
-        // if suggest, match on the BusinessName only, else assume it's an Elasticsearch query
-        businessSearch(query, offset, limit, suggest) map response recover {
-          case e: NoNodeAvailableException => ServiceUnavailable(
-            Json.obj(
-              "status" -> 503,
-              "code" -> "es_down",
-              "message_en" -> e.getMessage
+      searchTerm match {
+        case Some(query) if query.length > 0 =>
+          // if suggest, match on the BusinessName only, else assume it's an Elasticsearch query
+          businessSearch(query, offset, limit, suggest) map response recover {
+            case e: NoNodeAvailableException => ServiceUnavailable(
+              Json.obj(
+                "status" -> 503,
+                "code" -> "es_down",
+                "message_en" -> e.getMessage
+              )
             )
-          )
 
-          case NonFatal(e) => InternalServerError(
-            Json.obj(
-              "status" -> 500,
-              "code" -> "internal_error",
-              "message_en" -> e.getMessage
+            case NonFatal(e) => InternalServerError(
+              Json.obj(
+                "status" -> 500,
+                "code" -> "internal_error",
+                "message_en" -> e.getMessage
+              )
             )
+          }
+        case _ =>
+          Future.successful(
+            BadRequest(Json.obj("status" -> 400, "code" -> "missing_query", "message_en" -> "No query specified."))
           )
-        }
-      case _ =>
-        Future.successful(
-          BadRequest(Json.obj("status" -> 400, "code" -> "missing_query", "message_en" -> "No query specified."))
-        )
+      }
     }
   }
 

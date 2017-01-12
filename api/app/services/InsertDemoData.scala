@@ -27,7 +27,7 @@ import scala.util.{Failure, Success, Try}
 @Singleton
 class InsertDemoData @Inject()(
   environment: Environment,
-  elasticsearchClient: ElasticClient,
+  elastic: ElasticClient,
   applicationLifecycle: ApplicationLifecycle
 )(
   implicit exec: ExecutionContext
@@ -43,7 +43,7 @@ class InsertDemoData @Inject()(
 
 
   def initialiseIndex: Future[Unit] = {
-    elasticsearchClient.execute {
+    elastic.execute {
       // define the ElasticSearch index
       create.index(businessIndex).mappings(
         mapping("business").fields(
@@ -63,7 +63,7 @@ class InsertDemoData @Inject()(
     } map { _ =>
       if (environment.mode != Mode.Prod) {
         applicationLifecycle.addStopHook { () =>
-          elasticsearchClient.execute { delete index s"bi-$envString"}
+          elastic.execute { delete index s"bi-$envString"}
         }
       }
     }
@@ -85,13 +85,10 @@ class InsertDemoData @Inject()(
   def importData(source: Iterator[Array[String]]): Future[Iterator[IndexResult]] = {
     Console.println(s"Starting to import the data, found elements to import: ${source.nonEmpty}")
 
-    Future.sequence {
+    val importFuture = Future.sequence {
       source map { values =>
-        elasticsearchClient.execute {
-
+        elastic.execute {
           logger.debug("Indexing entry in ElasticSearch")
-          Console.println(s"Indexing an entry into ElasticSearch index $businessIndex/business")
-
           index into businessIndex / "business" id values(0) fields(
             "BusinessName" -> values(1),
             "UPRN" -> values(2).toLong,
@@ -101,6 +98,16 @@ class InsertDemoData @Inject()(
             "Turnover" -> values(6),
             "EmploymentBands" -> values(7))
         }
+      }
+    }
+
+    elastic.execute {
+      search.in(businessIndex / "business")
+    } flatMap {
+      case resp if resp.hits.length == 0 => importFuture
+      case resp @ _ => {
+        Console.println(s"No import necessary, found ${resp.hits.length} entries in the index")
+        Future.successful(Iterator.empty)
       }
     }
   }
