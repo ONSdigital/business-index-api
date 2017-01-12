@@ -138,5 +138,9 @@ class InsertDemoData @Inject()(
   }
 
   Console.println("Stating to import generated data")
-  importData(generateData())
+
+  Try(Await.result(importData(generateData()), 10.minutes)) match {
+    case Success(_) => Console.println(s"Successfully imported data")
+    case Failure(err) => Console.println(err.getStackTraceString)
+  }
 }
