@@ -2,9 +2,6 @@ package models.domain
 
 package object parsers {
 
-  object from {
-    def apply(num: Int): NumDsl = NumDsl(num)
-  }
 
   implicit class NumDsl(val num: Int) extends AnyVal {
     def -->(end: Int): OffsetDelimiter = OffsetDelimiter(num, end)

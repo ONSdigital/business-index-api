@@ -11,7 +11,7 @@ import play.api.libs.json._
 import play.api.mvc._
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
 import scala.util.control.NonFatal
 
 case class Business(
@@ -33,13 +33,13 @@ object Business {
   * Contains action for the /v1/search route.
   *
   * @param environment
-  * @param elasticsearchClient
+  * @param elastic
   * @param context
   */
 @Singleton
 class SearchController @Inject()(
   environment: Environment,
-  elasticsearchClient: ElasticClient
+  elastic: ElasticClient
 )(
   implicit context: ExecutionContext
 ) extends Controller with ElasticDsl with DefaultInstrumented with StrictLogging {
@@ -47,6 +47,8 @@ class SearchController @Inject()(
   // metrics
   private[this] val requestMeter = metrics.meter("search-requests", "requests")
   private[this] val totalHitsHistogram = metrics.histogram("totalHits", "es-searches")
+
+  private[this] val index = s"bi-${environment.mode.toString.toLowerCase}" / "business"
 
   // mapper from Elasticsearch result to Business case class
   implicit object BusinessHitAs extends HitAs[Business] {
@@ -76,13 +78,13 @@ class SearchController @Inject()(
       QueryStringQueryDefinition(term)
     }
 
-    elasticsearchClient.execute {
-      search.in(s"bi-${environment.mode.toString.toLowerCase}" / "business")
+    elastic.execute {
+      search.in(index)
         .query(definition)
         .start(offset)
         .limit(limit)
     }.map { resp => resp.as[Business].toList match {
-        case list@head :: tail => {
+        case list@_ :: _ => {
           totalHitsHistogram += resp.totalHits
           resp -> list
         }
@@ -93,7 +95,7 @@ class SearchController @Inject()(
 
   def response(resp: RichSearchResponse, businesses: List[Business]): Result = {
     businesses match {
-      case head :: tail => {
+      case _ :: _ => {
         Ok(Json.toJson(businesses))
           .withHeaders(
             "X-Total-Count" -> resp.totalHits.toString,
@@ -107,6 +109,21 @@ class SearchController @Inject()(
   def response(tp: (RichSearchResponse, List[Business])): Result = response(tp._1, tp._2)
 
   def searchTerm(term: String, suggest: Boolean = false) = searchBusiness(Some(term), suggest)
+
+  def findById(id: Long): Future[Business] = {
+    elastic.execute {
+      get id id from index
+    } map { resp =>
+      Json.parse(resp.sourceAsString).as[Business]
+    }
+  }
+
+  def searchBusinessById(id: String): Action[AnyContent] = Action.async {
+    Try(id.toLong) match {
+      case Success(value) => findById(value) map (res => Ok(Json.toJson(res)))
+      case Failure(err) => Future.successful(InternalServerError(err.getMessage))
+    }
+  }
 
   def searchBusiness(term: Option[String], suggest: Boolean = false) = Action.async { implicit request =>
     requestMeter.mark()

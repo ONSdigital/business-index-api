@@ -22,7 +22,7 @@
     <body>
 
         <script type="text/ng-template" id="customTemplate.html">
-            <a ng-href="{{'/#/view/'+ match.model.id}}" ng-controller="MatchController">
+            <a ui-sref="view({'id': match.model.id})" ng-controller="MatchController">
                 <span ng-bind-html="match.label.businessName | uibTypeaheadHighlight:query"></span>
             </a>
         </script>
@@ -40,7 +40,7 @@
                     <div class='typeahead-demo'>
                         <input type="text"
                         class="large-search"
-                        ng-model="asyncSelected"
+                        ng-model="asyncSelected.businessName"
                         placeholder="Search.."
                         typeahead-template-url="customTemplate.html"
                         uib-typeahead="address for address in search($viewValue)"

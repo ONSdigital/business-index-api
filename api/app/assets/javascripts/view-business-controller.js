@@ -1,22 +1,8 @@
 testUi.controller("ViewBusinessController", [
   "$scope",
-  "$http",
-  "$stateParams",
-  function($scope, $http, $stateParams) {
+  "business",
+  function($scope, business) {
 
-    $scope.businessName = decodeURIComponent($stateParams.id);
-
-    $scope.displayName = $scope.businessName.replace(/"/g, '');
-
-    $http.get('/v1/search', {
-      params: {
-        "query": "\"" + $scope.businessName + "\""
-      }
-    }).then(function(response) {
-      $scope.item = response.data[0];
-    }, function(err) {
-      console.log("Unable to load the name for", $scope.businessName);
-      console.error(err);
-    });
-  }]);
+  $scope.item = business;
+}]);
 
