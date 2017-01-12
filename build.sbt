@@ -4,9 +4,8 @@ import sbtassembly.AssemblyPlugin.autoImport._
 lazy val Versions = new {
   val phantom = "2.0.0"
   val util = "0.27.8"
-  val elastic4s = "2.4.0"
+  val elastic4s = "2.3.1"
 }
-
 
 lazy val commonSettings = Seq(
   scalaVersion := "2.11.8",

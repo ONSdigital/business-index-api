@@ -110,17 +110,39 @@ class SearchController @Inject()(
 
   def searchTerm(term: String, suggest: Boolean = false) = searchBusiness(Some(term), suggest)
 
-  def findById(id: Long): Future[Business] = {
+  def findById(id: Long): Future[Option[Business]] = {
     elastic.execute {
       get id id from index
     } map { resp =>
-      Json.parse(resp.sourceAsString).as[Business]
+      for {
+        name <- resp.fieldOpt("BusinessName")
+        uprn <- resp.fieldOpt("UPRN")
+        code <- resp.fieldOpt("IndustryCode")
+        legalStatus <- resp.fieldOpt("LegalStatus")
+        tradingStatus <- resp.fieldOpt("TradingStatus")
+        turnover <- resp.fieldOpt("Turnover")
+        bands <- resp.fieldOpt("EmploymentBands")
+      } yield {
+        Business(
+          id = id,
+          businessName = name.getValue.toString,
+          uprn = uprn.getValue.toString.toLong,
+          industryCode = code.getValue.toString.toLong,
+          legalStatus = legalStatus.getValue.toString,
+          tradingStatus = tradingStatus.getValue.toString,
+          turnover = turnover.getValue.toString,
+          employmentBands = bands.getValue.toString
+        )
+      }
     }
   }
 
   def searchBusinessById(id: String): Action[AnyContent] = Action.async {
     Try(id.toLong) match {
-      case Success(value) => findById(value) map (res => Ok(Json.toJson(res)))
+      case Success(value) => findById(value) map {
+        case Some(res) => Ok(Json.toJson(res))
+        case None => NoContent
+      }
       case Failure(err) => Future.successful(InternalServerError(err.getMessage))
     }
   }
