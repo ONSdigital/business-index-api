@@ -109,10 +109,10 @@ class SearchController @Inject()(
 
   def response(tp: (RichSearchResponse, List[Business])): Result = response(tp._1, tp._2)
 
-  def searchTerm(term: String, suggest: Boolean = false) = searchBusiness(Some(term), suggest)
+  def searchTerm(term: String, suggest: Boolean = false): Action[AnyContent] = searchBusiness(Some(term), suggest)
 
   protected[this] def resultAsBusiness(businessId: Long, resp: RichGetResponse): Option[Business] = {
-
+    Console.println(resp.sourceAsString)
     val source = Option(resp.source).map(_.asScala.toMap[String, AnyRef]).getOrElse(Map.empty[String, AnyRef])
 
     for {
