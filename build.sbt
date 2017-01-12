@@ -104,7 +104,7 @@ lazy val api = (project in file("api"))
       filters,
       "com.outworkers" %% "phantom-dsl" % Versions.phantom,
       "org.webjars" %% "webjars-play" % "2.5.0-3",
-      "org.webjars.bower" % "angular" % "1.6.1",
+      "org.webjars.bower" % "angular" % "1.5.9",
       "org.webjars.bower" % "dali" % "1.3.2",
       "org.webjars.bower" % "angular-toggle-switch" % "1.3.0",
       "org.webjars.bower" % "angular-bootstrap" % "1.1.0",
