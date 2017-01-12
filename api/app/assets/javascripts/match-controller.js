@@ -3,7 +3,8 @@ testUi.controller("MatchController", [
   function($scope) {
 
     $scope.encode = function(match) {
-      return encodeURIComponent(match.label);
+      console.log(match);
+      return match.label;
     };
 
   }]);

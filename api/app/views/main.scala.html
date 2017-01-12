@@ -14,13 +14,16 @@
         <script src="@routes.WebJarAssets.at(webJarAssets.locate("angular-ui-router.js"))"></script>
         <script src="@routes.WebJarAssets.at(webJarAssets.locate("ui-bootstrap-tpls.js"))"></script>
         <script src="@routes.Assets.versioned("/javascripts/app.js")" type="text/javascript"></script>
+        <script src="@routes.Assets.versioned("/javascripts/search-controller.js")" type="text/javascript"></script>
+        <script src="@routes.Assets.versioned("/javascripts/match-controller.js")" type="text/javascript"></script>
+        <script src="@routes.Assets.versioned("/javascripts/view-business-controller.js")" type="text/javascript"></script>
         @scripts
     </head>
     <body>
 
         <script type="text/ng-template" id="customTemplate.html">
-            <a ng-href="{{'/#/view/'+ encode(match)}}" ng-controller="MatchController">
-                <span ng-bind-html="match.label | uibTypeaheadHighlight:query"></span>
+            <a ui-sref="view({'id': match.model.id})" ng-controller="MatchController">
+                <span ng-bind-html="match.label.businessName | uibTypeaheadHighlight:query"></span>
             </a>
         </script>
 
@@ -37,7 +40,7 @@
                     <div class='typeahead-demo'>
                         <input type="text"
                         class="large-search"
-                        ng-model="asyncSelected"
+                        ng-model="asyncSelected.businessName"
                         placeholder="Search.."
                         typeahead-template-url="customTemplate.html"
                         uib-typeahead="address for address in search($viewValue)"

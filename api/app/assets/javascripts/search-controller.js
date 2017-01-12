@@ -14,11 +14,7 @@ testUi.controller("SearchController", [
           "query": query
         }
       }).then(function(response) {
-        var source = response.data || [];
-
-        return source.map(function(el) {
-          return el.businessName || "";
-        });
+        return (response.data || []);
       });
     };
 
