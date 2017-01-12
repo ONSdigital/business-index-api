@@ -8,13 +8,15 @@ testUi.controller("ViewBusinessController", [
 
     $scope.displayName = $scope.businessName.replace(/"/g, '');
 
-
     $http.get('/v1/search', {
       params: {
         "query": "\"" + $scope.businessName + "\""
       }
     }).then(function(response) {
       $scope.item = response.data[0];
+    }, function(err) {
+      console.log("Unable to load the name for", $scope.businessName);
+      console.error(err);
     });
   }]);
 

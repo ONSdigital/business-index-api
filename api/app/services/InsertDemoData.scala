@@ -85,6 +85,9 @@ class InsertDemoData @Inject()(
     Future.sequence {
       source map { values =>
         elasticsearchClient.execute {
+
+          logger.debug("Indexing entry in Elastic")
+
           index into s"bi-$envString" / "business" id values(0) fields(
             "BusinessName" -> values(1),
             "UPRN" -> values(2).toLong,

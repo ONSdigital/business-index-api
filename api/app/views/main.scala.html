@@ -22,8 +22,8 @@
     <body>
 
         <script type="text/ng-template" id="customTemplate.html">
-            <a ng-href="{{'/#/view/'+ encode(match)}}" ng-controller="MatchController">
-                <span ng-bind-html="match.label | uibTypeaheadHighlight:query"></span>
+            <a ng-href="{{'/#/view/'+ match.model.id}}" ng-controller="MatchController">
+                <span ng-bind-html="match.label.businessName | uibTypeaheadHighlight:query"></span>
             </a>
         </script>
 
