@@ -2,6 +2,10 @@ package controllers.v1
 
 import javax.inject._
 
+import cats.data.ValidatedNel
+import com.outworkers.util.catsparsers._
+import com.outworkers.util.catsparsers.{parse => cparse}
+import com.outworkers.util.domain.ApiErrorResponse
 import com.sksamuel.elastic4s._
 import com.typesafe.scalalogging.StrictLogging
 import nl.grons.metrics.scala.DefaultInstrumented
@@ -11,9 +15,10 @@ import play.api.libs.json._
 import play.api.mvc._
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Failure, Success, Try}
+import scala.util.Try
 import scala.util.control.NonFatal
 import scala.collection.JavaConverters._
+import com.outworkers.util.play._
 
 case class Business(
   id: Long,
@@ -27,7 +32,7 @@ case class Business(
 )
 
 object Business {
-  implicit val businessHitFormat = Json.format[Business]
+  implicit val businessHitFormat: OFormat[Business] = Json.format[Business]
 }
 
 /**
@@ -44,6 +49,12 @@ class SearchController @Inject()(
 )(
   implicit context: ExecutionContext
 ) extends Controller with ElasticDsl with DefaultInstrumented with StrictLogging {
+
+  implicit object LongParser extends CatsParser[Long] {
+    override def parse(str: String): ValidatedNel[String, Long] = {
+      Try(java.lang.Long.parseLong(str)).asValidation
+    }
+  }
 
   // metrics
   private[this] val requestMeter = metrics.meter("search-requests", "requests")
@@ -85,10 +96,9 @@ class SearchController @Inject()(
         .start(offset)
         .limit(limit)
     }.map { resp => resp.as[Business].toList match {
-        case list@_ :: _ => {
+        case list@_ :: _ =>
           totalHitsHistogram += resp.totalHits
           resp -> list
-        }
         case Nil => resp -> List.empty[Business]
       }
     }
@@ -96,95 +106,92 @@ class SearchController @Inject()(
 
   def response(resp: RichSearchResponse, businesses: List[Business]): Result = {
     businesses match {
-      case _ :: _ => {
+      case _ :: _ =>
         Ok(Json.toJson(businesses))
           .withHeaders(
             "X-Total-Count" -> resp.totalHits.toString,
             "X-Max-Score" -> resp.maxScore.toString
           )
-      }
       case _ => Ok("{}").as(JSON)
     }
   }
 
   def response(tp: (RichSearchResponse, List[Business])): Result = response(tp._1, tp._2)
 
-  def searchTerm(term: String, suggest: Boolean = false) = searchBusiness(Some(term), suggest)
+  def searchTerm(term: String, suggest: Boolean = false): Action[AnyContent] = searchBusiness(Some(term), suggest)
 
   protected[this] def resultAsBusiness(businessId: Long, resp: RichGetResponse): Option[Business] = {
+    val source = Option(resp.source).map(_.asScala.toMap[String, AnyRef]).getOrElse(Map.empty[String, AnyRef])
 
-    val source = resp.source.asScala.toMap[String, AnyRef]
-
-    for {
-      name <- source.get("BusinessName")
-      uprn <- source.get("UPRN")
-      code <- source.get("IndustryCode")
-      legalStatus <- source.get("LegalStatus")
-      tradingStatus <- source.get("TradingStatus")
-      turnover <- source.get("Turnover")
-      bands <- source.get("EmploymentBands")
-    } yield {
-      Business(
-        id = businessId,
-        businessName = name.toString,
-        uprn = uprn.toString.toLong,
-        industryCode = code.toString.toLong,
-        legalStatus = legalStatus.toString,
-        tradingStatus = tradingStatus.toString,
-        turnover = turnover.toString,
-        employmentBands = bands.toString
-      )
-    }
+    Try(Business(
+      id = businessId,
+      businessName = source.getOrElse("BusinessName", "").toString,
+      uprn = java.lang.Long.parseLong(source.getOrElse("UPRN", 0L).toString),
+      industryCode = source.getOrElse("IndustryCode", "").toString.toLong,
+      legalStatus = source.getOrElse("LegalStatus", "").toString,
+      tradingStatus = source.getOrElse("TradingStatus", "").toString,
+      turnover = source.getOrElse("Turnover", "").toString,
+      employmentBands = source.getOrElse("EmploymentBands", "").toString
+    )).toOption
   }
 
   def findById(businessId: Long): Future[Option[Business]] = {
-    elastic.execute {
-      get id id from index
-    } map(resultAsBusiness(businessId, _))
+    logger.debug(s"Searching for business with ID $businessId")
+    elastic.execute { get id businessId from index } map(resultAsBusiness(businessId, _))
   }
 
   def searchBusinessById(id: String): Action[AnyContent] = Action.async {
-    Try(id.toLong) match {
-      case Success(value) => findById(value) map {
-        case Some(res) => Ok(Json.toJson(res))
-        case None => NoContent
+    cparse[Long](id) fold (_.response.future, value =>
+      findById(value) map {
+        case Some(res) => {
+          logger.debug(s"Found business result ${Json.toJson(res)}")
+          Ok(Json.toJson(res))
+        }
+        case None =>
+          logger.debug(s"Could not find a record with the ID $id")
+          NoContent
       }
-      case Failure(err) => Future.successful(InternalServerError(err.getMessage))
-    }
+    )
   }
 
-  def searchBusiness(term: Option[String], suggest: Boolean = false) = Action.async { implicit request =>
-    requestMeter.mark()
+  def searchBusiness(term: Option[String], suggest: Boolean = false): Action[AnyContent] = {
+    Action.async { implicit request =>
+      requestMeter.mark()
 
-    val searchTerm = term.orElse(request.getQueryString("q")).orElse(request.getQueryString("query"))
+      val searchTerm = term.orElse(request.getQueryString("q")).orElse(request.getQueryString("query"))
 
-    val offset = Try(request.getQueryString("offset").getOrElse("0").toInt).getOrElse(0)
-    val limit = Try(request.getQueryString("limit").getOrElse("100").toInt).getOrElse(100)
+      val offset = Try(request.getQueryString("offset").getOrElse("0").toInt).getOrElse(0)
+      val limit = Try(request.getQueryString("limit").getOrElse("100").toInt).getOrElse(100)
 
-    searchTerm match {
-      case Some(query) if query.length > 0 =>
-        // if suggest, match on the BusinessName only, else assume it's an Elasticsearch query
-        businessSearch(query, offset, limit, suggest) map response recover {
-          case e: NoNodeAvailableException => ServiceUnavailable(
-            Json.obj(
-              "status" -> 503,
-              "code" -> "es_down",
-              "message_en" -> e.getMessage
+      searchTerm match {
+        case Some(query) if query.length > 0 =>
+          // if suggest, match on the BusinessName only, else assume it's an Elasticsearch query
+          businessSearch(query, offset, limit, suggest) map response recover {
+            case e: NoNodeAvailableException => ServiceUnavailable(
+              Json.obj(
+                "status" -> 503,
+                "code" -> "es_down",
+                "message_en" -> e.getMessage
+              )
             )
-          )
 
-          case NonFatal(e) => InternalServerError(
-            Json.obj(
-              "status" -> 500,
-              "code" -> "internal_error",
-              "message_en" -> e.getMessage
+            case NonFatal(e) => InternalServerError(
+              Json.obj(
+                "status" -> 500,
+                "code" -> "internal_error",
+                "message_en" -> e.getMessage
+              )
             )
-          )
-        }
-      case _ =>
-        Future.successful(
-          BadRequest(Json.obj("status" -> 400, "code" -> "missing_query", "message_en" -> "No query specified."))
-        )
+          }
+        case _ =>
+          BadRequest(
+            Json.obj(
+              "status" -> 400,
+              "code" -> "missing_query",
+              "message_en" -> "No query specified."
+            )
+          ).future
+      }
     }
   }
 
