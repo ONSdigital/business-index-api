@@ -2,14 +2,13 @@ package scala.db
 
 import java.util.concurrent.TimeUnit
 
-import com.outworkers.phantom.dsl.{DateTime, UUID}
-import com.outworkers.util.testing.Sample
-import org.scalatest.{FlatSpec, Matchers, OptionValues}
 import org.scalatest.concurrent.{PatienceConfiguration, ScalaFutures}
 import org.scalatest.time.{Millis, Seconds, Span}
-import com.outworkers.util.testing._
+import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers, OptionValues}
 
-trait DatabaseSuite extends FlatSpec with Matchers with OptionValues with ScalaFutures with TestDbProvider {
+import scala.concurrent.ExecutionContextExecutor
+
+trait DatabaseSuite extends FlatSpec with BeforeAndAfterAll with Matchers with OptionValues with ScalaFutures with TestDbProvider {
 
   protected[this] val defaultScalaTimeoutSeconds = 25
 
@@ -21,18 +20,15 @@ trait DatabaseSuite extends FlatSpec with Matchers with OptionValues with ScalaF
 
   implicit val defaultTimeout: PatienceConfiguration.Timeout = timeout(defaultTimeoutSpan)
 
+  implicit val context: ExecutionContextExecutor = com.outworkers.phantom.dsl.context
+
   override implicit val patienceConfig = PatienceConfig(
     timeout = defaultTimeoutSpan,
     interval = Span(defaultScalaInterval, Millis)
   )
 
-  implicit object FeedbackSampler extends Sample[FeedbackEntry] {
-    override def sample: FeedbackEntry = FeedbackEntry(
-      gen[UUID],
-      gen[String],
-      genOpt[String],
-      gen[String],
-      gen[DateTime]
-    )
+  override def beforeAll(): Unit = {
+    super.beforeAll()
+    database.create()
   }
 }
