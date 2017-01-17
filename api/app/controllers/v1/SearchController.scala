@@ -5,6 +5,7 @@ import javax.inject._
 import cats.data.ValidatedNel
 import com.outworkers.util.catsparsers._
 import com.outworkers.util.catsparsers.{parse => cparse}
+import com.outworkers.util.domain.ApiErrorResponse
 import com.sksamuel.elastic4s._
 import com.typesafe.scalalogging.StrictLogging
 import nl.grons.metrics.scala.DefaultInstrumented
@@ -95,10 +96,9 @@ class SearchController @Inject()(
         .start(offset)
         .limit(limit)
     }.map { resp => resp.as[Business].toList match {
-        case list@_ :: _ => {
+        case list@_ :: _ =>
           totalHitsHistogram += resp.totalHits
           resp -> list
-        }
         case Nil => resp -> List.empty[Business]
       }
     }
@@ -106,13 +106,12 @@ class SearchController @Inject()(
 
   def response(resp: RichSearchResponse, businesses: List[Business]): Result = {
     businesses match {
-      case _ :: _ => {
+      case _ :: _ =>
         Ok(Json.toJson(businesses))
           .withHeaders(
             "X-Total-Count" -> resp.totalHits.toString,
             "X-Max-Score" -> resp.maxScore.toString
           )
-      }
       case _ => Ok("{}").as(JSON)
     }
   }
@@ -123,13 +122,7 @@ class SearchController @Inject()(
 
   protected[this] def resultAsBusiness(businessId: Long, resp: RichGetResponse): Option[Business] = {
     val source = Option(resp.source).map(_.asScala.toMap[String, AnyRef]).getOrElse(Map.empty[String, AnyRef])
-    Console.println(source.map {
-      case (key, value) => s"$key -> $value"
-    }.mkString("\n"))
 
-    //{"LegalStatus":"1",
-    // "BusinessName":"TEST-MEASUREMENT.CO.UK LIMITED"
-    // "IndustryCode":91890,"UPRN":734090080368,"Turnover":"B","TradingStatus":"A","EmploymentBands":"D"}
     Try(Business(
       id = businessId,
       businessName = source.getOrElse("BusinessName", "").toString,
@@ -143,7 +136,7 @@ class SearchController @Inject()(
   }
 
   def findById(businessId: Long): Future[Option[Business]] = {
-    Console.println(s"Searching for business with ID $businessId")
+    logger.debug(s"Searching for business with ID $businessId")
     elastic.execute { get id businessId from index } map(resultAsBusiness(businessId, _))
   }
 
@@ -151,11 +144,11 @@ class SearchController @Inject()(
     cparse[Long](id) fold (_.response.future, value =>
       findById(value) map {
         case Some(res) => {
-          Console.println(s"Found business result ${Json.toJson(res)}")
+          logger.debug(s"Found business result ${Json.toJson(res)}")
           Ok(Json.toJson(res))
         }
         case None =>
-          Console.println(s"Could not find a record with the ID $id")
+          logger.debug(s"Could not find a record with the ID $id")
           NoContent
       }
     )
@@ -191,9 +184,13 @@ class SearchController @Inject()(
             )
           }
         case _ =>
-          Future.successful(
-            BadRequest(Json.obj("status" -> 400, "code" -> "missing_query", "message_en" -> "No query specified."))
-          )
+          BadRequest(
+            Json.obj(
+              "status" -> 400,
+              "code" -> "missing_query",
+              "message_en" -> "No query specified."
+            )
+          ).future
       }
     }
   }

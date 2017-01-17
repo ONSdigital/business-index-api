@@ -83,7 +83,7 @@ class InsertDemoData @Inject()(
   }
 
   def importData(source: Iterator[Array[String]]): Future[Iterator[IndexResult]] = {
-    Console.println(s"Starting to import the data, found elements to import: ${source.nonEmpty}")
+    logger.info(s"Starting to import the data, found elements to import: ${source.nonEmpty}")
 
     val importFuture = Future.sequence {
       source map { values =>
@@ -106,7 +106,7 @@ class InsertDemoData @Inject()(
     } flatMap {
       case resp if resp.hits.length == 0 => importFuture
       case resp @ _ => {
-        Console.println(s"No import necessary, found ${resp.hits.length} entries in the index")
+        logger.info(s"No import necessary, found ${resp.hits.length} entries in the index")
         Future.successful(Iterator.empty)
       }
     }
@@ -116,12 +116,11 @@ class InsertDemoData @Inject()(
     for {
       _ <- initialiseIndex recoverWith {
         case _: IndexAlreadyExistsException => {
-          Console.println(s"Index $businessIndex already found in ")
+          logger.info(s"Index $businessIndex already found in ")
           Future.successful(Nil)
         }
         case e: RemoteTransportException => {
-          Console.println("Failed to connect to ElasticSearch ")
-          Console.println(e.getStackTraceString)
+          logger.error("Failed to connect to to ElasticSearch cluster", e)
           Future.failed(e)
         }
       }
@@ -137,17 +136,17 @@ class InsertDemoData @Inject()(
     case Mode.Prod =>
   }*/
 
-  Console.println("InsertDemo Data service triggered")
+  logger.info("InsertDemo Data service triggered")
 
   Try(Await.result(initialiseIndex, 2.minutes)) match {
-    case Success(_) => Console.println(s"Initialised index $businessIndex")
-    case Failure(err) => Console.println(err.getStackTraceString)
+    case Success(_) => logger.info(s"Initialised index $businessIndex")
+    case Failure(err) => logger.error("Unable to initialise elastic index", err)
   }
 
-  Console.println("Stating to import generated data")
+  logger.info("Stating to import generated data")
 
   Try(Await.result(importData(generateData()), 10.minutes)) match {
-    case Success(_) => Console.println(s"Successfully imported data")
-    case Failure(err) => Console.println(err.getStackTraceString)
+    case Success(_) => logger.info(s"Successfully imported data")
+    case Failure(err) => logger.error("Unable to import generated data", err)
   }
 }
