@@ -109,7 +109,11 @@ class InsertDemoData @Inject()(
     for {
       _ <- initialiseIndex recoverWith {
         case _: IndexAlreadyExistsException => {
+<<<<<<< Updated upstream
           Console.println(s"Index $businessIndex already found in ")
+=======
+          logger.info(s"Index $businessIndex already found in cluster")
+>>>>>>> Stashed changes
           Future.successful(Nil)
         }
         case e: RemoteTransportException => {
@@ -133,8 +137,9 @@ class InsertDemoData @Inject()(
   Console.println("InsertDemo Data service triggered")
 
   Try(Await.result(initialiseIndex, 2.minutes)) match {
-    case Success(_) => Console.println(s"Initialised index $businessIndex")
-    case Failure(err) => Console.println(err.getStackTraceString)
+    case Success(_) => logger.info(s"Initialised index $businessIndex")
+    case Failure(err) =>
+      logger.info(s"Index $businessIndex already exists, silenced error with ${err.getMessage}")
   }
 
   Console.println("Stating to import generated data")
