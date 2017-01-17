@@ -5,6 +5,7 @@ lazy val Versions = new {
   val phantom = "2.0.0"
   val util = "0.27.8"
   val elastic4s = "2.3.1"
+  val spark = "1.6.0"
 }
 
 lazy val commonSettings = Seq(
@@ -51,8 +52,19 @@ lazy val businessIndex = (project in file("."))
     moduleName := "ons-bi"
   ).aggregate(
     parsers,
+    ingest,
     api
   )
+
+lazy val ingest = (project in file("ingest"))
+  .settings(commonSettings: _*)
+  .settings(
+    moduleName := "ingest",
+    libraryDependencies ++= Seq(
+      "org.apache.spark" % "spark-core" % Versions.spark,
+      "com.outworkers" %% "util-testing" % Versions.util % Test
+    )
+  ).dependsOn(parsers)
 
 lazy val parsers = (project in file("parsers"))
   .settings(commonSettings: _*)
