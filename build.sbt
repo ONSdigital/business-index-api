@@ -73,7 +73,7 @@ lazy val api = (project in file("api"))
     name := "ons-bi-api",
     scalaVersion := "2.11.8",
     buildInfoPackage := "controllers",
-
+    fork in run := true,
     buildInfoKeys ++= Seq[BuildInfoKey](
       resolvers,
       libraryDependencies,
@@ -119,6 +119,8 @@ lazy val api = (project in file("api"))
       "nl.grons" %% "metrics-scala" % "3.5.5",
       "com.sksamuel.elastic4s" %% "elastic4s-streams" % Versions.elastic4s,
       "com.sksamuel.elastic4s" %% "elastic4s-jackson" % Versions.elastic4s,
+      "com.outworkers" %% "util-parsers-cats" % Versions.util,
+      "com.outworkers" %% "util-play" % Versions.util,
       "com.outworkers" %% "util-testing" % Versions.util % Test,
       "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.0-M1" % Test
     )
