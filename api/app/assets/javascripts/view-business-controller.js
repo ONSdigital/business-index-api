@@ -3,6 +3,7 @@ testUi.controller("ViewBusinessController", [
   "business",
   function($scope, business) {
 
+  console.log(business);
   $scope.item = business;
 }]);
 

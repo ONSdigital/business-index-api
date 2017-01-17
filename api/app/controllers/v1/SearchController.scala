@@ -2,6 +2,9 @@ package controllers.v1
 
 import javax.inject._
 
+import cats.data.ValidatedNel
+import com.outworkers.util.catsparsers._
+import com.outworkers.util.catsparsers.{parse => cparse}
 import com.sksamuel.elastic4s._
 import com.typesafe.scalalogging.StrictLogging
 import nl.grons.metrics.scala.DefaultInstrumented
@@ -11,9 +14,10 @@ import play.api.libs.json._
 import play.api.mvc._
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Failure, Success, Try}
+import scala.util.Try
 import scala.util.control.NonFatal
 import scala.collection.JavaConverters._
+import com.outworkers.util.play._
 
 case class Business(
   id: Long,
@@ -44,6 +48,12 @@ class SearchController @Inject()(
 )(
   implicit context: ExecutionContext
 ) extends Controller with ElasticDsl with DefaultInstrumented with StrictLogging {
+
+  implicit object LongParser extends CatsParser[Long] {
+    override def parse(str: String): ValidatedNel[String, Long] = {
+      Try(java.lang.Long.parseLong(str)).asValidation
+    }
+  }
 
   // metrics
   private[this] val requestMeter = metrics.meter("search-requests", "requests")
@@ -112,43 +122,43 @@ class SearchController @Inject()(
   def searchTerm(term: String, suggest: Boolean = false): Action[AnyContent] = searchBusiness(Some(term), suggest)
 
   protected[this] def resultAsBusiness(businessId: Long, resp: RichGetResponse): Option[Business] = {
-    Console.println(resp.sourceAsString)
     val source = Option(resp.source).map(_.asScala.toMap[String, AnyRef]).getOrElse(Map.empty[String, AnyRef])
+    Console.println(source.map {
+      case (key, value) => s"$key -> $value"
+    }.mkString("\n"))
 
-    for {
-      name <- source.get("BusinessName")
-      uprn <- source.get("UPRN")
-      code <- source.get("IndustryCode")
-      legalStatus <- source.get("LegalStatus")
-      tradingStatus <- source.get("TradingStatus")
-      turnover <- source.get("Turnover")
-      bands <- source.get("EmploymentBands")
-    } yield {
-      Business(
-        id = businessId,
-        businessName = name.toString,
-        uprn = uprn.toString.toLong,
-        industryCode = code.toString.toLong,
-        legalStatus = legalStatus.toString,
-        tradingStatus = tradingStatus.toString,
-        turnover = turnover.toString,
-        employmentBands = bands.toString
-      )
-    }
+    //{"LegalStatus":"1",
+    // "BusinessName":"TEST-MEASUREMENT.CO.UK LIMITED"
+    // "IndustryCode":91890,"UPRN":734090080368,"Turnover":"B","TradingStatus":"A","EmploymentBands":"D"}
+    Try(Business(
+      id = businessId,
+      businessName = source.getOrElse("BusinessName", "").toString,
+      uprn = java.lang.Long.parseLong(source.getOrElse("UPRN", 0L).toString),
+      industryCode = source.getOrElse("IndustryCode", "").toString.toLong,
+      legalStatus = source.getOrElse("LegalStatus", "").toString,
+      tradingStatus = source.getOrElse("TradingStatus", "").toString,
+      turnover = source.getOrElse("Turnover", "").toString,
+      employmentBands = source.getOrElse("EmploymentBands", "").toString
+    )).toOption
   }
 
   def findById(businessId: Long): Future[Option[Business]] = {
-    elastic.execute { get id id from index } map(resultAsBusiness(businessId, _))
+    Console.println(s"Searching for business with ID $businessId")
+    elastic.execute { get id businessId from index } map(resultAsBusiness(businessId, _))
   }
 
   def searchBusinessById(id: String): Action[AnyContent] = Action.async {
-    Try(id.toLong) match {
-      case Success(value) => findById(value) map {
-        case Some(res) => Ok(Json.toJson(res))
-        case None => NoContent
+    cparse[Long](id) fold (_.response.future, value =>
+      findById(value) map {
+        case Some(res) => {
+          Console.println(s"Found business result ${Json.toJson(res)}")
+          Ok(Json.toJson(res))
+        }
+        case None =>
+          Console.println(s"Could not find a record with the ID $id")
+          NoContent
       }
-      case Failure(err) => Future.successful(InternalServerError(err.getMessage))
-    }
+    )
   }
 
   def searchBusiness(term: Option[String], suggest: Boolean = false): Action[AnyContent] = {
