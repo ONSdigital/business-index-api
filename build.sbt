@@ -6,6 +6,7 @@ lazy val Versions = new {
   val util = "0.27.8"
   val elastic4s = "2.3.1"
   val spark = "1.6.0"
+  val elasticSearchSpark = "2.4.0"
 }
 
 lazy val commonSettings = Seq(
@@ -61,7 +62,10 @@ lazy val ingest = (project in file("ingest"))
   .settings(
     moduleName := "ingest",
     libraryDependencies ++= Seq(
-      "org.apache.spark" % "spark-core" % Versions.spark,
+      "org.apache.spark" %% "spark-core" % Versions.spark,
+      "org.elasticsearch" %% "elasticsearch-spark" % Versions.elasticSearchSpark excludeAll {
+        ExclusionRule(organization = "javax.servlet")
+      },
       "com.outworkers" %% "util-testing" % Versions.util % Test
     )
   ).dependsOn(parsers)
