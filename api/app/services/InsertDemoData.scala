@@ -4,7 +4,6 @@ import java.io.FileNotFoundException
 import javax.inject._
 
 import com.sksamuel.elastic4s._
-import com.sksamuel.elastic4s.ElasticDsl.{create, index}
 import play.api.inject.ApplicationLifecycle
 import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s.analyzers._

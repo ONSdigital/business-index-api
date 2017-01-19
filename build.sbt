@@ -63,6 +63,7 @@ lazy val ingest = (project in file("ingest"))
   .settings(
     moduleName := "ingest",
     libraryDependencies ++= Seq(
+      "com.sksamuel.elastic4s" %% "elastic4s-streams" % Versions.elastic4s,
       "org.apache.spark" %% "spark-core" % Versions.spark,
       "org.elasticsearch" %% "elasticsearch-spark" % Versions.elasticSearchSpark excludeAll {
         ExclusionRule(organization = "javax.servlet")

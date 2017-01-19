@@ -29,6 +29,6 @@ trait DatabaseSuite extends FlatSpec with BeforeAndAfterAll with Matchers with O
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    database.create()
+    val _ = database.create(defaultScalaTimeout)
   }
 }
