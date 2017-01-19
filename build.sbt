@@ -57,6 +57,7 @@ lazy val businessIndex = (project in file("."))
     api
   )
 
+
 lazy val ingest = (project in file("ingest"))
   .settings(commonSettings: _*)
   .settings(
