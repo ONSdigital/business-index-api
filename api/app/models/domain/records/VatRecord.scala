@@ -31,7 +31,6 @@ import org.joda.time.DateTime
   *Address 5	310	339
   *Postcode 	340	347
   */
-
 case class VatRecord(
   lov_code: String,
   vat_registration_number: String,

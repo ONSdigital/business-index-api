@@ -4,6 +4,7 @@ import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.DataFrame
 import org.elasticsearch.spark.sql._
+import org.elasticsearch.spark._
 
 class ElasticIndexes(config: Config) {
   final val payeIndex: String = config.getString("businessindex.elasticsearch.indices.paye")
@@ -22,15 +23,16 @@ object ElasticWriter {
 
   private lazy val config = ConfigFactory.load()
 
-  private lazy val hybridIndex = config.getString("addressindex.elasticsearch.indices.hybrid")
+  private lazy val hybridIndex = config.getString("businessindex.elasticsearch.indices.hybrid")
+
   /**
-    * Stores addresses (NAG) into ElasticSearch
+    * Stores data into ElasticSearch.
     * @param data `DataFrame` containing addresses
     */
-  def save(data: DataFrame): Unit = data.saveToEs(nagIndex)
+  def save(index: String, data: DataFrame): Unit = data.saveToEs(index)
 
   /**
     * Stores arbitrary records
     */
-  def save[T](index: String data: RDD[T]): Unit = data.saveToEs(hybridIndex)
+  def save[T](index: String, data: RDD[T]): Unit = data.saveToEs(index)
 }
