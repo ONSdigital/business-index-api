@@ -20,15 +20,13 @@ case class SparkConfig(
 
 class SparkIngestion(
   val elastic: ElasticClient,
-  val indexes: List[Initializer],
-  val context: SparkContext
+  val indexes: List[Initializer]
 ) {
 
   private[this] val timeoutSeconds = 20
   private[this] val logger = LoggerFactory.getLogger(getClass)
 
   protected[this] def shutdown(error: Throwable): Unit = {
-    context.stop()
     sys.error(error.getMessage)
   }
 

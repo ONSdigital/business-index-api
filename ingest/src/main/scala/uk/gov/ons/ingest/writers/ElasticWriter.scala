@@ -24,8 +24,6 @@ object ElasticWriter {
 
   private lazy val config = ConfigFactory.load()
 
-  private lazy val hybridIndex = config.getString("businessindex.elasticsearch.indices.hybrid")
-
   /**
     * Stores data into ElasticSearch.
     * @param data `DataFrame` containing addresses

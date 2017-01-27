@@ -49,12 +49,7 @@ case class VatRecord(
   total_turnover: Long,
   trading_name: String,
   full_name: String,
-  address_1: String,
-  address_2: String,
-  address_3: String,
-  address_4: String,
-  address_5: String,
-  postcode: String
+  address: Address
 )
 
 object VatRecord {

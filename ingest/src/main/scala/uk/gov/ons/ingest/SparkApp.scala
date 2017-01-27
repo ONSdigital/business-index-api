@@ -1,27 +1,28 @@
 package uk.gov.ons.ingest
 
-import org.apache.spark.sql.DataFrame
-import org.rogach.scallop.ScallopConf
+import com.sksamuel.elastic4s.{ElasticClient, ElasticsearchClientUri}
+import com.typesafe.config.ConfigFactory
+import org.elasticsearch.common.settings.Settings
+import uk.gov.ons.ingest.writers.indexes.{CompaniesHouseIndex, PayeIndex, VatIndex}
 
-/**
-  * Main executed file
-  */
 object SparkApp extends App {
-  val opts = new ScallopConf(args) {
 
-    banner("""This master Spark runner builds the individual indexes that help generate the master record""")
+  val config = ConfigFactory.load().getConfig("env.dev4")
 
-    val help = opt[Boolean]("help", noshort = true, descr = "Show this message")
-  }
+  val elasticClusterUrl = config.getString("elasticsearch.uri")
+  val sparkMaster = config.getString("spark.master")
 
-  if (!opts.help()) {
-  } else {
-    opts.printHelp()
-  }
+  val elastic = ElasticClient.transport(
+    Settings.settingsBuilder()
+      .put("cluster.name", elasticClusterUrl)
+      .put("client.transport.sniff", config.getBoolean("elasticsearch.client.transport.sniff"))
+      .build(),
+    ElasticsearchClientUri(elasticClusterUrl)
+  )
 
-  private[this] def ingest() = {
-    val client
-    val spark = new SparkIngestion()
-  }
+  val ingestion = new SparkIngestion(
+    elastic,
+    VatIndex() :: PayeIndex() :: CompaniesHouseIndex() :: Nil
+  )
 
 }

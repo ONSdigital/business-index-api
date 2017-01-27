@@ -58,7 +58,8 @@ class InsertDemoData @Inject()(
       ).analysis(CustomAnalyzerDefinition("BusinessNameAnalyzer",
         StandardTokenizer,
         LowercaseTokenFilter,
-        edgeNGramTokenFilter("BusinessNameNGramFilter") minGram 2 maxGram 24))
+        edgeNGramTokenFilter("BusinessNameNGramFilter") minGram 2 maxGram 24)
+      )
     } map { _ =>
       if (environment.mode != Mode.Prod) {
         applicationLifecycle.addStopHook { () =>
