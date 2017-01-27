@@ -22,6 +22,8 @@ lazy val commonSettings = Seq(
     "-language:reflectiveCalls",
     "-language:experimental.macros",
     "-language:implicitConversions",
+    "-language:higherKinds",
+    "-language:postfixOps",
     "-deprecation", // warning and location for usages of deprecated APIs
     "-feature", // warning and location for usages of features that should be imported explicitly
     "-unchecked", // additional warnings where generated code depends on assumptions
@@ -63,6 +65,7 @@ lazy val ingest = (project in file("ingest"))
   .settings(
     moduleName := "ingest",
     libraryDependencies ++= Seq(
+      "org.rogach" %% "scallop" % "0.9.5",
       "com.sksamuel.elastic4s" %% "elastic4s-streams" % Versions.elastic4s,
       "org.apache.spark" %% "spark-core" % Versions.spark,
       "org.elasticsearch" %% "elasticsearch-spark" % Versions.elasticSearchSpark excludeAll {

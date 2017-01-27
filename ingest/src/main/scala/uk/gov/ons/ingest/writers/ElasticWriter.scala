@@ -7,10 +7,11 @@ import org.elasticsearch.spark.sql._
 import org.elasticsearch.spark._
 
 class ElasticIndexes(config: Config) {
-  final val payeIndex: String = config.getString("businessindex.elasticsearch.indices.paye")
-  final val vatIndex: String = config.getString("businessindex.elasticsearch.indices.vat")
-  final val charitiesComissionIndex: String = config.getString("businessindex.elasticsearch.indices.charities")
-  final val companiesHouseRecords: String = config.getString("businessindex.elasticsearch.indices.companies")
+  final val payeIndex: String = config.getString("elasticsearch.indices.paye")
+  final val vatIndex: String = config.getString("elasticsearch.indices.vat")
+  final val charitiesComissionIndex: String = config.getString("elasticsearch.indices.charities")
+  final val companiesHouseRecords: String = config.getString("elasticsearch.indices.companieshouse")
+  final val masterIndex: String = config.getString("elasticsearch.index.master")
 }
 
 

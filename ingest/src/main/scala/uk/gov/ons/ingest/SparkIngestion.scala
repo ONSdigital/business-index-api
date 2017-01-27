@@ -5,12 +5,14 @@ import com.sksamuel.elastic4s.ElasticClient
 import org.apache.spark.SparkContext
 import org.elasticsearch.indices.IndexAlreadyExistsException
 import org.slf4j.LoggerFactory
-import uk.gov.ons.ingest.writers.ElasticInitializer
+import uk.gov.ons.ingest.writers.Initializer
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
+import scala.concurrent.ExecutionContext.Implicits.global
 
 case class SparkConfig(
+  sparkMaster: String,
   hdfsUrl: String,
   elasticUrl: String,
   hbaseUrl: Option[String]
@@ -18,7 +20,7 @@ case class SparkConfig(
 
 class SparkIngestion(
   val elastic: ElasticClient,
-  val indexes: List[ElasticInitializer],
+  val indexes: List[Initializer],
   val context: SparkContext
 ) {
 
@@ -32,7 +34,7 @@ class SparkIngestion(
 
   def setup(): Unit = {
     Await.result(
-      ElasticInitializer(indexes) recover {
+      Initializer(indexes: _*) recover {
         case e: IndexAlreadyExistsException => {
           logger.error("Index already exists, but the error can be silenced", e)
         }

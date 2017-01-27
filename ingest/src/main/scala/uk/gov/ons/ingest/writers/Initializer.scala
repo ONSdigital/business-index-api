@@ -1,15 +1,13 @@
 package uk.gov.ons.ingest.writers
 
-
 import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s.ElasticClient
 import com.sksamuel.elastic4s.analyzers.{CustomAnalyzerDefinition, LowercaseTokenFilter, StandardTokenizer}
 import com.sksamuel.elastic4s.mappings.MappingDefinition
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse
-
 import scala.concurrent.Future
 
-abstract class ElasticInitializer(
+abstract class Initializer(
   val elastic: ElasticClient,
   val indexName: String
 ) {
@@ -29,11 +27,9 @@ abstract class ElasticInitializer(
   }
 }
 
-object ElasticInitializer {
+object Initializer {
 
-  def apply[
-    M[X] <: TraversableOnce[X]
-  ](sources: M[ElasticInitializer]): Future[M[ElasticInitializer]] = {
-    Future.sequence(sources.map(_.initialiseIndex))
+  def apply(sources: Initializer*): Future[Seq[CreateIndexResponse]] = {
+    Future.sequence(sources.map(_.index))
   }
 }
