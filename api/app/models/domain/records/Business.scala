@@ -11,6 +11,6 @@ case class Business(
   charitiesCommission: Option[CharitiesCommissionEntry],
   vatRecord: Option[Hmrc.VatRecord],
   payeRecord: Option[PAYERecord],
-  companiesHouse: Option[]
+  companiesHouse: Option[CompaniesHouseRecord]
 )
 
