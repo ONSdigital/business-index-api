@@ -52,7 +52,7 @@ class PayeIndex extends Initializer {
     field("scheme_type", StringType) index "not_analyzed" includeInAll false,
 
 
-    field("date_commencted", DateType) index "not_analyzed" includeInAll false,
+    field("date_commenced", DateType) index "not_analyzed" includeInAll false,
     field("transfer_in_identifier", StringType) index "not_analyzed" includeInAll false,
     field("successor_in_identifier", StringType) index "not_analyzed" includeInAll false,
     field("date_ceased", DateType) index "not_analyzed" includeInAll false,
