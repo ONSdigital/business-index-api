@@ -1,5 +1,6 @@
 package models.domain.records
 
+import cats.data.ValidatedNel
 import models.domain.parsers._
 import org.joda.time.DateTime
 
@@ -83,4 +84,22 @@ object VatRecord {
       "Postcode" offset 340 --> 347
     )
   }
+
+  /*
+  implicit object VatRecParser extends BiParser[Map[String, String], VatRecord] {
+    def parse(source: Map[String, String]): ValidatedNel[String, VatRecord] = {
+      (parse[DateTime](source("effective_date_of_registration")) and
+        parse[Long](source("number")) and parse[Int]map VatRecord.apply
+
+        val res: ValidatedNel[String, VatRecord]
+      res map {
+        case Valid(vatRecord) =>
+        case Invalid(listErrors) => listErrors.mkString("\n")
+      }
+
+    }
+  }
+
+  sparkContext.readFile("blabla").map(line => offsets(line).biparse[Map[String, String], T])
+  */
 }
