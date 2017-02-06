@@ -54,37 +54,7 @@ lazy val businessIndex = (project in file("."))
     name := "ons-bi",
     moduleName := "ons-bi"
   ).aggregate(
-    parsers,
-    ingest,
     api
-  )
-
-
-lazy val ingest = (project in file("ingest"))
-  .settings(commonSettings: _*)
-  .settings(
-    moduleName := "ingest",
-    libraryDependencies ++= Seq(
-      "org.rogach" %% "scallop" % "0.9.5",
-      "com.sksamuel.elastic4s" %% "elastic4s-streams" % Versions.elastic4s,
-      "org.apache.spark" %% "spark-core" % Versions.spark,
-      "org.elasticsearch" %% "elasticsearch-spark" % Versions.elasticSearchSpark excludeAll {
-        ExclusionRule(organization = "javax.servlet")
-      },
-      "com.outworkers" %% "util-testing" % Versions.util % Test
-    )
-  ).dependsOn(parsers)
-
-lazy val parsers = (project in file("parsers"))
-  .settings(commonSettings: _*)
-  .settings(
-    moduleName := "parsers",
-
-    addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full),
-    libraryDependencies ++= Seq(
-      "org.typelevel" %% "macro-compat" % "1.1.1",
-      "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided"
-    )
   )
 
 lazy val api = (project in file("api"))
@@ -145,4 +115,4 @@ lazy val api = (project in file("api"))
       "com.outworkers" %% "util-testing" % Versions.util % Test,
       "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.0-M1" % Test
     )
-  ).dependsOn(parsers)
+  )
