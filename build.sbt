@@ -55,20 +55,7 @@ lazy val businessIndex = (project in file("."))
     moduleName := "ons-bi"
   ).aggregate(
     parsers,
-    ingest,
     api
-  )
-
-lazy val parsers = (project in file("parsers"))
-  .settings(commonSettings: _*)
-  .settings(
-    moduleName := "parsers",
-
-    addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full),
-    libraryDependencies ++= Seq(
-      "org.typelevel" %% "macro-compat" % "1.1.1",
-      "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided"
-    )
   )
 
 lazy val api = (project in file("api"))
@@ -129,4 +116,4 @@ lazy val api = (project in file("api"))
       "com.outworkers" %% "util-testing" % Versions.util % Test,
       "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.0-M1" % Test
     )
-  ).dependsOn(parsers)
+  )
