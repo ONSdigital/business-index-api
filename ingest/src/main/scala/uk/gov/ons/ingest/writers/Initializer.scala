@@ -2,7 +2,7 @@ package uk.gov.ons.ingest.writers
 
 import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s.{CreateIndexDefinition, ElasticClient}
-import com.sksamuel.elastic4s.analyzers.{AnalyzerDefinition, CustomAnalyzerDefinition, LowercaseTokenFilter, StandardTokenizer}
+import com.sksamuel.elastic4s.analyzers.AnalyzerDefinition
 import com.sksamuel.elastic4s.mappings.MappingDefinition
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse
 

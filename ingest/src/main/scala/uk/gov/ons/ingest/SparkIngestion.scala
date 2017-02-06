@@ -26,13 +26,11 @@ class SparkIngestion(
   private[this] val timeoutSeconds = 20
   private[this] val logger = LoggerFactory.getLogger(getClass)
 
-  protected[this] def shutdown(error: Throwable): Unit = {
-    sys.error(error.getMessage)
-  }
+  protected[this] def shutdown(error: Throwable): Unit = sys.error(error.getMessage)
 
   def setup(): Unit = {
     Await.result(
-      Initializer(indexes: _*) recover {
+      Initializer(indexes: _*)(elastic, scala.concurrent.ExecutionContext.Implicits.global) recover {
         case e: IndexAlreadyExistsException => {
           logger.error("Index already exists, but the error can be silenced", e)
         }

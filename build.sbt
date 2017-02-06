@@ -59,22 +59,6 @@ lazy val businessIndex = (project in file("."))
     api
   )
 
-
-lazy val ingest = (project in file("ingest"))
-  .settings(commonSettings: _*)
-  .settings(
-    moduleName := "ingest",
-    libraryDependencies ++= Seq(
-      "org.rogach" %% "scallop" % "0.9.5",
-      "com.sksamuel.elastic4s" %% "elastic4s-streams" % Versions.elastic4s,
-      "org.apache.spark" %% "spark-core" % Versions.spark,
-      "org.elasticsearch" %% "elasticsearch-spark" % Versions.elasticSearchSpark excludeAll {
-        ExclusionRule(organization = "javax.servlet")
-      },
-      "com.outworkers" %% "util-testing" % Versions.util % Test
-    )
-  ).dependsOn(parsers)
-
 lazy val parsers = (project in file("parsers"))
   .settings(commonSettings: _*)
   .settings(

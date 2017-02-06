@@ -22,7 +22,7 @@ class ElasticIndexes(config: Config) {
   */
 object ElasticWriter {
 
-  private lazy val config = ConfigFactory.load()
+  private[this] lazy val config = ConfigFactory.load()
 
   /**
     * Stores data into ElasticSearch.
