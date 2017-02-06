@@ -1,6 +1,6 @@
 package models.domain.records
 
-import com.outworkers.phantom.dsl.DateTime
+import org.joda.time.DateTime
 
 case class Address(
   line_1: String,
@@ -32,7 +32,7 @@ case class PAYERecord(
   succession_out_identifier: String,
   date_of_transfer: DateTime,
   scheme_cancelled_date: DateTime,
-  scheme_reopened_date:DateTime
+  scheme_reopened_date: DateTime
 ) {
   def trade_classification_number: String = legal_status
 }

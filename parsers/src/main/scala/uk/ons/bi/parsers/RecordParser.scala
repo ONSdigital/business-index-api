@@ -1,6 +1,5 @@
 package uk.ons.bi.parsers
 
-import scala.collection.immutable.NumericRange
 import scala.util.Try
 
 trait RecordParser[T] {

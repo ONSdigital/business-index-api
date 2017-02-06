@@ -4,7 +4,6 @@ import java.io.FileNotFoundException
 import javax.inject._
 
 import com.sksamuel.elastic4s._
-import com.sksamuel.elastic4s.ElasticDsl.{create, index}
 import play.api.inject.ApplicationLifecycle
 import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s.analyzers._
@@ -59,7 +58,8 @@ class InsertDemoData @Inject()(
       ).analysis(CustomAnalyzerDefinition("BusinessNameAnalyzer",
         StandardTokenizer,
         LowercaseTokenFilter,
-        edgeNGramTokenFilter("BusinessNameNGramFilter") minGram 2 maxGram 24))
+        edgeNGramTokenFilter("BusinessNameNGramFilter") minGram 2 maxGram 24)
+      )
     } map { _ =>
       if (environment.mode != Mode.Prod) {
         applicationLifecycle.addStopHook { () =>
