@@ -54,7 +54,6 @@ lazy val businessIndex = (project in file("."))
     name := "ons-bi",
     moduleName := "ons-bi"
   ).aggregate(
-    parsers,
     api
   )
 
