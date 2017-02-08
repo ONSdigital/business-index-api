@@ -36,7 +36,7 @@ class Module(environment: Environment,
       case Some(c) => c
     }
 
-    val esUri = envConf.getString("elasticsearch.uri").get
+    val esUri = envConf.getString("elasticsearch.uri").getOrElse("elasticsearch://localhost:9300")
 
     val esCluster = envConf.getString("elasticsearch.cluster.name").getOrElse("elasticsearch_" + System.getProperty("user.name"))
 
