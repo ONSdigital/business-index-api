@@ -29,11 +29,16 @@ class Module(environment: Environment,
              configuration: Configuration) extends AbstractModule with DefaultInstrumented with ElasticDsl {
 
   override def configure() = {
-    //val esUri = configuration.getString("elasticsearch.uri").getOrElse("elasticsearch://localhost:9300")
-    //Testing change 06/12/2016
-    val esUri = configuration.getString("elasticsearch.uri").getOrElse("elasticsearch://10.50.33.20:9300")
+    val env = sys.props.get("environment").getOrElse(sys.error("Setup system property 'environment'"))
 
-    val esCluster = configuration.getString("elasticsearch.cluster.name").getOrElse("elasticsearch_" + System.getProperty("user.name"))
+    val envConf = configuration.getConfig(s"env.$env") match {
+      case None => sys.error(s"Unable to find config for '$env' env")
+      case Some(c) => c
+    }
+
+    val esUri = envConf.getString("elasticsearch.uri").get
+
+    val esCluster = envConf.getString("elasticsearch.cluster.name").getOrElse("elasticsearch_" + System.getProperty("user.name"))
 
     val elasticSearchClient = environment.mode match {
       case Mode.Dev =>

@@ -20,7 +20,7 @@ The last command runs an interactive Elasticsearch 2.4.1 session that the applic
 To compile, build and run the application (by default it will connect to your local ElasticSearch):
 
 ```shell
-sbt run
+sbt api/run -Denvironment=local
 ```
 
 To package the project in a runnable fat-jar:

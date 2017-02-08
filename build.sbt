@@ -64,6 +64,7 @@ lazy val api = (project in file("api"))
     name := "ons-bi-api",
     scalaVersion := "2.11.8",
     buildInfoPackage := "controllers",
+    javaOptions in Test += "-Denvironment=local",
     fork in run := true,
     buildInfoKeys ++= Seq[BuildInfoKey](
       resolvers,
