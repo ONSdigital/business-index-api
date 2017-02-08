@@ -36,7 +36,7 @@ compute time.
 
 ### Dependencies
 
-A graph detailing all project dependencies can be found [here](dependencies.png).
+A graph detailing all project dependencies can be found [here](dependencies.png). TODO: update
 
 #### Configuring Splunk Logging
 
