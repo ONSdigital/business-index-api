@@ -31,10 +31,7 @@ class Module(environment: Environment,
   override def configure() = {
     val env = sys.props.get("environment").getOrElse(sys.error("Setup system property 'environment'"))
 
-    val envConf = configuration.getConfig(s"env.$env") match {
-      case None => sys.error(s"Unable to find config for '$env' env")
-      case Some(c) => c
-    }
+    val envConf = configuration.getConfig(s"env.$env").getOrElse(sys.error(s"Unable to find config for '$env' env"))
 
     val esUri = envConf.getString("elasticsearch.uri").getOrElse("elasticsearch://localhost:9300")
 
