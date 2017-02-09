@@ -109,6 +109,8 @@ class SearchController @Inject()(
       case _ :: _ =>
         Ok(Json.toJson(businesses))
           .withHeaders(
+            "Access-Control-Allow-Origin" -> "*",
+            "Access-Control-Expose-Headers" -> "X-Total-Count",
             "X-Total-Count" -> resp.totalHits.toString,
             "X-Max-Score" -> resp.maxScore.toString
           )
