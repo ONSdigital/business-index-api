@@ -29,7 +29,7 @@ class Module(environment: Environment,
              configuration: Configuration) extends AbstractModule with DefaultInstrumented with ElasticDsl {
 
   override def configure() = {
-    val env = sys.props.get("environment").getOrElse(sys.error("Setup system property 'environment'"))
+    val env = sys.props.get("environment").getOrElse("default")
 
     val envConf = configuration.getConfig(s"env.$env").getOrElse(sys.error(s"Unable to find config for '$env' env"))
 
