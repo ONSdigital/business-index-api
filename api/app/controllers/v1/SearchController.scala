@@ -114,7 +114,12 @@ class SearchController @Inject()(
             "X-Total-Count" -> resp.totalHits.toString,
             "X-Max-Score" -> resp.maxScore.toString
           )
-      case _ => Ok("{}").as(JSON)
+      case _ => Ok("{}").as(JSON)withHeaders(
+        "Access-Control-Allow-Origin" -> "*",
+        "Access-Control-Expose-Headers" -> "X-Total-Count",
+        "X-Total-Count" -> "0",
+        "X-Max-Score" -> "0"
+      )
     }
   }
 
