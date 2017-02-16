@@ -1,5 +1,6 @@
-import sbtbuildinfo.BuildInfoPlugin.autoImport._
+import org.apache.commons.io.FileUtils
 import sbtassembly.AssemblyPlugin.autoImport._
+import sbtbuildinfo.BuildInfoPlugin.autoImport._
 
 lazy val Versions = new {
   val phantom = "2.0.0"
@@ -9,7 +10,18 @@ lazy val Versions = new {
   val elasticSearchSpark = "2.4.0"
 }
 
-lazy val commonSettings = Seq(
+// direct github dependency, does not work properly
+// https://github.com/sbt/sbt/issues/1284
+def doRemove() = {
+  val staging = new File(System.getenv("HOME") + "/.sbt/0.13/staging")
+  println(staging.getAbsolutePath)
+  val before = staging.exists()
+  FileUtils.deleteQuietly(staging)
+  println(s"Staging dir exists $before -> ${staging.exists()}.")
+  Seq()
+}
+
+lazy val commonSettings = doRemove ++ Seq(
   scalaVersion := "2.11.8",
   resolvers ++= Seq(
     Resolver.bintrayRepo("outworkers", "oss-releases"),
