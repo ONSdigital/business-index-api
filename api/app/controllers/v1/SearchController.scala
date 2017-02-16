@@ -5,7 +5,6 @@ import javax.inject._
 import cats.data.ValidatedNel
 import com.outworkers.util.catsparsers._
 import com.outworkers.util.catsparsers.{parse => cparse}
-import com.outworkers.util.domain.ApiErrorResponse
 import com.sksamuel.elastic4s._
 import com.typesafe.scalalogging.StrictLogging
 import nl.grons.metrics.scala.DefaultInstrumented
@@ -106,16 +105,16 @@ class SearchController @Inject()(
 
   def response(resp: RichSearchResponse, businesses: List[Business]): Result = {
     businesses match {
-      case _ :: _ =>
-        Ok(Json.toJson(businesses))
-          .withHeaders(
-            "Access-Control-Allow-Origin" -> "*",
-            "Access-Control-Expose-Headers" -> "X-Total-Count",
-            "X-Total-Count" -> resp.totalHits.toString,
-            "X-Max-Score" -> resp.maxScore.toString
-          )
-      case _ => Ok("{}").as(JSON)
+      case _ :: _ => responseWithHTTPHeaders(resp, Ok(Json.toJson(businesses)))
+      case _ => responseWithHTTPHeaders(resp, Ok("{}").as(JSON))
     }
+  }
+
+  def responseWithHTTPHeaders(resp: RichSearchResponse, searchResult: Result): Result = {
+    searchResult.withHeaders(
+      "Access-Control-Expose-Headers" -> "X-Total-Count, X-Max-Score",
+      "X-Total-Count" -> resp.totalHits.toString,
+      "X-Max-Score" -> resp.maxScore.toString)
   }
 
   def response(tp: (RichSearchResponse, List[Business])): Result = response(tp._1, tp._2)
