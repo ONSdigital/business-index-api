@@ -14,10 +14,7 @@ lazy val Versions = new {
 // https://github.com/sbt/sbt/issues/1284
 def doRemove() = {
   val staging = new File(System.getenv("HOME") + "/.sbt/0.13/staging")
-  println(staging.getAbsolutePath)
-  val before = staging.exists()
   FileUtils.deleteQuietly(staging)
-  println(s"Staging dir exists $before -> ${staging.exists()}.")
   Seq()
 }
 
