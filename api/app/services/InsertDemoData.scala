@@ -1,21 +1,21 @@
 package services
 
-import java.io.FileNotFoundException
 import javax.inject._
 
-import com.sksamuel.elastic4s._
-import play.api.inject.ApplicationLifecycle
 import com.sksamuel.elastic4s.ElasticDsl._
-import com.sksamuel.elastic4s.analyzers._
-import com.sksamuel.elastic4s.mappings.FieldType._
+import com.sksamuel.elastic4s._
+import com.typesafe.config.Config
 import com.typesafe.scalalogging.StrictLogging
 import org.elasticsearch.indices.IndexAlreadyExistsException
 import org.elasticsearch.transport.RemoteTransportException
-import play.api.{Environment, Mode}
+import play.api.inject.ApplicationLifecycle
+import uk.gov.ons.bi.ingest.helper.Utils
+import uk.gov.ons.bi.ingest.parsers.CsvProcessor
+import uk.gov.ons.bi.models.{BIndexConsts, BusinessIndexRec}
+import uk.gov.ons.bi.writers.ElasticImporter
 
-import scala.concurrent.{Await, ExecutionContext, Future}
-import scala.io.Source
 import scala.concurrent.duration._
+import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
 /**
@@ -24,95 +24,50 @@ import scala.util.{Failure, Success, Try}
   * CSV file header: "ID","BusinessName","UPRN","IndustryCode","LegalStatus","TradingStatus","Turnover","EmploymentBands"
   */
 @Singleton
-class InsertDemoData @Inject()(
-  environment: Environment,
-  elastic: ElasticClient,
-  applicationLifecycle: ApplicationLifecycle
-)(
-  implicit exec: ExecutionContext
+class InsertDemoData @Inject()(applicationLifecycle: ApplicationLifecycle)(
+  implicit exec: ExecutionContext,
+  config: Config,
+  elastic: ElasticClient
 ) extends StrictLogging {
 
-  private[this] val envString = environment.mode.toString.toLowerCase
+  val elasticImporter = new ElasticImporter
 
-  private[this] val businessIndex = s"bi-$envString"
+  // TODO: must go to bi-data
+  private[this] val businessIndex = config.getString("elasticsearch.bi.name")
+  private[this] val initialization = config.getString("elastic.recreate.index").toBoolean
 
   private[this] def csv(p: String): Option[Iterator[String]] =
-    Option(getClass.getResourceAsStream(p)).map(Source.fromInputStream)
-      .map(_.getLines.filterNot(_.contains("BusinessName")))
+    Option(Utils.getResource(p)).map(_.filterNot(_.contains("BusinessName")))
 
 
-  def initialiseIndex: Future[Unit] = {
-    elastic.execute {
-      // define the ElasticSearch index
-      create.index(businessIndex).mappings(
-        mapping("business").fields(
-          field("BusinessName", StringType) boost 4 analyzer "BusinessNameAnalyzer",
-          field("BusinessName_suggest", CompletionType),
-          field("UPRN", LongType) analyzer KeywordAnalyzer,
-          field("IndustryCode", LongType) analyzer KeywordAnalyzer,
-          field("LegalStatus", StringType) index "not_analyzed" includeInAll false,
-          field("TradingStatus", StringType) index "not_analyzed" includeInAll false,
-          field("Turnover", StringType) index "not_analyzed" includeInAll false,
-          field("EmploymentBands", StringType) index "not_analyzed" includeInAll false
-        )
-      ).analysis(CustomAnalyzerDefinition("BusinessNameAnalyzer",
-        StandardTokenizer,
-        LowercaseTokenFilter,
-        edgeNGramTokenFilter("BusinessNameNGramFilter") minGram 2 maxGram 24)
-      )
-    } map { _ =>
-      if (environment.mode != Mode.Prod) {
-        applicationLifecycle.addStopHook { () =>
-          elastic.execute { delete index s"bi-$envString"}
-        }
-      }
+  def initialiseIndex: Future[Any] = {
+    if (initialization) {
+      elasticImporter.initializeIndex(businessIndex)
+    } else {
+      Future.successful()
     }
   }
 
-  def generateData(): Iterator[Array[String]] = {
-
-    val dataSource = (csv(s"/$envString/sample.csv") orElse csv("/sample.csv")) getOrElse {
-      val error = new FileNotFoundException("sample.csv")
-      logger.error("Unable to find any sample.csv file in the classpath", error)
-      throw error
+  def generateData: Iterator[BusinessIndexRec] =
+    CsvProcessor.csvToMap(Utils.getResource("/demo/sample.csv")).map { r =>
+      // PostCode is not in sample data ...
+      BusinessIndexRec.fromMap(r("ID").toLong, Map(BIndexConsts.BiPostCode -> "SE") ++ r)
     }
 
-    dataSource map {
-      _.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)", -1).map(_.replace("\"", ""))
-    }
-  }
-
-  def importData(source: Iterator[Array[String]]): Future[Iterator[IndexResult]] = {
+  def importData(source: Iterator[BusinessIndexRec]): Future[Iterator[BulkResult]] = {
     logger.info(s"Starting to import the data, found elements to import: ${source.nonEmpty}")
-
-    val importFuture = Future.sequence {
-      source map { values =>
-        elastic.execute {
-          logger.debug("Indexing entry in ElasticSearch")
-          index into businessIndex / "business" id values(0) fields(
-            "BusinessName" -> values(1),
-            "UPRN" -> values(2).toLong,
-            "IndustryCode" -> values(3).toLong,
-            "LegalStatus" -> values(4),
-            "TradingStatus" -> values(5),
-            "Turnover" -> values(6),
-            "EmploymentBands" -> values(7))
-        }
-      }
-    }
 
     elastic.execute {
       search.in(businessIndex / "business")
     } flatMap {
-      case resp if resp.hits.length == 0 => importFuture
-      case resp @ _ => {
+      case resp if resp.hits.length == 0 => elasticImporter.loadBusinessIndex(businessIndex, source.toSeq)
+      case resp@_ =>
         logger.info(s"No import necessary, found ${resp.hits.length} entries in the index")
         Future.successful(Iterator.empty)
-      }
     }
   }
 
-  def init: Future[Iterator[IndexResult]] = {
+  def init: Future[Iterator[BulkResult]] = {
     for {
       _ <- initialiseIndex recoverWith {
         case _: IndexAlreadyExistsException => {
@@ -124,7 +79,7 @@ class InsertDemoData @Inject()(
           Future.failed(e)
         }
       }
-      data <- importData(generateData())
+      data <- importData(generateData)
     } yield data
   }
 
@@ -146,7 +101,7 @@ class InsertDemoData @Inject()(
 
   logger.info("Stating to import generated data")
 
-  Try(Await.result(importData(generateData()), 10.minutes)) match {
+  Try(Await.result(importData(generateData), 10.minutes)) match {
     case Success(_) => logger.info(s"Successfully imported data")
     case Failure(err) => logger.error("Unable to import generated data", err)
   }

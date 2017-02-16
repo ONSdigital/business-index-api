@@ -1,4 +1,5 @@
 import org.apache.commons.io.FileUtils
+import play.sbt.PlayScala
 import sbtassembly.AssemblyPlugin.autoImport._
 import sbtbuildinfo.BuildInfoPlugin.autoImport._
 
@@ -62,9 +63,7 @@ lazy val businessIndex = (project in file("."))
   .settings(
     name := "ons-bi",
     moduleName := "ons-bi"
-  ).aggregate(
-    api
-  )
+  ).aggregate(api)
 
 lazy val api = (project in file("api"))
   .dependsOn(ProjectRef(uri("https://github.com/ONSdigital/business-index-data.git#feature/linking"), "biUtils"))
@@ -75,6 +74,7 @@ lazy val api = (project in file("api"))
     scalaVersion := "2.11.8",
     buildInfoPackage := "controllers",
     javaOptions in Test += "-Denvironment=local",
+    javaOptions ++= Seq("-Denvironment=local"),
     fork in run := true,
     buildInfoKeys ++= Seq[BuildInfoKey](
       resolvers,
