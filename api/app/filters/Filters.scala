@@ -21,6 +21,7 @@ class XResponseTimeHeader @Inject()(implicit val mat: Materializer) extends Filt
       val responseTime = endTime - startTime
 
       result.withHeaders(
+        "Access-Control-Allow-Origin" -> "*",
         "X-Response-Time" -> responseTime.toString,
         "Server" -> (BuildInfo.name + "/" + BuildInfo.version)
       )
