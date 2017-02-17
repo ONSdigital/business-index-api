@@ -3,8 +3,10 @@ package controllers.v1
 import javax.inject._
 
 import cats.data.ValidatedNel
+
 import com.outworkers.util.catsparsers.{parse => cparse, _}
 import com.outworkers.util.play._
+
 import com.sksamuel.elastic4s._
 import com.typesafe.scalalogging.StrictLogging
 import nl.grons.metrics.scala.DefaultInstrumented
@@ -79,17 +81,19 @@ class SearchController @Inject()(environment: Environment, elastic: ElasticClien
 
   def response(resp: RichSearchResponse, businesses: List[BusinessIndexRec]): Result = {
     businesses match {
-      case _ :: _ =>
-        Ok(Json.toJson(businesses))
-          .withHeaders(
-            "X-Total-Count" -> resp.totalHits.toString,
-            "X-Max-Score" -> resp.maxScore.toString
-          )
-      case _ => Ok("{}").as(JSON)
+      case _ :: _ => responseWithHTTPHeaders(resp, Ok(Json.toJson(businesses)))
+      case _ => responseWithHTTPHeaders(resp, Ok("{}").as(JSON))
     }
   }
 
   def response(tp: (RichSearchResponse, List[BusinessIndexRec])): Result = response(tp._1, tp._2)
+
+  def responseWithHTTPHeaders(resp: RichSearchResponse, searchResult: Result): Result = {
+    searchResult.withHeaders(
+      "Access-Control-Expose-Headers" -> "X-Total-Count, X-Max-Score",
+      "X-Total-Count" -> resp.totalHits.toString,
+      "X-Max-Score" -> resp.maxScore.toString)
+  }
 
   def searchTerm(term: String, suggest: Boolean = false): Action[AnyContent] = searchBusiness(Some(term), suggest)
 
