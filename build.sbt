@@ -1,5 +1,7 @@
-import sbtbuildinfo.BuildInfoPlugin.autoImport._
+import org.apache.commons.io.FileUtils
+import play.sbt.PlayScala
 import sbtassembly.AssemblyPlugin.autoImport._
+import sbtbuildinfo.BuildInfoPlugin.autoImport._
 
 lazy val Versions = new {
   val phantom = "2.0.0"
@@ -9,7 +11,15 @@ lazy val Versions = new {
   val elasticSearchSpark = "2.4.0"
 }
 
-lazy val commonSettings = Seq(
+// direct github dependency, does not work properly
+// https://github.com/sbt/sbt/issues/1284
+def doRemove() = {
+  val staging = new File(System.getenv("HOME") + "/.sbt/0.13/staging")
+  FileUtils.deleteQuietly(staging)
+  Seq()
+}
+
+lazy val commonSettings = doRemove ++ Seq(
   scalaVersion := "2.11.8",
   resolvers ++= Seq(
     Resolver.bintrayRepo("outworkers", "oss-releases"),
@@ -53,11 +63,10 @@ lazy val businessIndex = (project in file("."))
   .settings(
     name := "ons-bi",
     moduleName := "ons-bi"
-  ).aggregate(
-    api
-  )
+  ).aggregate(api)
 
 lazy val api = (project in file("api"))
+  .dependsOn(ProjectRef(uri("https://github.com/ONSdigital/business-index-data.git#develop"), "biUtils"))
   .enablePlugins(BuildInfoPlugin, PlayScala)
   .settings(commonSettings: _*)
   .settings(
@@ -65,6 +74,7 @@ lazy val api = (project in file("api"))
     scalaVersion := "2.11.8",
     buildInfoPackage := "controllers",
     javaOptions in Test += "-Denvironment=local",
+    javaOptions ++= Seq("-Denvironment=local"),
     fork in run := true,
     buildInfoKeys ++= Seq[BuildInfoKey](
       resolvers,

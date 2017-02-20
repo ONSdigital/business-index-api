@@ -47,7 +47,7 @@
   <!-- Shut up local ES warning "[Missing Link] max file descriptors..." -->
   <logger name="org.elasticsearch.env" level="OFF"/>
 
-  <root level="WARN">
+  <root level="DEBUG">
     <!--<appender-ref ref="ASYNCFILE" />-->
     <!--<appender-ref ref="SPLUNKSOCKET" />-->
     <appender-ref ref="ASYNCSTDOUT" />

@@ -3,8 +3,10 @@ package controllers.v1
 import javax.inject._
 
 import cats.data.ValidatedNel
-import com.outworkers.util.catsparsers._
-import com.outworkers.util.catsparsers.{parse => cparse}
+
+import com.outworkers.util.catsparsers.{parse => cparse, _}
+import com.outworkers.util.play._
+
 import com.sksamuel.elastic4s._
 import com.typesafe.scalalogging.StrictLogging
 import nl.grons.metrics.scala.DefaultInstrumented
@@ -13,25 +15,15 @@ import play.api.Environment
 import play.api.libs.json._
 import play.api.mvc._
 
+import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 import scala.util.control.NonFatal
-import scala.collection.JavaConverters._
-import com.outworkers.util.play._
+import uk.gov.ons.bi.models.{BIndexConsts, BusinessIndexRec}
+import BusinessIndexObj._
 
-case class Business(
-  id: Long,
-  businessName: String,
-  uprn: Long,
-  industryCode: Long,
-  legalStatus: String,
-  tradingStatus: String,
-  turnover: String,
-  employmentBands: String
-)
-
-object Business {
-  implicit val businessHitFormat: OFormat[Business] = Json.format[Business]
+object BusinessIndexObj {
+  implicit val businessHitFormat: OFormat[BusinessIndexRec] = Json.format[BusinessIndexRec]
 }
 
 /**
@@ -42,10 +34,7 @@ object Business {
   * @param context
   */
 @Singleton
-class SearchController @Inject()(
-  environment: Environment,
-  elastic: ElasticClient
-)(
+class SearchController @Inject()(environment: Environment, elastic: ElasticClient)(
   implicit context: ExecutionContext
 ) extends Controller with ElasticDsl with DefaultInstrumented with StrictLogging {
 
@@ -61,30 +50,15 @@ class SearchController @Inject()(
 
   private[this] val index = s"bi-${environment.mode.toString.toLowerCase}" / "business"
 
-  // mapper from Elasticsearch result to Business case class
-  implicit object BusinessHitAs extends HitAs[Business] {
-    override def as(hit: RichSearchHit): Business = {
-      Business(
-        hit.id.toLong,
-        hit.sourceAsMap("BusinessName").toString,
-        hit.sourceAsMap("UPRN").toString.toLong,
-        hit.sourceAsMap("IndustryCode").toString.toLong,
-        hit.sourceAsMap("LegalStatus").toString,
-        hit.sourceAsMap("TradingStatus").toString,
-        hit.sourceAsMap("Turnover").toString,
-        hit.sourceAsMap("EmploymentBands").toString
-      )
-    }
+  // mapper from ElasticSearch result to Business case class
+  implicit object BusinessHitAs extends HitAs[BusinessIndexRec] {
+    override def as(hit: RichSearchHit): BusinessIndexRec = BusinessIndexRec.fromMap(hit.id.toLong, hit.sourceAsMap)
   }
 
-  protected[this] def businessSearch(
-    term: String,
-    offset: Int,
-    limit: Int,
-    suggest: Boolean = false
-  ): Future[(RichSearchResponse, List[Business])] = {
+  protected[this] def businessSearch(term: String, offset: Int, limit: Int, suggest: Boolean = false
+                                    ): Future[(RichSearchResponse, List[BusinessIndexRec])] = {
     val definition = if (suggest) {
-      matchQuery("BusinessName", query)
+      matchQuery(BIndexConsts.BiName, query)
     } else {
       QueryStringQueryDefinition(term)
     }
@@ -94,21 +68,25 @@ class SearchController @Inject()(
         .query(definition)
         .start(offset)
         .limit(limit)
-    }.map { resp => resp.as[Business].toList match {
+    }.map { resp =>
+      println(resp)
+      resp.as[BusinessIndexRec].toList match {
         case list@_ :: _ =>
           totalHitsHistogram += resp.totalHits
           resp -> list
-        case Nil => resp -> List.empty[Business]
+        case Nil => resp -> List.empty[BusinessIndexRec]
       }
     }
   }
 
-  def response(resp: RichSearchResponse, businesses: List[Business]): Result = {
+  def response(resp: RichSearchResponse, businesses: List[BusinessIndexRec]): Result = {
     businesses match {
       case _ :: _ => responseWithHTTPHeaders(resp, Ok(Json.toJson(businesses)))
       case _ => responseWithHTTPHeaders(resp, Ok("{}").as(JSON))
     }
   }
+
+  def response(tp: (RichSearchResponse, List[BusinessIndexRec])): Result = response(tp._1, tp._2)
 
   def responseWithHTTPHeaders(resp: RichSearchResponse, searchResult: Result): Result = {
     searchResult.withHeaders(
@@ -117,37 +95,27 @@ class SearchController @Inject()(
       "X-Max-Score" -> resp.maxScore.toString)
   }
 
-  def response(tp: (RichSearchResponse, List[Business])): Result = response(tp._1, tp._2)
-
   def searchTerm(term: String, suggest: Boolean = false): Action[AnyContent] = searchBusiness(Some(term), suggest)
 
-  protected[this] def resultAsBusiness(businessId: Long, resp: RichGetResponse): Option[Business] = {
+  protected[this] def resultAsBusiness(businessId: Long, resp: RichGetResponse): Option[BusinessIndexRec] = {
     val source = Option(resp.source).map(_.asScala.toMap[String, AnyRef]).getOrElse(Map.empty[String, AnyRef])
 
-    Try(Business(
-      id = businessId,
-      businessName = source.getOrElse("BusinessName", "").toString,
-      uprn = java.lang.Long.parseLong(source.getOrElse("UPRN", 0L).toString),
-      industryCode = source.getOrElse("IndustryCode", "").toString.toLong,
-      legalStatus = source.getOrElse("LegalStatus", "").toString,
-      tradingStatus = source.getOrElse("TradingStatus", "").toString,
-      turnover = source.getOrElse("Turnover", "").toString,
-      employmentBands = source.getOrElse("EmploymentBands", "").toString
-    )).toOption
+    Try(BusinessIndexRec.fromMap(businessId, source)).toOption
   }
 
-  def findById(businessId: Long): Future[Option[Business]] = {
+  def findById(businessId: Long): Future[Option[BusinessIndexRec]] = {
     logger.debug(s"Searching for business with ID $businessId")
-    elastic.execute { get id businessId from index } map(resultAsBusiness(businessId, _))
+    elastic.execute {
+      get id businessId from index
+    } map (resultAsBusiness(businessId, _))
   }
 
   def searchBusinessById(id: String): Action[AnyContent] = Action.async {
-    cparse[Long](id) fold (_.response.future, value =>
+    cparse[Long](id) fold(_.response.future, value =>
       findById(value) map {
-        case Some(res) => {
+        case Some(res) =>
           logger.debug(s"Found business result ${Json.toJson(res)}")
           Ok(Json.toJson(res))
-        }
         case None =>
           logger.debug(s"Could not find a record with the ID $id")
           NoContent
@@ -175,7 +143,6 @@ class SearchController @Inject()(
                 "message_en" -> e.getMessage
               )
             )
-
             case NonFatal(e) => InternalServerError(
               Json.obj(
                 "status" -> 500,

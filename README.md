@@ -5,6 +5,11 @@
 * Java 8 or higher
 * SBT (http://www.scala-sbt.org/)
 
+### GitHub Dependencies
+
+This project contains direct dependency to other github project: business-index-data, module: biUtils
+This dependency has been implemented via direct "ProjectRef" link to mentioned GitHub repository (within specific branch).
+
 ### Development Setup (MacOS)
 
 To install/run ElasticSearch on MacOS, use Homebrew (http://brew.sh):

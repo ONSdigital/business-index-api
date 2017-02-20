@@ -4,16 +4,16 @@ import ch.qos.logback.classic.LoggerContext
 import com.codahale.metrics.JmxReporter
 import com.codahale.metrics.health.HealthCheck
 import com.google.inject.AbstractModule
-import com.sksamuel.elastic4s.{ElasticClient, ElasticsearchClientUri}
+import com.sksamuel.elastic4s.{ElasticClient, _}
+import com.typesafe.config.{Config, ConfigFactory}
 import com.typesafe.scalalogging.StrictLogging
 import nl.grons.metrics.scala.DefaultInstrumented
-import org.elasticsearch.common.settings.Settings
+import org.elasticsearch.cluster.health.ClusterHealthStatus._
 import org.slf4j.LoggerFactory
 import play.api.inject.ApplicationLifecycle
-import play.api.{Configuration, Environment, Mode}
+import play.api.{Configuration, Environment}
 import services.InsertDemoData
-import com.sksamuel.elastic4s._
-import org.elasticsearch.cluster.health.ClusterHealthStatus._
+import uk.gov.ons.bi.writers.{BiConfigManager, ElasticClientBuilder}
 
 import scala.concurrent.Future
 
@@ -25,43 +25,15 @@ class AvoidLogbackMemoryLeak @Inject()(lifecycle: ApplicationLifecycle) extends 
   }
 }
 
-class Module(environment: Environment,
-             configuration: Configuration) extends AbstractModule with DefaultInstrumented with ElasticDsl {
+class Module(environment: Environment, configuration: Configuration) extends AbstractModule with DefaultInstrumented with ElasticDsl {
 
-  override def configure() = {
-    val env = sys.props.get("environment").getOrElse("default")
+  override def configure(): Unit = {
 
-    val envConf = configuration.getConfig(s"env.$env").getOrElse(sys.error(s"Unable to find config for '$env' env"))
+    val config = BiConfigManager.envConf(ConfigFactory.load())
 
-    val esUri = envConf.getString("elasticsearch.uri").getOrElse("elasticsearch://localhost:9300")
+    val elasticSearchClient = ElasticClientBuilder.build(config)
 
-    val esCluster = envConf.getString("elasticsearch.cluster.name").getOrElse("elasticsearch_" + System.getProperty("user.name"))
-
-    val elasticSearchClient = environment.mode match {
-      case Mode.Dev =>
-        ElasticClient.transport(
-          Settings.settingsBuilder()
-            .put("cluster.name", esCluster)
-            .put("client.transport.sniff", true)
-            .build(),
-          ElasticsearchClientUri(esUri)
-        )
-      case Mode.Test =>
-        ElasticClient.local(
-          Settings.settingsBuilder()
-            .put("path.home", System.getProperty("java.io.tmpdir"))
-            .put("client.transport.sniff", true)
-            .build()
-        )
-      case _ =>
-        ElasticClient.transport(
-          Settings.settingsBuilder()
-            .put("cluster.name", esCluster)
-            .put("client.transport.sniff", configuration.getBoolean("elasticsearch.client.transport.sniff").getOrElse(true))
-            .build(),
-          ElasticsearchClientUri(esUri)
-        )
-    }
+    bind(classOf[Config]).toInstance(config)
 
     bind(classOf[ElasticClient]).toInstance(elasticSearchClient)
 

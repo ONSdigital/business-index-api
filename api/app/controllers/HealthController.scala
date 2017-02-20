@@ -15,6 +15,7 @@ class HealthController extends Controller with DefaultInstrumented {
     new ThreadFactoryBuilder().setNameFormat("health-check-%d").setDaemon(true).build())
 
   def health = Action {
+
     val healthChecks = registry.runHealthChecks(healthCheckExecutor).asScala
     val hasUnhealthyCheck = healthChecks.forall(_._2.isHealthy)
 
