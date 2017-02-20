@@ -66,7 +66,7 @@ lazy val businessIndex = (project in file("."))
   ).aggregate(api)
 
 lazy val api = (project in file("api"))
-  .dependsOn(ProjectRef(uri("https://github.com/ONSdigital/business-index-data.git#master"), "biUtils"))
+  .dependsOn(ProjectRef(uri("https://github.com/ONSdigital/business-index-data.git#develop"), "biUtils"))
   .enablePlugins(BuildInfoPlugin, PlayScala)
   .settings(commonSettings: _*)
   .settings(
