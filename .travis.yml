@@ -1,7 +1,7 @@
 sudo: false
 language: scala
 
-before_script: travis_retry sbt ++$TRAVIS_SCALA_VERSION update
+before_script: travis_retry sbt -Dinclude.from.github=true ++$TRAVIS_SCALA_VERSION update
 
 script:
   sbt -Dinclude.from.github=true ++$TRAVIS_SCALA_VERSION test
