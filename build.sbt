@@ -65,8 +65,12 @@ lazy val businessIndex = (project in file("."))
     moduleName := "ons-bi"
   ).aggregate(api)
 
+val FromGitHub = Option(sys.props("include.from.github")).getOrElse("false").toBoolean
+def includeBiData =  if (FromGitHub) ProjectRef(uri("https://github.com/ONSdigital/business-index-data.git#develop"), "biUtils")
+  else ProjectRef(file("../business-index-data"), "biUtils")
+
 lazy val api = (project in file("api"))
-  .dependsOn(ProjectRef(uri("https://github.com/ONSdigital/business-index-data.git#develop"), "biUtils"))
+  .dependsOn(includeBiData)
   .enablePlugins(BuildInfoPlugin, PlayScala)
   .settings(commonSettings: _*)
   .settings(

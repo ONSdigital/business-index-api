@@ -4,7 +4,7 @@ language: scala
 before_script: travis_retry sbt ++$TRAVIS_SCALA_VERSION update
 
 script:
-  sbt ++$TRAVIS_SCALA_VERSION test
+  sbt -Dinclude.from.github=true ++$TRAVIS_SCALA_VERSION test
 # FIXME: not in artifactory yet
 # sbt ++$TRAVIS_SCALA_VERSION coverage test coverageReport coverageAggregate coveralls
 
