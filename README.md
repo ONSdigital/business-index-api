@@ -4,11 +4,17 @@
 
 * Java 8 or higher
 * SBT (http://www.scala-sbt.org/)
+* Business-index-data project
 
-### GitHub Dependencies
+### Dependencies
 
 This project contains direct dependency to other github project: business-index-data, module: biUtils
-This dependency has been implemented via direct "ProjectRef" link to mentioned GitHub repository (within specific branch).
+It expect this project to be fetched in the same folder as business-index-api (develop branch).
+\git
+\git\business-index-data|develop
+\git\business-index-api|any-branch
+
+There is an option -Dinclude.from.github=true - which enable SBT to pull bi-data repository by itself (no need to download *-data manually).
 
 ### Development Setup (MacOS)
 
