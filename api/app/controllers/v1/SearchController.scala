@@ -3,15 +3,12 @@ package controllers.v1
 import javax.inject._
 
 import cats.data.ValidatedNel
-
 import com.outworkers.util.catsparsers.{parse => cparse, _}
 import com.outworkers.util.play._
-
 import com.sksamuel.elastic4s._
 import com.typesafe.scalalogging.StrictLogging
 import nl.grons.metrics.scala.DefaultInstrumented
 import org.elasticsearch.client.transport.NoNodeAvailableException
-import play.api.Environment
 import play.api.libs.json._
 import play.api.mvc._
 
@@ -21,6 +18,7 @@ import scala.util.Try
 import scala.util.control.NonFatal
 import uk.gov.ons.bi.models.{BIndexConsts, BusinessIndexRec}
 import BusinessIndexObj._
+import com.typesafe.config.Config
 
 object BusinessIndexObj {
   implicit val businessHitFormat: OFormat[BusinessIndexRec] = Json.format[BusinessIndexRec]
@@ -29,13 +27,14 @@ object BusinessIndexObj {
 /**
   * Contains action for the /v1/search route.
   *
-  * @param environment
   * @param elastic
   * @param context
+  * @param config
   */
 @Singleton
-class SearchController @Inject()(environment: Environment, elastic: ElasticClient)(
-  implicit context: ExecutionContext
+class SearchController @Inject()(elastic: ElasticClient)(
+  implicit context: ExecutionContext,
+  config: Config
 ) extends Controller with ElasticDsl with DefaultInstrumented with StrictLogging {
 
   implicit object LongParser extends CatsParser[Long] {
@@ -48,7 +47,7 @@ class SearchController @Inject()(environment: Environment, elastic: ElasticClien
   private[this] val requestMeter = metrics.meter("search-requests", "requests")
   private[this] val totalHitsHistogram = metrics.histogram("totalHits", "es-searches")
 
-  private[this] val index = s"bi-${environment.mode.toString.toLowerCase}" / "business"
+  private[this] val index = config.getString("elasticsearch.bi.name").concat("/business")
 
   // mapper from ElasticSearch result to Business case class
   implicit object BusinessHitAs extends HitAs[BusinessIndexRec] {
