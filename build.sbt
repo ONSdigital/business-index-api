@@ -93,7 +93,6 @@ lazy val api = (project in file("api"))
     },
     mainClass in assembly := Some("play.core.server.ProdServerStart"),
     fullClasspath in assembly += Attributed.blank(PlayKeys.playPackageAssets.value),
-    unmanagedJars in Compile += file("libs/biutils_2.11.jar"), // libs that are not in artifactory
     libraryDependencies ++= Seq(
       filters,
       "org.webjars" %% "webjars-play" % "2.5.0-3",
