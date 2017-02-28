@@ -6,16 +6,6 @@
 * SBT (http://www.scala-sbt.org/)
 * Business-index-data project
 
-### Dependencies
-
-This project contains direct dependency to other github project: business-index-data, module: biUtils
-It expect this project to be fetched in the same folder as business-index-api (develop branch).
-\git
-\git\business-index-data|develop
-\git\business-index-api|any-branch
-
-There is an option -Dinclude.from.github=true - which enable SBT to pull bi-data repository by itself (no need to download *-data manually).
-
 ### Development Setup (MacOS)
 
 To install/run ElasticSearch on MacOS, use Homebrew (http://brew.sh):
@@ -47,7 +37,43 @@ compute time.
 
 ### Dependencies
 
-A graph detailing all project dependencies can be found [here](dependencies.png). TODO: update
+Project has one unmanaged dependency (lib folder) to business-index-data/biUtils project.
+If dependency need to be updated - package new jar in business-index-data project and copy it to specified dir.
+
+A graph detailing all project dependencies can be found [here](dependencies.txt). TODO: update
+If any sbt changes performed - please re-generate dependency graph by executing:
+```shell
+sbt -no-colors dependencyTree > dependencies.txt
+```
+
+#### HBase (experimental)
+
+Introduced requests caching in HBase. By default caching is disabled (configurable in application.conf).
+HBase can be installed locally with
+```shell
+brew install hbase
+```
+and started as:
+```shell
+start-hbase.sh
+```
+
+There should be *es_requests* table be created with 'd' column family.
+Open hbase shell and execute:
+
+```shell
+hbase shell
+create 'es_requests', 'd'
+```
+
+Other useful shell commands:
+
+```shell
+list
+scan 'es_requests'
+count 'es_requests'
+truncate 'es_requests'
+```
 
 #### Configuring Splunk Logging
 
