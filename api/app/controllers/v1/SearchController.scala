@@ -83,16 +83,18 @@ class SearchController @Inject()(elastic: ElasticClient, val config: Config)(
 
   }
 
-  def response(resp: RichSearchResponse, businesses: List[BusinessIndexRec]): Result = {
+  def response(resp: SearchData, businesses: List[BusinessIndexRec]): Result = {
     businesses match {
       case _ :: _ => responseWithHTTPHeaders(resp, Ok(Json.toJson(businesses)))
       case _ => responseWithHTTPHeaders(resp, Ok("{}").as(JSON))
     }
   }
 
-  def response(tp: (RichSearchResponse, List[BusinessIndexRec])): Result = response(tp._1, tp._2)
+  def response(tp: (SearchData, List[BusinessIndexRec])): Result = response(tp._1, tp._2)
 
-  def responseWithHTTPHeaders(resp: RichSearchResponse, searchResult: Result): Result = {
+  case class SearchData(totalHits: Long, maxScore: Float)
+
+  def responseWithHTTPHeaders(resp: SearchData, searchResult: Result): Result = {
     searchResult.withHeaders(
       "Access-Control-Expose-Headers" -> "X-Total-Count, X-Max-Score",
       "X-Total-Count" -> resp.totalHits.toString,
@@ -130,16 +132,19 @@ class SearchController @Inject()(elastic: ElasticClient, val config: Config)(
   private[this] val isCaching = config.getBoolean("hbase.caching.enabled")
 
   private[this] def getOrElseWrap(request: String)(f: => Future[(RichSearchResponse, List[BusinessIndexRec])]):
-    Future[(RichSearchResponse, List[BusinessIndexRec])] = {
+  Future[(SearchData, List[BusinessIndexRec])] = {
     if (isCaching) {
-      f.map { res =>
-        (res._1,
-          Json.fromJson[List[BusinessIndexRec]](
-            Json.parse(getOrElseUpdateCache(request)(Json.toJson(res._2).toString()))
-          ).getOrElse(sys.error("Unable to extract json")))
+      getFromCache(request) match {
+        case Some(s) =>
+          val cachedBus = Json.fromJson[List[BusinessIndexRec]](Json.parse(s)).getOrElse(sys.error("Unable to extract json"))
+          Future.successful((SearchData(cachedBus.size, 100), cachedBus))
+        case None => f.map { case (r, businesses) =>
+          updateCache(request, Json.toJson(businesses).toString())
+          (SearchData(r.totalHits, r.maxScore), businesses)
+        }
       }
     } else {
-      f
+      f.map { case (r, businesses) => (SearchData(r.totalHits, r.maxScore), businesses) }
     }
   }
 
@@ -156,8 +161,9 @@ class SearchController @Inject()(elastic: ElasticClient, val config: Config)(
       searchTerm match {
         case Some(query) if query.length > 0 =>
           // if suggest, match on the BusinessName only, else assume it's an Elasticsearch query
-          val k = getOrElseWrap(query) { businessSearch(query, offset, limit, suggest) }
-          k map response recover {
+          getOrElseWrap(query) {
+            businessSearch(query, offset, limit, suggest)
+          } map response recover {
             case e: NoNodeAvailableException => ServiceUnavailable(
               Json.obj(
                 "status" -> 503,

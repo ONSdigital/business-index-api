@@ -1,19 +1,16 @@
 package services
 
-import com.typesafe.config.{Config, ConfigFactory}
+import com.typesafe.config.Config
 import org.apache.hadoop.hbase.client._
 import org.apache.hadoop.hbase.util.Bytes
 import org.apache.hadoop.hbase.{CellUtil, HBaseConfiguration, TableName}
 import org.slf4j.LoggerFactory
-import uk.gov.ons.bi.writers.BiConfigManager
-
-import scala.collection.JavaConverters._
 
 trait HBaseCache {
 
   // All HBase API rely on this function: it expect byte[] everywhere, instead of Strings.
   implicit def asBytes(s: String): Array[Byte] = Bytes.toBytes(s)
-  
+
   private[this] val logger = LoggerFactory.getLogger(getClass)
 
   def config: Config
@@ -38,18 +35,19 @@ trait HBaseCache {
 
   protected lazy val table: Table = connection.getTable(TableName.valueOf(tableName))
 
-  protected def getOrElseUpdateCache(request: String)(f: => String): String = {
+  protected def getFromCache(request: String): Option[String] = {
     val result = table.get(new Get(request))
-    if (result.isEmpty) {
-      val propString = f
-      val put = new Put(request)
-      put.addColumn("d", "response", propString)
-      table.put(put)
-      propString
-    } else {
+    if (result.isEmpty) None else {
       logger.debug(s"Value from cache for $request")
-      result.rawCells().map(cell => Bytes.toString(CellUtil.cloneValue(cell))).head
+      result.rawCells().map(cell => Bytes.toString(CellUtil.cloneValue(cell))).headOption
     }
+  }
+
+  protected def updateCache(request: String, newValue: String): String = {
+    val put = new Put(request)
+    put.addColumn("d", "response", newValue)
+    table.put(put)
+    newValue
   }
 
 }
