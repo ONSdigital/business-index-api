@@ -4,7 +4,6 @@ import sbtassembly.AssemblyPlugin.autoImport._
 import sbtbuildinfo.BuildInfoPlugin.autoImport._
 
 lazy val Versions = new {
-  val phantom = "2.0.0"
   val util = "0.27.8"
   val elastic4s = "2.3.1"
   val spark = "1.6.0"
@@ -78,7 +77,6 @@ lazy val api = (project in file("api"))
     scalaVersion := "2.11.8",
     buildInfoPackage := "controllers",
     javaOptions in Test += "-Denvironment=local",
-    javaOptions ++= Seq("-Denvironment=local"),
     fork in run := true,
     buildInfoKeys ++= Seq[BuildInfoKey](
       resolvers,
@@ -108,7 +106,6 @@ lazy val api = (project in file("api"))
     fullClasspath in assembly += Attributed.blank(PlayKeys.playPackageAssets.value),
     libraryDependencies ++= Seq(
       filters,
-      "com.outworkers" %% "phantom-dsl" % Versions.phantom,
       "org.webjars" %% "webjars-play" % "2.5.0-3",
       "org.webjars.bower" % "angular" % "1.5.9",
       "org.webjars.bower" % "dali" % "1.3.2",
