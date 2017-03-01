@@ -9,23 +9,24 @@ import com.typesafe.scalalogging.StrictLogging
 import org.elasticsearch.indices.IndexAlreadyExistsException
 import org.elasticsearch.transport.RemoteTransportException
 import play.api.inject.ApplicationLifecycle
+import services.InsertDemoUtils._
 import uk.gov.ons.bi.ingest.helper.Utils
 import uk.gov.ons.bi.ingest.parsers.CsvProcessor
-import uk.gov.ons.bi.models.{BIndexConsts, BusinessIndexRec}
+import uk.gov.ons.bi.models.BusinessIndexRec
 import uk.gov.ons.bi.writers.ElasticImporter
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
-import InsertDemoUtils._
 
 object InsertDemoUtils {
 
+  val testFolder = sys.props.getOrElse("sample.folder", "demo")
+
   def generateData: Iterator[BusinessIndexRec] =
-    CsvProcessor.csvToMap(Utils.getResource("/demo/sample.csv")).map { r =>
+    CsvProcessor.csvToMap(Utils.getResource(s"/$testFolder/sample.csv")).map { r =>
       BusinessIndexRec.fromMap(r("ID").toLong, r)
     }
-
 }
 
 /**

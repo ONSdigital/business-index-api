@@ -65,7 +65,7 @@ lazy val api = (project in file("api"))
     resolvers ++= Seq(
       "Hadoop Releases" at "https://repository.cloudera.com/content/repositories/releases/"
     ),
-    javaOptions in Test += "-Denvironment=local",
+    javaOptions in Test ++= Seq("-Denvironment=local","-Dsample.folder=test"),
     fork in run := true,
     buildInfoKeys ++= Seq[BuildInfoKey](
       resolvers,

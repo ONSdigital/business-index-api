@@ -9,7 +9,7 @@ import services.InsertDemoUtils
 class InsertDemoTest extends FlatSpec with Matchers {
 
   "It" should "generate data out of sample file" in {
-    InsertDemoUtils.generateData.toList.size shouldBe 100000
+    InsertDemoUtils.generateData.toList.size shouldBe 20
   }
 
 }
