@@ -17,13 +17,14 @@ class JsonParseTest extends FlatSpec with Matchers {
     """.stripMargin
 
   private[this] val smallerJson =
-    """
-      |{"id":85282745,"businessName":"BI (2018) LIMITED","uprn":977146940701,"postCode":"SE","industryCode":42751,"legalStatus":"1"}
-    """.stripMargin
+    """{"id":85282745,"businessName":"BI (2018) LIMITED","uprn":977146940701,"postCode":"SE","industryCode":42751,"legalStatus":"1"}"""
 
   "It" should "create proper json" in {
     parseJson(fullJson).get.id shouldBe 85282744
-    parseJson(smallerJson).get.id shouldBe 85282745
+    val bi = parseJson(smallerJson).get
+    bi.id shouldBe 85282745
+
+    Json.toJson(bi).toString() shouldBe smallerJson
   }
 
   private[this] def parseJson(x: String) = Json.fromJson[BusinessIndexRec](Json.parse(x))

@@ -17,6 +17,16 @@ import uk.gov.ons.bi.writers.ElasticImporter
 import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
+import InsertDemoUtils._
+
+object InsertDemoUtils {
+
+  def generateData: Iterator[BusinessIndexRec] =
+    CsvProcessor.csvToMap(Utils.getResource("/demo/sample.csv")).map { r =>
+      BusinessIndexRec.fromMap(r("ID").toLong, r)
+    }
+
+}
 
 /**
   * Class that imports sample.csv.
@@ -47,12 +57,6 @@ class InsertDemoData @Inject()(applicationLifecycle: ApplicationLifecycle)(
       Future.successful()
     }
   }
-
-  def generateData: Iterator[BusinessIndexRec] =
-    CsvProcessor.csvToMap(Utils.getResource("/demo/sample.csv")).map { r =>
-      // PostCode is not in sample data ...
-      BusinessIndexRec.fromMap(r("ID").toLong, Map(BIndexConsts.BiPostCode -> "SE") ++ r)
-    }
 
   def importData(source: Iterator[BusinessIndexRec]): Future[Iterator[BulkResult]] = {
     logger.info(s"Starting to import the data, found elements to import: ${source.nonEmpty}")

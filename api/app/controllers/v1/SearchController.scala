@@ -78,14 +78,12 @@ class SearchController @Inject()(elastic: ElasticClient, val config: Config)(
         case Nil => resp -> List.empty[BusinessIndexRec]
       }
     }
-
     r
-
   }
 
   def response(resp: SearchData, businesses: List[BusinessIndexRec]): Result = {
     businesses match {
-      case _ :: _ => responseWithHTTPHeaders(resp, Ok(Json.toJson(businesses)))
+      case _ :: _ => responseWithHTTPHeaders(resp, Ok(Json.toJson(businesses.map(_.secured))))
       case _ => responseWithHTTPHeaders(resp, Ok("{}").as(JSON))
     }
   }
@@ -120,8 +118,7 @@ class SearchController @Inject()(elastic: ElasticClient, val config: Config)(
     cparse[Long](id) fold(_.response.future, value =>
       findById(value) map {
         case Some(res) =>
-          logger.debug(s"Found business result ${Json.toJson(res)}")
-          Ok(Json.toJson(res))
+          Ok(Json.toJson(res.secured))
         case None =>
           logger.debug(s"Could not find a record with the ID $id")
           NoContent
@@ -171,7 +168,9 @@ class SearchController @Inject()(elastic: ElasticClient, val config: Config)(
                 "message_en" -> e.getMessage
               )
             )
-            case NonFatal(e) => InternalServerError(
+            case NonFatal(e) =>
+              logger.error(s"Internal error ${e.getMessage}", e)
+              InternalServerError(
               Json.obj(
                 "status" -> 500,
                 "code" -> "internal_error",
