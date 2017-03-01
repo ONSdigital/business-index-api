@@ -94,7 +94,6 @@ class SearchController @Inject()(elastic: ElasticClient, val config: Config)(
 
   def responseWithHTTPHeaders(resp: SearchData, searchResult: Result): Result = {
     searchResult.withHeaders(
-      "Access-Control-Expose-Headers" -> "X-Total-Count, X-Max-Score",
       "X-Total-Count" -> resp.totalHits.toString,
       "X-Max-Score" -> resp.maxScore.toString)
   }
