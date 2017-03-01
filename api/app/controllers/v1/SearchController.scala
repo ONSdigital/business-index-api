@@ -6,19 +6,20 @@ import cats.data.ValidatedNel
 import com.outworkers.util.catsparsers.{parse => cparse, _}
 import com.outworkers.util.play._
 import com.sksamuel.elastic4s._
+import com.typesafe.config.Config
 import com.typesafe.scalalogging.StrictLogging
+import controllers.v1.BusinessIndexObj._
 import nl.grons.metrics.scala.DefaultInstrumented
 import org.elasticsearch.client.transport.NoNodeAvailableException
 import play.api.libs.json._
 import play.api.mvc._
+import services.HBaseCache
+import uk.gov.ons.bi.models.{BIndexConsts, BusinessIndexRec}
 
 import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 import scala.util.control.NonFatal
-import uk.gov.ons.bi.models.{BIndexConsts, BusinessIndexRec}
-import BusinessIndexObj._
-import com.typesafe.config.Config
 
 object BusinessIndexObj {
   implicit val businessHitFormat: OFormat[BusinessIndexRec] = Json.format[BusinessIndexRec]
@@ -32,16 +33,17 @@ object BusinessIndexObj {
   * @param config
   */
 @Singleton
-class SearchController @Inject()(elastic: ElasticClient)(
-  implicit context: ExecutionContext,
-  config: Config
-) extends Controller with ElasticDsl with DefaultInstrumented with StrictLogging {
+class SearchController @Inject()(elastic: ElasticClient, val config: Config)(
+  implicit context: ExecutionContext
+) extends Controller with ElasticDsl with DefaultInstrumented with StrictLogging with HBaseCache {
 
   implicit object LongParser extends CatsParser[Long] {
     override def parse(str: String): ValidatedNel[String, Long] = {
       Try(java.lang.Long.parseLong(str)).asValidation
     }
   }
+
+  override protected def tableName = "es_requests"
 
   // metrics
   private[this] val requestMeter = metrics.meter("search-requests", "requests")
@@ -62,13 +64,13 @@ class SearchController @Inject()(elastic: ElasticClient)(
       QueryStringQueryDefinition(term)
     }
 
-    elastic.execute {
+    val r = elastic.execute {
       search.in(index)
         .query(definition)
         .start(offset)
         .limit(limit)
     }.map { resp =>
-      println(resp)
+      // println(resp)
       resp.as[BusinessIndexRec].toList match {
         case list@_ :: _ =>
           totalHitsHistogram += resp.totalHits
@@ -76,18 +78,21 @@ class SearchController @Inject()(elastic: ElasticClient)(
         case Nil => resp -> List.empty[BusinessIndexRec]
       }
     }
+    r
   }
 
-  def response(resp: RichSearchResponse, businesses: List[BusinessIndexRec]): Result = {
+  def response(resp: SearchData, businesses: List[BusinessIndexRec]): Result = {
     businesses match {
-      case _ :: _ => responseWithHTTPHeaders(resp, Ok(Json.toJson(businesses)))
+      case _ :: _ => responseWithHTTPHeaders(resp, Ok(Json.toJson(businesses.map(_.secured))))
       case _ => responseWithHTTPHeaders(resp, Ok("{}").as(JSON))
     }
   }
 
-  def response(tp: (RichSearchResponse, List[BusinessIndexRec])): Result = response(tp._1, tp._2)
+  def response(tp: (SearchData, List[BusinessIndexRec])): Result = response(tp._1, tp._2)
 
-  def responseWithHTTPHeaders(resp: RichSearchResponse, searchResult: Result): Result = {
+  case class SearchData(totalHits: Long, maxScore: Float)
+
+  def responseWithHTTPHeaders(resp: SearchData, searchResult: Result): Result = {
     searchResult.withHeaders(
       "Access-Control-Expose-Headers" -> "X-Total-Count, X-Max-Score",
       "X-Total-Count" -> resp.totalHits.toString,
@@ -113,8 +118,7 @@ class SearchController @Inject()(elastic: ElasticClient)(
     cparse[Long](id) fold(_.response.future, value =>
       findById(value) map {
         case Some(res) =>
-          logger.debug(s"Found business result ${Json.toJson(res)}")
-          Ok(Json.toJson(res))
+          Ok(Json.toJson(res.secured))
         case None =>
           logger.debug(s"Could not find a record with the ID $id")
           NoContent
@@ -122,8 +126,28 @@ class SearchController @Inject()(elastic: ElasticClient)(
     )
   }
 
+  private[this] val isCaching = config.getBoolean("hbase.caching.enabled")
+
+  private[this] def getOrElseWrap(request: String)(f: => Future[(RichSearchResponse, List[BusinessIndexRec])]):
+  Future[(SearchData, List[BusinessIndexRec])] = {
+    if (isCaching) {
+      getFromCache(request) match {
+        case Some(s) =>
+          val cachedBus = Json.fromJson[List[BusinessIndexRec]](Json.parse(s)).getOrElse(sys.error("Unable to extract json"))
+          Future.successful((SearchData(cachedBus.size, 100), cachedBus))
+        case None => f.map { case (r, businesses) =>
+          updateCache(request, Json.toJson(businesses).toString())
+          (SearchData(r.totalHits, r.maxScore), businesses)
+        }
+      }
+    } else {
+      f.map { case (r, businesses) => (SearchData(r.totalHits, r.maxScore), businesses) }
+    }
+  }
+
   def searchBusiness(term: Option[String], suggest: Boolean = false): Action[AnyContent] = {
     Action.async { implicit request =>
+      // getOrElseWrap(term)
       requestMeter.mark()
 
       val searchTerm = term.orElse(request.getQueryString("q")).orElse(request.getQueryString("query"))
@@ -134,7 +158,9 @@ class SearchController @Inject()(elastic: ElasticClient)(
       searchTerm match {
         case Some(query) if query.length > 0 =>
           // if suggest, match on the BusinessName only, else assume it's an Elasticsearch query
-          businessSearch(query, offset, limit, suggest) map response recover {
+          getOrElseWrap(query) {
+            businessSearch(query, offset, limit, suggest)
+          } map response recover {
             case e: NoNodeAvailableException => ServiceUnavailable(
               Json.obj(
                 "status" -> 503,
@@ -142,7 +168,9 @@ class SearchController @Inject()(elastic: ElasticClient)(
                 "message_en" -> e.getMessage
               )
             )
-            case NonFatal(e) => InternalServerError(
+            case NonFatal(e) =>
+              logger.error(s"Internal error ${e.getMessage}", e)
+              InternalServerError(
               Json.obj(
                 "status" -> 500,
                 "code" -> "internal_error",

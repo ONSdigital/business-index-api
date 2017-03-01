@@ -1,4 +1,3 @@
-import org.apache.commons.io.FileUtils
 import play.sbt.PlayScala
 import sbtassembly.AssemblyPlugin.autoImport._
 import sbtbuildinfo.BuildInfoPlugin.autoImport._
@@ -10,15 +9,7 @@ lazy val Versions = new {
   val elasticSearchSpark = "2.4.0"
 }
 
-// direct github dependency, does not work properly
-// https://github.com/sbt/sbt/issues/1284
-def doRemove() = {
-  val staging = new File(System.getenv("HOME") + "/.sbt/0.13/staging")
-  FileUtils.deleteQuietly(staging)
-  Seq()
-}
-
-lazy val commonSettings = doRemove ++ Seq(
+lazy val commonSettings = Seq(
   scalaVersion := "2.11.8",
   resolvers ++= Seq(
     Resolver.bintrayRepo("outworkers", "oss-releases"),
@@ -64,19 +55,17 @@ lazy val businessIndex = (project in file("."))
     moduleName := "ons-bi"
   ).aggregate(api)
 
-val FromGitHub = Option(sys.props("include.from.github")).getOrElse("false").toBoolean
-def includeBiData =  if (FromGitHub) ProjectRef(uri("https://github.com/ONSdigital/business-index-data.git#develop"), "biUtils")
-  else ProjectRef(file("../business-index-data"), "biUtils")
-
 lazy val api = (project in file("api"))
-  .dependsOn(includeBiData)
   .enablePlugins(BuildInfoPlugin, PlayScala)
   .settings(commonSettings: _*)
   .settings(
     name := "ons-bi-api",
     scalaVersion := "2.11.8",
     buildInfoPackage := "controllers",
-    javaOptions in Test += "-Denvironment=local",
+    resolvers ++= Seq(
+      "Hadoop Releases" at "https://repository.cloudera.com/content/repositories/releases/"
+    ),
+    javaOptions in Test ++= Seq("-Denvironment=local","-Dsample.folder=test"),
     fork in run := true,
     buildInfoKeys ++= Seq[BuildInfoKey](
       resolvers,
@@ -125,6 +114,14 @@ lazy val api = (project in file("api"))
       "com.outworkers" %% "util-parsers-cats" % Versions.util,
       "com.outworkers" %% "util-play" % Versions.util,
       "com.outworkers" %% "util-testing" % Versions.util % Test,
-      "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.0-M1" % Test
-    )
+      "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.0-M1" % Test,
+      "org.scalatest" %% "scalatest" % "3.0.0" % Test,
+      "com.google.guava" % "guava" % "18.0",
+      "org.apache.hadoop" % "hadoop-common" % "2.6.0",
+      "org.apache.hadoop" % "hadoop-mapred" % "0.22.0",
+      "org.apache.hbase" % "hbase-common" % "1.3.0",
+      "org.apache.hbase" % "hbase-client" % "1.3.0"
+    ),
+
+    dependencyOverrides += "com.google.guava" % "guava" % "18.0"
   )

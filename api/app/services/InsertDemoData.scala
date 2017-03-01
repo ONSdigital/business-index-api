@@ -9,14 +9,25 @@ import com.typesafe.scalalogging.StrictLogging
 import org.elasticsearch.indices.IndexAlreadyExistsException
 import org.elasticsearch.transport.RemoteTransportException
 import play.api.inject.ApplicationLifecycle
+import services.InsertDemoUtils._
 import uk.gov.ons.bi.ingest.helper.Utils
 import uk.gov.ons.bi.ingest.parsers.CsvProcessor
-import uk.gov.ons.bi.models.{BIndexConsts, BusinessIndexRec}
+import uk.gov.ons.bi.models.BusinessIndexRec
 import uk.gov.ons.bi.writers.ElasticImporter
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
+
+object InsertDemoUtils {
+
+  val testFolder = sys.props.getOrElse("sample.folder", "demo")
+
+  def generateData: Iterator[BusinessIndexRec] =
+    CsvProcessor.csvToMap(Utils.getResource(s"/$testFolder/sample.csv")).map { r =>
+      BusinessIndexRec.fromMap(r("ID").toLong, r)
+    }
+}
 
 /**
   * Class that imports sample.csv.
@@ -47,12 +58,6 @@ class InsertDemoData @Inject()(applicationLifecycle: ApplicationLifecycle)(
       Future.successful()
     }
   }
-
-  def generateData: Iterator[BusinessIndexRec] =
-    CsvProcessor.csvToMap(Utils.getResource("/demo/sample.csv")).map { r =>
-      // PostCode is not in sample data ...
-      BusinessIndexRec.fromMap(r("ID").toLong, Map(BIndexConsts.BiPostCode -> "SE") ++ r)
-    }
 
   def importData(source: Iterator[BusinessIndexRec]): Future[Iterator[BulkResult]] = {
     logger.info(s"Starting to import the data, found elements to import: ${source.nonEmpty}")
