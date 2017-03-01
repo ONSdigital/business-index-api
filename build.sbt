@@ -115,6 +115,7 @@ lazy val api = (project in file("api"))
       "com.outworkers" %% "util-play" % Versions.util,
       "com.outworkers" %% "util-testing" % Versions.util % Test,
       "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.0-M1" % Test,
+      "org.scalatest" %% "scalatest" % "3.0.0" % Test,
       "com.google.guava" % "guava" % "18.0",
       "org.apache.hadoop" % "hadoop-common" % "2.6.0",
       "org.apache.hadoop" % "hadoop-mapred" % "0.22.0",
