@@ -46,6 +46,7 @@ class InsertDemoData @Inject()(applicationLifecycle: ApplicationLifecycle)(
   // TODO: must go to bi-data
   private[this] val businessIndex = config.getString("elasticsearch.bi.name")
   private[this] val initialization = config.getString("elastic.recreate.index").toBoolean
+  private[this] val importSamples = config.getString("elastic.import.sample").toBoolean
 
   private[this] def csv(p: String): Option[Iterator[String]] =
     Option(Utils.getResource(p)).map(_.filterNot(_.contains("BusinessName")))
@@ -104,10 +105,12 @@ class InsertDemoData @Inject()(applicationLifecycle: ApplicationLifecycle)(
       logger.info(s"Index $businessIndex already exists, silenced error with ${err.getMessage}")
   }
 
-  logger.info("Stating to import generated data")
+  if (importSamples) {
+    logger.info("Stating to import generated data")
 
-  Try(Await.result(importData(generateData), 10.minutes)) match {
-    case Success(_) => logger.info(s"Successfully imported data")
-    case Failure(err) => logger.error("Unable to import generated data", err)
+    Try(Await.result(importData(generateData), 10.minutes)) match {
+      case Success(_) => logger.info(s"Successfully imported data")
+      case Failure(err) => logger.error("Unable to import generated data", err)
+    }
   }
 }
