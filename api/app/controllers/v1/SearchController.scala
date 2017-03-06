@@ -71,6 +71,9 @@ class SearchController @Inject()(elastic: ElasticClient, val config: Config)(
         .limit(limit)
     }.map { resp =>
       logger.trace(s"Business search response: $resp")
+      if (resp.shardFailures.nonEmpty)
+      sys.error(s"${resp.shardFailures.length} failed shards out of ${resp.totalShards}, the returned result would be partial and not reliable")
+
       resp.as[BusinessIndexRec].toList match {
         case list@_ :: _ =>
           totalHitsHistogram += resp.totalHits
