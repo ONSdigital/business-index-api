@@ -109,7 +109,11 @@ class InsertDemoData @Inject()(applicationLifecycle: ApplicationLifecycle)(
     logger.info("Stating to import generated data")
 
     Try(Await.result(importData(generateData), 10.minutes)) match {
-      case Success(_) => logger.info(s"Successfully imported data")
+      case Success(res) =>
+        val ress = res.toList
+        if (ress.exists(_.hasFailures))
+          sys.error("Unexpected error while importing data:" + ress.map(_.failureMessage))
+        logger.info(s"Successfully imported data")
       case Failure(err) => logger.error("Unable to import generated data", err)
     }
   }

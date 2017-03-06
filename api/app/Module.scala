@@ -1,3 +1,4 @@
+import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 
 import ch.qos.logback.classic.LoggerContext
@@ -52,7 +53,15 @@ class Module(environment: Environment, configuration: Configuration) extends Abs
     bind(classOf[InsertDemoData]).asEagerSingleton()
     bind(classOf[AvoidLogbackMemoryLeak]).asEagerSingleton()
 
-    val reporter = JmxReporter.forRegistry(metricRegistry).build()
-    reporter.start()
+    if (!SingleJmxReporterPerJvm.initialized.getAndSet(true)) {
+      val reporter = JmxReporter.forRegistry(metricRegistry).build()
+      reporter.start()
+    }
   }
+}
+
+object SingleJmxReporterPerJvm {
+
+  val initialized = new AtomicBoolean(false)
+
 }
