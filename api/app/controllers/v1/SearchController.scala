@@ -70,8 +70,9 @@ class SearchController @Inject()(elastic: ElasticClient, val config: Config)(
         .start(offset)
         .limit(limit)
     }.map { resp =>
+      logger.trace(s"Business search response: $resp")
       if (resp.shardFailures.nonEmpty)
-        sys.error(s"${resp.shardFailures.length} failed shards out of ${resp.totalShards}, the returned result would be partial and not reliable")
+      sys.error(s"${resp.shardFailures.length} failed shards out of ${resp.totalShards}, the returned result would be partial and not reliable")
 
       resp.as[BusinessIndexRec].toList match {
         case list@_ :: _ =>
@@ -135,7 +136,7 @@ class SearchController @Inject()(elastic: ElasticClient, val config: Config)(
       getFromCache(request) match {
         case Some(s) =>
           val cachedBus = Json.fromJson[List[BusinessIndexRec]](Json.parse(s)).getOrElse(sys.error("Unable to extract json"))
-          Future.successful((SearchData(cachedBus.size, 100), cachedBus))
+          Future.successful((SearchData(cachedBus.size.toLong, 100f), cachedBus))
         case None => f.map { case (r, businesses) =>
           updateCache(request, Json.toJson(businesses).toString())
           (SearchData(r.totalHits, r.maxScore), businesses)
