@@ -8,17 +8,22 @@ import controllers.v1.BusinessIndexObj._
 
 class IntegrationSpec extends PlaySpec with GuiceOneServerPerSuite with OneBrowserPerSuite with HtmlUnitFactory {
 
-  "Application" should {
 
-    // wait while all data loaded into elastic
-    Thread.sleep(100)
-
+  "Common application" should {
     val baseApiUri = s"http://localhost:$port"
 
     "work from within a browser" in {
       go to baseApiUri
       pageSource must include("ONS BI DEMO")
     }
+  }
+
+  "Data Application" should {
+
+    // wait while all data loaded into elastic
+    Thread.sleep(100)
+
+    val baseApiUri = s"http://localhost:$port"
 
     // following tests rely on @InsertDemoData -
     // local elastic with few loaded records
@@ -42,7 +47,7 @@ class IntegrationSpec extends PlaySpec with GuiceOneServerPerSuite with OneBrows
 
     "check if only allowed fields" in {
       go to s"$baseApiUri/v1/search/BusinessName:*?limit=1"
-      val rec = extractData(pageSource).head
+      val rec = extractFirstData(pageSource)
       rec.vatRefs mustBe None
       rec.payeRefs mustBe None
       rec.postCode mustBe None
@@ -54,7 +59,7 @@ class IntegrationSpec extends PlaySpec with GuiceOneServerPerSuite with OneBrows
 
       def checkFor(s: String) = {
         go to s"$baseApiUri/v1/search/BusinessName:$s"
-        val res = extractData(pageSource).head
+        val res = extractFirstData(pageSource)
         res.businessName mustBe name
       }
       checkFor(name)
@@ -64,5 +69,7 @@ class IntegrationSpec extends PlaySpec with GuiceOneServerPerSuite with OneBrows
     }
   }
 
-  private def extractData(s: String) = Json.fromJson[List[BusinessIndexRec]](Json.parse(s)).get
+  private def extractData(s: String) = Json.fromJson[List[BusinessIndexRec]](Json.parse(s)).getOrElse(sys.error(s"error while parsing data from elastic: $s"))
+
+  private def extractFirstData(s: String) = extractData(s).headOption.getOrElse(sys.error(s"no business data returned by elastic: $s"))
 }
