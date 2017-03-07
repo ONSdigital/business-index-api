@@ -6,6 +6,7 @@ import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s._
 import com.typesafe.config.Config
 import com.typesafe.scalalogging.StrictLogging
+import org.elasticsearch.action.admin.indices.create.CreateIndexResponse
 import org.elasticsearch.indices.IndexAlreadyExistsException
 import org.elasticsearch.transport.RemoteTransportException
 import play.api.inject.ApplicationLifecycle
@@ -18,10 +19,11 @@ import uk.gov.ons.bi.writers.ElasticImporter
 import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
+import scala.collection.JavaConverters._
 
 object InsertDemoUtils {
 
-  val testFolder = sys.props.getOrElse("sample.folder", "demo")
+  val testFolder: String = sys.props.getOrElse("sample.folder", "demo")
 
   def generateData: Iterator[BusinessIndexRec] =
     CsvProcessor.csvToMap(Utils.getResource(s"/$testFolder/sample.csv")).map { r =>
@@ -48,15 +50,11 @@ class InsertDemoData @Inject()(applicationLifecycle: ApplicationLifecycle)(
   private[this] val initialization = config.getString("elastic.recreate.index").toBoolean
   private[this] val importSamples = config.getString("elastic.import.sample").toBoolean
 
-  private[this] def csv(p: String): Option[Iterator[String]] =
-    Option(Utils.getResource(p)).map(_.filterNot(_.contains("BusinessName")))
-
-
-  def initialiseIndex: Future[Any] = {
+  def initialiseIndex: Future[Option[CreateIndexResponse]] = {
     if (initialization) {
-      elasticImporter.initializeIndex(businessIndex)
+      elasticImporter.initializeIndex(businessIndex).map(cr => Option(cr))
     } else {
-      Future.successful()
+      Future.successful[Option[CreateIndexResponse]](None)
     }
   }
 
@@ -100,7 +98,12 @@ class InsertDemoData @Inject()(applicationLifecycle: ApplicationLifecycle)(
   logger.info("InsertDemo Data service triggered")
 
   Try(Await.result(initialiseIndex, 2.minutes)) match {
-    case Success(_) => logger.info(s"Initialised index $businessIndex")
+    case Success(None) => logger.info(s"Recreation of index $businessIndex disabled!")
+    case Success(Some(r)) =>
+      logger.info(s"Initialised index $businessIndex: ${r.getHeaders.asScala}")
+      // for local elastic version - CreateIndex is "partially async"
+      // so when we're trying to import data its still doing some work (temp file creation maybe)
+      Thread.sleep(100)
     case Failure(err) =>
       logger.info(s"Index $businessIndex already exists, silenced error with ${err.getMessage}")
   }
