@@ -15,7 +15,7 @@ testUi.config(["$stateProvider", "$urlRouterProvider",
       resolve: {
         "business": [
           "$stateParams", "$http", function ($stateParams, $http) {
-            return $http.get('/v1/business/' + $stateParams.id).then(function(response) {
+            return $http.get("/v1/business/" + $stateParams.id).then(function(response) {
               return response.data;
             }, function(err) {
               console.log("Unable to load the name for", $stateParams.id);

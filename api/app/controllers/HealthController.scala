@@ -17,7 +17,9 @@ class HealthController extends Controller with DefaultInstrumented {
   def health = Action {
 
     val healthChecks = registry.runHealthChecks(healthCheckExecutor).asScala
-    val hasUnhealthyCheck = healthChecks.forall(_._2.isHealthy)
+    val hasUnhealthyCheck = healthChecks.forall { case (_, result) =>
+      result.isHealthy
+    }
 
     val body = healthChecks.map {
       case (key, result) if result.isHealthy =>

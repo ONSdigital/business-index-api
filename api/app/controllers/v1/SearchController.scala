@@ -91,7 +91,10 @@ class SearchController @Inject()(elastic: ElasticClient, val config: Config)(
     }
   }
 
-  def response(tp: (SearchData, List[BusinessIndexRec])): Result = response(tp._1, tp._2)
+  def response(tp: (SearchData, List[BusinessIndexRec])): Result = {
+    val (searchData, list) = tp
+    response(searchData, list)
+  }
 
   case class SearchData(totalHits: Long, maxScore: Float)
 
