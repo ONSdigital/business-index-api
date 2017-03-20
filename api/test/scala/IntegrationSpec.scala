@@ -50,7 +50,6 @@ class IntegrationSpec extends PlaySpec with GuiceOneServerPerSuite with OneBrows
       val rec = extractFirstData(pageSource)
       rec.vatRefs mustBe None
       rec.payeRefs mustBe None
-      rec.postCode mustBe None
       rec.employmentBands mustNot be(None)
     }
 
