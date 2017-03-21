@@ -25,7 +25,7 @@ addSbtPlugin("org.scoverage" % "sbt-scoverage" % "1.5.0")
 
 addSbtPlugin("org.scoverage" % "sbt-coveralls" % "1.1.0")
 
-addSbtPlugin("org.scoverage" % "sbt-codacy-coverage" % "1.3.8")
+addSbtPlugin("com.codacy" % "sbt-codacy-coverage" % "1.3.8")
 
 // https://github.com/sbt/sbt/issues/1931
 libraryDependencies += "org.slf4j" % "slf4j-nop" % "1.7.21"
