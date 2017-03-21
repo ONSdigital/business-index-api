@@ -1,4 +1,4 @@
-# business-index-api [![Build Status](https://travis-ci.com/ONSdigital/business-index-api.svg?token=2Zb1TowL2ncxBWZtMQ5Q&branch=master)](https://travis-ci.com/ONSdigital/business-index-api)
+# business-index-api [![Build Status](https://travis-ci.org/ONSdigital/business-index-api.svg?branch=develop](https://travis-ci.com/ONSdigital/business-index-api)
 
 ### Prerequisites
 
