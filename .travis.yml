@@ -4,11 +4,14 @@ language: scala
 before_script: travis_retry sbt -Dinclude.from.github=true ++$TRAVIS_SCALA_VERSION update
 
 script:
-  sbt -Dinclude.from.github=true ++$TRAVIS_SCALA_VERSION test
-# FIXME: not in artifactory yet
-# sbt ++$TRAVIS_SCALA_VERSION coverage test coverageReport coverageAggregate coveralls
+  - sbt -Dinclude.from.github=true ++$TRAVIS_SCALA_VERSION clean coverage test
 
-after_succes: ./build/tag.sh
+after_success:
+  - sbt coverageReport
+    sbt coverageAggregate
+    sbt codacyCoverage
+    sbt coveralls
+  - ./build/tag.sh
 
 scala:
   - 2.11.8
