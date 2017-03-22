@@ -62,9 +62,9 @@ class IntegrationSpec extends PlaySpec with GuiceOneServerPerSuite with OneBrows
         res.businessName mustBe name
       }
       checkFor(name)
-      (3 to name.length).foreach { x =>
-        checkFor(name.substring(0, x))
-      }
+//      (3 to name.length).foreach { x =>
+//        checkFor(name.substring(0, x))
+//      }
     }
   }
 
