@@ -7,19 +7,15 @@ import com.outworkers.util.catsparsers.{parse => cparse, _}
 import com.outworkers.util.play._
 import com.sksamuel.elastic4s._
 import com.typesafe.config.Config
-import com.typesafe.scalalogging.StrictLogging
 import controllers.v1.BusinessIndexObj._
 import nl.grons.metrics.scala.DefaultInstrumented
-import org.elasticsearch.client.transport.NoNodeAvailableException
 import play.api.libs.json._
 import play.api.mvc._
 import services.HBaseCache
 import uk.gov.ons.bi.models.{BIndexConsts, BusinessIndexRec}
 
-import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
-import scala.util.control.NonFatal
 
 object BusinessIndexObj {
   implicit val businessHitFormat: OFormat[BusinessIndexRec] = Json.format[BusinessIndexRec]
@@ -35,7 +31,7 @@ object BusinessIndexObj {
 @Singleton
 class SearchController @Inject()(elastic: ElasticClient, val config: Config)(
   implicit context: ExecutionContext
-) extends Controller with ElasticDsl with DefaultInstrumented with StrictLogging with HBaseCache {
+) extends SearchControllerUtils with ElasticDsl with DefaultInstrumented with HBaseCache {
 
   implicit object LongParser extends CatsParser[Long] {
     override def parse(str: String): ValidatedNel[String, Long] = {
@@ -56,24 +52,26 @@ class SearchController @Inject()(elastic: ElasticClient, val config: Config)(
     override def as(hit: RichSearchHit): BusinessIndexRec = BusinessIndexRec.fromMap(hit.id.toLong, hit.sourceAsMap)
   }
 
-  protected[this] def businessSearch(term: String, offset: Int, limit: Int, suggest: Boolean = false
-                                    ): Future[(RichSearchResponse, List[BusinessIndexRec])] = {
-    val definition = if (suggest) {
-      matchQuery(BIndexConsts.BiName, query)
-    } else {
-      QueryStringQueryDefinition(term)
-    }
-
-    val r = elastic.execute {
+  private[this] def businessSearchInternal(term: String, offset: Int, limit: Int, suggest: Boolean = false
+                                          ): Future[RichSearchResponse] = {
+    val definition = if (suggest) matchQuery(BIndexConsts.BiName, query) else QueryStringQueryDefinition(term)
+    elastic.execute {
       search.in(index)
         .query(definition)
         .start(offset)
         .limit(limit)
     }.map { resp =>
-      logger.trace(s"Business search response: $resp")
       if (resp.shardFailures.nonEmpty)
-      sys.error(s"${resp.shardFailures.length} failed shards out of ${resp.totalShards}, the returned result would be partial and not reliable")
+        sys.error(s"${resp.shardFailures.length} failed shards out of ${resp.totalShards}, the returned result would be partial and not reliable")
+      resp
+    }
+  }
 
+  // search with limit=0 still returns count of elements
+  private[this] def businessSearch(term: String, offset: Int, limit: Int, suggest: Boolean = false
+                                  ): Future[(RichSearchResponse, List[BusinessIndexRec])] = {
+    businessSearchInternal(term, offset, limit, suggest).map { resp =>
+      logger.trace(s"Business search response: $resp")
       resp.as[BusinessIndexRec].toList match {
         case list@_ :: _ =>
           totalHitsHistogram += resp.totalHits
@@ -81,58 +79,11 @@ class SearchController @Inject()(elastic: ElasticClient, val config: Config)(
         case Nil => resp -> List.empty[BusinessIndexRec]
       }
     }
-    r
-  }
-
-  def response(resp: SearchData, businesses: List[BusinessIndexRec]): Result = {
-    businesses match {
-      case _ :: _ => responseWithHTTPHeaders(resp, Ok(Json.toJson(businesses.map(_.secured))))
-      case _ => responseWithHTTPHeaders(resp, Ok("{}").as(JSON))
-    }
-  }
-
-  def response(tp: (SearchData, List[BusinessIndexRec])): Result = {
-    val (searchData, list) = tp
-    response(searchData, list)
-  }
-
-  case class SearchData(totalHits: Long, maxScore: Float)
-
-  def responseWithHTTPHeaders(resp: SearchData, searchResult: Result): Result = {
-    searchResult.withHeaders(
-      "X-Total-Count" -> resp.totalHits.toString,
-      "X-Max-Score" -> resp.maxScore.toString)
-  }
-
-  def searchTerm(term: String, suggest: Boolean = false): Action[AnyContent] = searchBusiness(Some(term), suggest)
-
-  protected[this] def resultAsBusiness(businessId: Long, resp: RichGetResponse): Option[BusinessIndexRec] = {
-    val source = Option(resp.source).map(_.asScala.toMap[String, AnyRef]).getOrElse(Map.empty[String, AnyRef])
-
-    Try(BusinessIndexRec.fromMap(businessId, source)).toOption
-  }
-
-  def findById(businessId: Long): Future[Option[BusinessIndexRec]] = {
-    logger.debug(s"Searching for business with ID $businessId")
-    elastic.execute {
-      get id businessId from index
-    } map (resultAsBusiness(businessId, _))
-  }
-
-  def searchBusinessById(id: String): Action[AnyContent] = Action.async {
-    cparse[Long](id) fold(_.response.future, value =>
-      findById(value) map {
-        case Some(res) =>
-          Ok(Json.toJson(res.secured))
-        case None =>
-          logger.debug(s"Could not find a record with the ID $id")
-          NoContent
-      }
-    )
   }
 
   private[this] val isCaching = config.getBoolean("hbase.caching.enabled")
 
+  // hbase caching
   private[this] def getOrElseWrap(request: String)(f: => Future[(RichSearchResponse, List[BusinessIndexRec])]):
   Future[(SearchData, List[BusinessIndexRec])] = {
     if (isCaching) {
@@ -150,6 +101,31 @@ class SearchController @Inject()(elastic: ElasticClient, val config: Config)(
     }
   }
 
+  // public API
+  def searchTerm(term: String, suggest: Boolean = false): Action[AnyContent] = searchBusiness(Some(term), suggest)
+
+  // public API
+  def findById(businessId: Long): Future[Option[BusinessIndexRec]] = {
+    logger.debug(s"Searching for business with ID $businessId")
+    elastic.execute {
+      get id businessId from index
+    } map (resultAsBusiness(businessId, _))
+  }
+
+  // public API
+  def searchBusinessById(id: String): Action[AnyContent] = Action.async {
+    cparse[Long](id) fold(_.response.future, value =>
+      findById(value) map {
+        case Some(res) =>
+          Ok(Json.toJson(res.secured))
+        case None =>
+          logger.debug(s"Could not find a record with the ID $id")
+          NoContent
+      }
+    )
+  }
+
+  // public api
   def searchBusiness(term: Option[String], suggest: Boolean = false): Action[AnyContent] = {
     Action.async { implicit request =>
       // getOrElseWrap(term)
@@ -165,24 +141,7 @@ class SearchController @Inject()(elastic: ElasticClient, val config: Config)(
           // if suggest, match on the BusinessName only, else assume it's an Elasticsearch query
           getOrElseWrap(query) {
             businessSearch(query, offset, limit, suggest)
-          } map response recover {
-            case e: NoNodeAvailableException => ServiceUnavailable(
-              Json.obj(
-                "status" -> 503,
-                "code" -> "es_down",
-                "message_en" -> e.getMessage
-              )
-            )
-            case NonFatal(e) =>
-              logger.error(s"Internal error ${e.getMessage}", e)
-              InternalServerError(
-              Json.obj(
-                "status" -> 500,
-                "code" -> "internal_error",
-                "message_en" -> e.getMessage
-              )
-            )
-          }
+          } map response recover responseRecover
         case _ =>
           BadRequest(
             Json.obj(
@@ -194,5 +153,4 @@ class SearchController @Inject()(elastic: ElasticClient, val config: Config)(
       }
     }
   }
-
 }
