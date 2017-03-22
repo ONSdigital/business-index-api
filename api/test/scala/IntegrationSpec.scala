@@ -62,9 +62,16 @@ class IntegrationSpec extends PlaySpec with GuiceOneServerPerSuite with OneBrows
         res.businessName mustBe name
       }
       checkFor(name)
-//      (3 to name.length).foreach { x =>
-//        checkFor(name.substring(0, x))
-//      }
+      def toSearch(in: String): String = {
+        in.lastIndexOf(' ') match {
+          case x if x > 0 =>
+            val l = in.substring(0, x)
+            checkFor(l)
+            toSearch(l)
+          case _ => ""
+        }
+      }
+      toSearch(name)
     }
   }
 
