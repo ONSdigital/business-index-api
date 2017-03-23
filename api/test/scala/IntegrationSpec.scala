@@ -78,7 +78,7 @@ class IntegrationSpec extends PlaySpec with GuiceOneServerPerSuite with OneBrows
       val postcode = "SE13 6AS"
       go to s"$baseApiUri/v1/search/PostCode:($postcode)"
       val res = extractData(pageSource)
-      ((res.length == 1) && (res(0).postCode.getOrElse(throw new Exception("Cannot get empty Option value")) == postcode)) mustBe true
+      ((res.length == 1) && (res(0).postCode.getOrElse(throw new Exception(s"Postcode $postcode is empty in test/sample.csv data")) == postcode)) mustBe true
     }
 
     "check if wildcard postcode search works correctly" in {
