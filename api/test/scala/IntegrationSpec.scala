@@ -73,6 +73,30 @@ class IntegrationSpec extends PlaySpec with GuiceOneServerPerSuite with OneBrows
       }
       toSearch(name)
     }
+
+    "check if exact postcode search returns only one result" in {
+      val postcode = "SE13 6AS"
+
+      def checkFor(s: String): Int = {
+        go to s"""$baseApiUri/v1/search/PostCode:"$s""""
+        val res = extractData(pageSource)
+        res.length
+      }
+      val t = checkFor(postcode)
+      t mustBe 1
+    }
+
+    "check if exact postcode search returns correct result" in {
+      val postcode = "SE13 6AS"
+
+      def checkFor(s: String): String = {
+        go to s"""$baseApiUri/v1/search/PostCode:"$s""""
+        val res = extractFirstData(pageSource)
+        res.postCode.get
+      }
+      val t = checkFor(postcode)
+      t mustBe postcode
+    }
   }
 
   private def extractData(s: String) = Json.fromJson[List[BusinessIndexRec]](Json.parse(s)).getOrElse(sys.error(s"error while parsing data from elastic: $s"))
