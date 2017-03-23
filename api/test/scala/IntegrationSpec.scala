@@ -74,28 +74,18 @@ class IntegrationSpec extends PlaySpec with GuiceOneServerPerSuite with OneBrows
       toSearch(name)
     }
 
-    "check if exact postcode search returns only one result" in {
+    "check if exact postcode search returns only one result and is correct" in {
       val postcode = "SE13 6AS"
-
-      def checkFor(s: String): Int = {
-        go to s"$baseApiUri/v1/search/PostCode:($s)"
-        val res = extractData(pageSource)
-        res.length
-      }
-      val t = checkFor(postcode)
-      t mustBe 1
+      go to s"$baseApiUri/v1/search/PostCode:($postcode)"
+      val res = extractData(pageSource)
+      ((res.length == 1) && (res(0).postCode.get == postcode)) mustBe true
     }
 
-    "check if exact postcode search returns correct result" in {
-      val postcode = "SE13 6AS"
-
-      def checkFor(s: String): String = {
-        go to s"$baseApiUri/v1/search/PostCode:($s)"
-        val res = extractFirstData(pageSource)
-        res.postCode.get
-      }
-      val t = checkFor(postcode)
-      t mustBe postcode
+    "check if wildcard postcode search works correctly" in {
+      val postcode = "SE13"
+      go to s"$baseApiUri/v1/search/PostCode:($postcode)"
+      val res = extractData(pageSource)
+      res.length mustBe 2
     }
   }
 
