@@ -78,7 +78,7 @@ class IntegrationSpec extends PlaySpec with GuiceOneServerPerSuite with OneBrows
       val postcode = "SE13 6AS"
 
       def checkFor(s: String): Int = {
-        go to s"""$baseApiUri/v1/search/PostCode:"$s""""
+        go to s"$baseApiUri/v1/search/PostCode:($s)"
         val res = extractData(pageSource)
         res.length
       }
@@ -90,7 +90,7 @@ class IntegrationSpec extends PlaySpec with GuiceOneServerPerSuite with OneBrows
       val postcode = "SE13 6AS"
 
       def checkFor(s: String): String = {
-        go to s"""$baseApiUri/v1/search/PostCode:"$s""""
+        go to s"$baseApiUri/v1/search/PostCode:($s)"
         val res = extractFirstData(pageSource)
         res.postCode.get
       }
