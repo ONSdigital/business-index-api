@@ -50,7 +50,6 @@ class IntegrationSpec extends PlaySpec with GuiceOneServerPerSuite with OneBrows
       val rec = extractFirstData(pageSource)
       rec.vatRefs mustBe None
       rec.payeRefs mustBe None
-      rec.postCode mustBe None
       rec.employmentBands mustNot be(None)
     }
 
@@ -63,9 +62,30 @@ class IntegrationSpec extends PlaySpec with GuiceOneServerPerSuite with OneBrows
         res.businessName mustBe name
       }
       checkFor(name)
-      (3 to name.length).foreach { x =>
-        checkFor(name.substring(0, x))
+      def toSearch(in: String): String = {
+        in.lastIndexOf(' ') match {
+          case x if x > 0 =>
+            val l = in.substring(0, x)
+            checkFor(l)
+            toSearch(l)
+          case _ => ""
+        }
       }
+      toSearch(name)
+    }
+
+    "check if exact postcode search returns only one result and is correct" in {
+      val postcode = "SE13 6AS"
+      go to s"$baseApiUri/v1/search/PostCode:($postcode)"
+      val res = extractData(pageSource)
+      ((res.length == 1) && (res(0).postCode.getOrElse(throw new Exception(s"Postcode $postcode is empty in test/sample.csv data")) == postcode)) mustBe true
+    }
+
+    "check if wildcard postcode search works correctly" in {
+      val postcode = "SE13"
+      go to s"$baseApiUri/v1/search/PostCode:($postcode)"
+      val res = extractData(pageSource)
+      res.length mustBe 2
     }
   }
 

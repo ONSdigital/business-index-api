@@ -56,12 +56,13 @@ class SearchController @Inject()(elastic: ElasticClient, val config: Config)(
     override def as(hit: RichSearchHit): BusinessIndexRec = BusinessIndexRec.fromMap(hit.id.toLong, hit.sourceAsMap)
   }
 
-  protected[this] def businessSearch(term: String, offset: Int, limit: Int, suggest: Boolean = false
-                                    ): Future[(RichSearchResponse, List[BusinessIndexRec])] = {
+  protected[this] def businessSearch(term: String, offset: Int, limit: Int,
+                                     suggest: Boolean = false,
+                                     defaultOperator: String): Future[(RichSearchResponse, List[BusinessIndexRec])] = {
     val definition = if (suggest) {
       matchQuery(BIndexConsts.BiName, query)
     } else {
-      QueryStringQueryDefinition(term)
+      QueryStringQueryDefinition(term).defaultOperator(defaultOperator)
     }
 
     val r = elastic.execute {
@@ -159,12 +160,13 @@ class SearchController @Inject()(elastic: ElasticClient, val config: Config)(
 
       val offset = Try(request.getQueryString("offset").getOrElse("0").toInt).getOrElse(0)
       val limit = Try(request.getQueryString("limit").getOrElse("100").toInt).getOrElse(100)
+      val defaultOperator = request.getQueryString("default_operator").getOrElse("AND")
 
       searchTerm match {
         case Some(query) if query.length > 0 =>
-          // if suggest, match on the BusinessName only, else assume it's an Elasticsearch query
+          // if suggest, match on the BusinessName only, else assume it's an ElasticSearch query
           getOrElseWrap(query) {
-            businessSearch(query, offset, limit, suggest)
+            businessSearch(query, offset, limit, suggest, defaultOperator)
           } map response recover {
             case e: NoNodeAvailableException => ServiceUnavailable(
               Json.obj(
