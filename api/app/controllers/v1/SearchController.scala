@@ -9,6 +9,7 @@ import com.sksamuel.elastic4s._
 import com.typesafe.config.Config
 import com.typesafe.scalalogging.StrictLogging
 import controllers.v1.BusinessIndexObj._
+import io.swagger.annotations.Api
 import nl.grons.metrics.scala.DefaultInstrumented
 import org.elasticsearch.client.transport.NoNodeAvailableException
 import play.api.libs.json._
@@ -32,6 +33,7 @@ object BusinessIndexObj {
   * @param context
   * @param config
   */
+@Api("Search")
 @Singleton
 class SearchController @Inject()(elastic: ElasticClient, val config: Config)(
   implicit context: ExecutionContext

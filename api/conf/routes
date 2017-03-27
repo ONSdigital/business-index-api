@@ -3,6 +3,7 @@
 # ~~~~
 
 GET     /                           controllers.HomeController.index
+
 GET     /v1/business/:id            controllers.v1.SearchController.searchBusinessById(id)
 GET     /v1/search                  controllers.v1.SearchController.searchBusiness(term: Option[String] ?= None, suggest: Boolean ?= false)
 GET     /v1/search/:term            controllers.v1.SearchController.searchTerm(term, suggest: Boolean ?= false)
@@ -17,3 +18,8 @@ GET     /health                     controllers.HealthController.health
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
 GET     /webjars/*file              controllers.WebJarAssets.at(file)
+
+# Swagger API
+GET   /swagger.json                 controllers.ApiHelpController.getResources
+GET   /docs/                        controllers.Assets.at(path="/public/swagger-ui",file="index.html")
+GET   /docs/*file                   controllers.Assets.at(path="/public/swagger-ui",file)

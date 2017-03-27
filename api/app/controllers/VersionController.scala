@@ -2,6 +2,7 @@ package controllers
 
 import javax.inject.Singleton
 
+import io.swagger.annotations.Api
 import play.api.mvc.{Action, Controller}
 
 import scala.collection.immutable.ListMap
@@ -9,6 +10,7 @@ import scala.collection.immutable.ListMap
 /**
   * Contains action for the /version route, displaying the latest BuildInfo values (generated during build).
   */
+@Api("Utils")
 @Singleton
 class VersionController extends Controller {
   def version = Action {

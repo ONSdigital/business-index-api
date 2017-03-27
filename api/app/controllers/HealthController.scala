@@ -9,13 +9,12 @@ import play.api.mvc.Controller
 import play.api.mvc._
 
 import scala.collection.JavaConverters._
-
 import java.util.Date
+
+import io.swagger.annotations.Api
 import org.joda.time.DateTime
 
-
-
-
+@Api("Utils")
 class HealthController extends Controller  {
   private[this] val startTime = System.currentTimeMillis()
 
