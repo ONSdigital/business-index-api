@@ -52,9 +52,9 @@ class SearchController @Inject()(elastic: ElasticClient, val config: Config)(
     override def as(hit: RichSearchHit): BusinessIndexRec = BusinessIndexRec.fromMap(hit.id.toLong, hit.sourceAsMap)
   }
 
-  protected[this] def businessSearch(term: String, offset: Int, limit: Int,
+  protected[this] def businessSearchInternal(term: String, offset: Int, limit: Int,
                                      suggest: Boolean = false,
-                                     defaultOperator: String): Future[(RichSearchResponse, List[BusinessIndexRec])] = {
+                                     defaultOperator: String): Future[RichSearchResponse] = {
     val definition = if (suggest) {
       matchQuery(BIndexConsts.BiName, query)
     } else {
@@ -73,9 +73,9 @@ class SearchController @Inject()(elastic: ElasticClient, val config: Config)(
   }
 
   // search with limit=0 still returns count of elements
-  private[this] def businessSearch(term: String, offset: Int, limit: Int, suggest: Boolean = false
-                                  ): Future[(RichSearchResponse, List[BusinessIndexRec])] = {
-    businessSearchInternal(term, offset, limit, suggest).map { resp =>
+  private[this] def businessSearch(term: String, offset: Int, limit: Int, suggest: Boolean = false,
+                                  defaultOperator: String): Future[(RichSearchResponse, List[BusinessIndexRec])] = {
+    businessSearchInternal(term, offset, limit, suggest, defaultOperator).map { resp =>
       logger.trace(s"Business search response: $resp")
       resp.as[BusinessIndexRec].toList match {
         case list@_ :: _ =>
