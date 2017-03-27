@@ -87,7 +87,28 @@ class IntegrationSpec extends PlaySpec with GuiceOneServerPerSuite with OneBrows
       val res = extractData(pageSource)
       res.length mustBe 2
     }
+
+    "check that nothing is returned if Postcode does not exist" in {
+      val postcode = "NNN 777"
+      go to s"$baseApiUri/v1/search/PostCode:$postcode"
+      pageSource mustBe "{}"
+    }
+
+    "check that search business by id works" in {
+      val id = "21840175"
+      go to s"$baseApiUri/v1/business/$id"
+      val res = extractBusiness(pageSource)
+      res.businessName mustBe "ACCLAIMED HOMES LIMITED"
+    }
+
+    "check that search business returns no results on incorrect id" in {
+      val id = "0"
+      go to s"$baseApiUri/v1/business/$id"
+      pageSource mustBe "{}"
+    }
   }
+
+  private def extractBusiness(s: String) = Json.fromJson[BusinessIndexRec](Json.parse(s)).getOrElse(sys.error(s"error while parsing business data from elastic: $s"))
 
   private def extractData(s: String) = Json.fromJson[List[BusinessIndexRec]](Json.parse(s)).getOrElse(sys.error(s"error while parsing data from elastic: $s"))
 

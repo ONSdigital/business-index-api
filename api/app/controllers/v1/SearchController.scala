@@ -73,7 +73,7 @@ class SearchController @Inject()(elastic: ElasticClient, val config: Config)(
     }.map { resp =>
       logger.trace(s"Business search response: $resp")
       if (resp.shardFailures.nonEmpty)
-      sys.error(s"${resp.shardFailures.length} failed shards out of ${resp.totalShards}, the returned result would be partial and not reliable")
+        sys.error(s"${resp.shardFailures.length} failed shards out of ${resp.totalShards}, the returned result would be partial and not reliable")
 
       resp.as[BusinessIndexRec].toList match {
         case list@_ :: _ =>
@@ -108,9 +108,9 @@ class SearchController @Inject()(elastic: ElasticClient, val config: Config)(
   def searchTerm(term: String, suggest: Boolean = false): Action[AnyContent] = searchBusiness(Some(term), suggest)
 
   protected[this] def resultAsBusiness(businessId: Long, resp: RichGetResponse): Option[BusinessIndexRec] = {
-    val source = Option(resp.source).map(_.asScala.toMap[String, AnyRef]).getOrElse(Map.empty[String, AnyRef])
-
-    Try(BusinessIndexRec.fromMap(businessId, source)).toOption
+    Option(resp.source).map(_.asScala.toMap[String, AnyRef]).flatMap { data =>
+      Try(BusinessIndexRec.fromMap(businessId, data)).toOption
+    }
   }
 
   def findById(businessId: Long): Future[Option[BusinessIndexRec]] = {
@@ -127,9 +127,9 @@ class SearchController @Inject()(elastic: ElasticClient, val config: Config)(
           Ok(Json.toJson(res.secured))
         case None =>
           logger.debug(s"Could not find a record with the ID $id")
-          NoContent
+          Ok("{}").as(JSON)
       }
-    )
+      )
   }
 
   private[this] val isCaching = config.getBoolean("hbase.caching.enabled")
@@ -178,12 +178,12 @@ class SearchController @Inject()(elastic: ElasticClient, val config: Config)(
             case NonFatal(e) =>
               logger.error(s"Internal error ${e.getMessage}", e)
               InternalServerError(
-              Json.obj(
-                "status" -> 500,
-                "code" -> "internal_error",
-                "message_en" -> e.getMessage
+                Json.obj(
+                  "status" -> 500,
+                  "code" -> "internal_error",
+                  "message_en" -> e.getMessage
+                )
               )
-            )
           }
         case _ =>
           BadRequest(
