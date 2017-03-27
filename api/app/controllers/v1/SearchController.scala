@@ -53,8 +53,8 @@ class SearchController @Inject()(elastic: ElasticClient, val config: Config)(
   }
 
   protected[this] def businessSearchInternal(term: String, offset: Int, limit: Int,
-                                     suggest: Boolean = false,
-                                     defaultOperator: String): Future[RichSearchResponse] = {
+                                             suggest: Boolean = false,
+                                             defaultOperator: String): Future[RichSearchResponse] = {
     val definition = if (suggest) {
       matchQuery(BIndexConsts.BiName, query)
     } else {
@@ -74,7 +74,7 @@ class SearchController @Inject()(elastic: ElasticClient, val config: Config)(
 
   // search with limit=0 still returns count of elements
   private[this] def businessSearch(term: String, offset: Int, limit: Int, suggest: Boolean = false,
-                                  defaultOperator: String): Future[(RichSearchResponse, List[BusinessIndexRec])] = {
+                                   defaultOperator: String): Future[(RichSearchResponse, List[BusinessIndexRec])] = {
     businessSearchInternal(term, offset, limit, suggest, defaultOperator).map { resp =>
       logger.trace(s"Business search response: $resp")
       resp.as[BusinessIndexRec].toList match {
@@ -149,13 +149,7 @@ class SearchController @Inject()(elastic: ElasticClient, val config: Config)(
             businessSearch(query, offset, limit, suggest, defaultOperator)
           } map response recover responseRecover
         case _ =>
-          BadRequest(
-            Json.obj(
-              "status" -> 400,
-              "code" -> "missing_query",
-              "message_en" -> "No query specified."
-            )
-          ).future
+          BadRequest(errAsJson(400, "missing_query", "No query specified.")).future
       }
     }
   }

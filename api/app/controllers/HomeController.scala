@@ -10,8 +10,4 @@ class HomeController @Inject()(webJarAssets: WebJarAssets) extends Controller {
     Ok(views.html.index("ONS BI DEMO", webJarAssets))
   }
 
-  def importer: Action[AnyContent] = Action {
-    Ok("")
-    //Ok(views.html.importer("ONS BI Importer", webJarAssets))
-  }
 }
