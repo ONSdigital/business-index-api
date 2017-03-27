@@ -5,6 +5,8 @@ import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.libs.json.Json
 import uk.gov.ons.bi.models.BusinessIndexRec
 import controllers.v1.BusinessIndexObj._
+import play.api.test.FakeRequest
+import play.api.test.Helpers._
 
 class IntegrationSpec extends PlaySpec with GuiceOneServerPerSuite with OneBrowserPerSuite with HtmlUnitFactory {
 
@@ -51,6 +53,18 @@ class IntegrationSpec extends PlaySpec with GuiceOneServerPerSuite with OneBrows
       rec.vatRefs mustBe None
       rec.payeRefs mustBe None
       rec.employmentBands mustNot be(None)
+    }
+
+    "check if illegal character returns 400 bad request" in {
+      val name = "|"
+      val search = route(app, FakeRequest(GET, s"/v1/search/BusinessName:$name")).getOrElse(sys.error("Can not find route."))
+      status(search) mustBe BAD_REQUEST
+    }
+
+    "check if 500 is returned on elastic search error" in {
+      val name = "!"
+      val search = route(app, FakeRequest(GET, s"/v1/search/BusinessName:$name")).getOrElse(sys.error("Can not find route."))
+      status(search) mustBe 500
     }
 
     "check if elasticsearch analyzers works" in {
