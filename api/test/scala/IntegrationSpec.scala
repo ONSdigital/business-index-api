@@ -5,6 +5,8 @@ import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.libs.json.Json
 import uk.gov.ons.bi.models.BusinessIndexRec
 import controllers.v1.BusinessIndexObj._
+import play.api.test.FakeRequest
+import play.api.test.Helpers._
 
 class IntegrationSpec extends PlaySpec with GuiceOneServerPerSuite with OneBrowserPerSuite with HtmlUnitFactory {
 
@@ -53,6 +55,18 @@ class IntegrationSpec extends PlaySpec with GuiceOneServerPerSuite with OneBrows
       rec.employmentBands mustNot be(None)
     }
 
+    "check if illegal character returns 400 bad request" in {
+      val name = "|"
+      val search = route(app, FakeRequest(GET, s"/v1/search/BusinessName:$name")).getOrElse(sys.error("Can not find route."))
+      status(search) mustBe BAD_REQUEST
+    }
+
+    "check if 500 is returned on elastic search error" in {
+      val name = "!"
+      val search = route(app, FakeRequest(GET, s"/v1/search/BusinessName:$name")).getOrElse(sys.error("Can not find route."))
+      status(search) mustBe 500
+    }
+
     "check if elasticsearch analyzers works" in {
       val name = "GRAFIXSTAR LTD. CORP'S & BRTHR'S"
 
@@ -87,7 +101,28 @@ class IntegrationSpec extends PlaySpec with GuiceOneServerPerSuite with OneBrows
       val res = extractData(pageSource)
       res.length mustBe 2
     }
+
+    "check that nothing is returned if Postcode does not exist" in {
+      val postcode = "NNN 777"
+      go to s"$baseApiUri/v1/search/PostCode:$postcode"
+      pageSource mustBe "{}"
+    }
+
+    "check that search business by id works" in {
+      val id = "21840175"
+      go to s"$baseApiUri/v1/business/$id"
+      val res = extractBusiness(pageSource)
+      res.businessName mustBe "ACCLAIMED HOMES LIMITED"
+    }
+
+    "check that search business returns no results on incorrect id" in {
+      val id = "0"
+      go to s"$baseApiUri/v1/business/$id"
+      pageSource mustBe "{}"
+    }
   }
+
+  private def extractBusiness(s: String) = Json.fromJson[BusinessIndexRec](Json.parse(s)).getOrElse(sys.error(s"error while parsing business data from elastic: $s"))
 
   private def extractData(s: String) = Json.fromJson[List[BusinessIndexRec]](Json.parse(s)).getOrElse(sys.error(s"error while parsing data from elastic: $s"))
 

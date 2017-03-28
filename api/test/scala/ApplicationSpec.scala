@@ -30,4 +30,24 @@ class ApplicationSpec extends PlaySpec with OneAppPerTest {
       contentAsString(search).toLowerCase must include ("missing_query")
     }
   }
+
+  "VersionController" should {
+    "return version information as JSON" in {
+      val version = route(app, FakeRequest(GET, "/version")).getOrElse(sys.error("Cannot find route."))
+
+      status(version) mustBe OK
+      contentType(version) mustBe Some("application/json")
+      contentAsString(version) must include ("ons-bi-api")
+    }
+  }
+
+  "HealthController" should {
+    "return health information as JSON" in {
+      val health = route(app, FakeRequest(GET, "/health")).getOrElse(sys.error("Cannot find route."))
+
+      status(health) mustBe OK
+      contentType(health) mustBe Some("application/json")
+      contentAsString(health) must include ("Date and Time:")
+    }
+  }
 }
