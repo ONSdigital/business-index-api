@@ -96,11 +96,6 @@ lazy val api = (project in file("api"))
     libraryDependencies ++= Seq(
       filters,
       "org.webjars" %% "webjars-play" % "2.5.0-3",
-      "org.webjars.bower" % "angular" % "1.5.9",
-      "org.webjars.bower" % "dali" % "1.3.2",
-      "org.webjars.bower" % "angular-toggle-switch" % "1.3.0",
-      "org.webjars.bower" % "angular-bootstrap" % "1.1.0",
-      "org.webjars.bower" % "angular-ui-router" % "0.2.15",
       "com.typesafe.scala-logging" %% "scala-logging" % "3.5.0",
       "ch.qos.logback" % "logback-classic" % "1.1.7",
       "com.splunk.logging" % "splunk-library-javalogging" % "1.5.2" excludeAll(

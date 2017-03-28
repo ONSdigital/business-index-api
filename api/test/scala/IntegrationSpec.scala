@@ -8,16 +8,6 @@ import controllers.v1.BusinessIndexObj._
 
 class IntegrationSpec extends PlaySpec with GuiceOneServerPerSuite with OneBrowserPerSuite with HtmlUnitFactory {
 
-
-  "Common application" should {
-    val baseApiUri = s"http://localhost:$port"
-
-    "work from within a browser" in {
-      go to baseApiUri
-      pageSource must include("ONS BI DEMO")
-    }
-  }
-
   "Data Application" should {
 
     // wait while all data loaded into elastic

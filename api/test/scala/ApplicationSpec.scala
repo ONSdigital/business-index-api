@@ -12,15 +12,6 @@ class ApplicationSpec extends PlaySpec with OneAppPerTest {
     }
   }
 
-  "HomeController" should {
-    "render the index page" in {
-      val home = route(app, FakeRequest(GET, "/")).getOrElse(sys.error("Can not find route."))
-
-      status(home) mustBe OK
-      contentType(home) mustBe Some("text/html")
-    }
-  }
-
   "SearchController" should {
     "return 400 when no query" in {
       val search = route(app, FakeRequest(GET, "/v1/search")).getOrElse(sys.error("Can not find route."))
