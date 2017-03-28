@@ -15,7 +15,8 @@ lazy val commonSettings = Seq(
     Resolver.bintrayRepo("outworkers", "oss-releases"),
     "splunk" at "http://splunk.artifactoryonline.com/splunk/ext-releases-local"
   ),
-  scalacOptions in ThisBuild ++= Seq(
+  coverageExcludedPackages := ".*target.*;.*javascript.*",
+    scalacOptions in ThisBuild ++= Seq(
     "-language:experimental.macros",
     "-target:jvm-1.8",
     "-encoding", "UTF-8",
