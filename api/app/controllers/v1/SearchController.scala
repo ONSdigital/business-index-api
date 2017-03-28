@@ -9,7 +9,7 @@ import com.sksamuel.elastic4s._
 import com.typesafe.config.Config
 import com.typesafe.scalalogging.StrictLogging
 import controllers.v1.BusinessIndexObj._
-import io.swagger.annotations.Api
+import io.swagger.annotations._
 import nl.grons.metrics.scala.DefaultInstrumented
 import org.elasticsearch.client.transport.NoNodeAvailableException
 import play.api.libs.json._
@@ -107,7 +107,14 @@ class SearchController @Inject()(elastic: ElasticClient, val config: Config)(
       "X-Max-Score" -> resp.maxScore.toString)
   }
 
-  def searchTerm(term: String, suggest: Boolean = false): Action[AnyContent] = searchBusiness(Some(term), suggest)
+  @ApiOperation(value = "Search businesses by query",
+    notes = "Returns list of available businesses",
+    httpMethod = "GET")
+  @ApiResponses(Array(
+    new ApiResponse(code = 500, message = "Internal server error"),
+    new ApiResponse(code = 503, message = "Elastic search is not available")))
+  def searchTerm(@ApiParam(value = "Query to elastic search") term: String,
+                 suggest: Boolean = false): Action[AnyContent] = searchBusiness(Some(term), suggest)
 
   protected[this] def resultAsBusiness(businessId: Long, resp: RichGetResponse): Option[BusinessIndexRec] = {
     val source = Option(resp.source).map(_.asScala.toMap[String, AnyRef]).getOrElse(Map.empty[String, AnyRef])

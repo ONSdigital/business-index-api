@@ -121,7 +121,8 @@ lazy val api = (project in file("api"))
       "org.apache.hadoop" % "hadoop-mapred" % "0.22.0",
       "org.apache.hbase" % "hbase-common" % "1.3.0",
       "org.apache.hbase" % "hbase-client" % "1.3.0",
-      "io.swagger" %% "swagger-play2" % "1.5.3"
+      "io.swagger" %% "swagger-play2" % "1.5.3",
+      "org.webjars" % "swagger-ui" % "2.2.10-1"
     ),
 
     dependencyOverrides += "com.google.guava" % "guava" % "18.0"

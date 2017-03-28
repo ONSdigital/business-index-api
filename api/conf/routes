@@ -21,5 +21,3 @@ GET     /webjars/*file              controllers.WebJarAssets.at(file)
 
 # Swagger API
 GET   /swagger.json                 controllers.ApiHelpController.getResources
-GET   /docs/                        controllers.Assets.at(path="/public/swagger-ui",file="index.html")
-GET   /docs/*file                   controllers.Assets.at(path="/public/swagger-ui",file)
