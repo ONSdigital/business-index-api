@@ -76,7 +76,7 @@ class SearchController @Inject()(elastic: ElasticClient, val config: Config)(
   private[this] def businessSearch(term: String, offset: Int, limit: Int, suggest: Boolean = false,
                                    defaultOperator: String): Future[(RichSearchResponse, List[BusinessIndexRec])] = {
     businessSearchInternal(term, offset, limit, suggest, defaultOperator).map { resp =>
-      logger.trace(s"Business search response: $resp")
+      logger.trace(s"Business search term $term, offset: $offset, limit: $limit, operator: $defaultOperator - response: $resp")
       resp.as[BusinessIndexRec].toList match {
         case list@_ :: _ =>
           totalHitsHistogram += resp.totalHits
