@@ -8,20 +8,10 @@ import controllers.v1.BusinessIndexObj._
 
 class IntegrationSpec extends PlaySpec with GuiceOneServerPerSuite with OneBrowserPerSuite with HtmlUnitFactory {
 
-
-  "Common application" should {
-    val baseApiUri = s"http://localhost:$port"
-
-    "work from within a browser" in {
-      go to baseApiUri
-      pageSource must include("ONS BI DEMO")
-    }
-  }
-
   "Data Application" should {
 
     // wait while all data loaded into elastic
-    Thread.sleep(100)
+    Thread.sleep(500)
 
     val baseApiUri = s"http://localhost:$port"
 
@@ -32,12 +22,20 @@ class IntegrationSpec extends PlaySpec with GuiceOneServerPerSuite with OneBrows
       def request = "BusinessName:TORUS*"
 
       // check directly elastic
-      go to s"http://localhost:9200/bi-dev/business/_search?q=$request"
-      check
+      //go to s"http://localhost:9200/bi-dev/business/_search?q=$request"
+      //check
       // check via api
       go to s"$baseApiUri/v1/search/$request"
       check
     }
+
+    "get by id" in {
+      val id = 21840175L
+      go to s"$baseApiUri/v1/business/$id"
+      val rec = Json.fromJson[BusinessIndexRec](Json.parse(pageSource)).getOrElse(sys.error(s"Non parsed obj $pageSource"))
+      rec.id mustBe id
+    }
+
 
     "search with limit" in {
       val limit = 5
@@ -78,7 +76,8 @@ class IntegrationSpec extends PlaySpec with GuiceOneServerPerSuite with OneBrows
       val postcode = "SE13 6AS"
       go to s"$baseApiUri/v1/search/PostCode:($postcode)"
       val res = extractData(pageSource)
-      ((res.length == 1) && (res(0).postCode.getOrElse(throw new Exception(s"Postcode $postcode is empty in test/sample.csv data")) == postcode)) mustBe true
+      res.length mustBe 1
+      res.head.postCode.getOrElse(sys.error(s"Postcode $postcode is empty in sample data")) mustBe postcode
     }
 
     "check if wildcard postcode search works correctly" in {
@@ -87,6 +86,15 @@ class IntegrationSpec extends PlaySpec with GuiceOneServerPerSuite with OneBrows
       val res = extractData(pageSource)
       res.length mustBe 2
     }
+
+    "invalid search must generate exception" in {
+      go to s"$baseApiUri/v1/search/PostCode:^&%"
+      val res = pageSource
+      res must include (""""status":500""")
+      println(pageSource)
+    }
+
+
   }
 
   private def extractData(s: String) = Json.fromJson[List[BusinessIndexRec]](Json.parse(s)).getOrElse(sys.error(s"error while parsing data from elastic: $s"))

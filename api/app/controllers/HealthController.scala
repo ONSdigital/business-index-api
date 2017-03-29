@@ -1,18 +1,8 @@
 package controllers
 
-import java.util.concurrent.Executors
-
-import com.google.common.base.Throwables
-import com.google.common.util.concurrent.ThreadFactoryBuilder
-import nl.grons.metrics.scala.DefaultInstrumented
-import play.api.mvc.Controller
-import play.api.mvc._
-
-import scala.collection.JavaConverters._
-import java.util.Date
-
-import io.swagger.annotations.Api
 import org.joda.time.DateTime
+import play.api.mvc.{Controller, _}
+import io.swagger.annotations.Api
 
 @Api("Utils")
 class HealthController extends Controller  {
