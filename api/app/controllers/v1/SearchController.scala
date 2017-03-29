@@ -56,7 +56,7 @@ class SearchController @Inject()(elastic: ElasticClient, val config: Config)(
                                              suggest: Boolean = false,
                                              defaultOperator: String): Future[RichSearchResponse] = {
     val definition = if (suggest) {
-      matchQuery(BIndexConsts.BiName, query)
+      matchQuery(BIndexConsts.cBiName, query)
     } else {
       QueryStringQueryDefinition(term).defaultOperator(defaultOperator)
     }
@@ -122,7 +122,7 @@ class SearchController @Inject()(elastic: ElasticClient, val config: Config)(
     cparse[Long](id) fold(_.response.future, value =>
       findById(value) map {
         case Some(res) =>
-          Ok(Json.toJson(res.secured))
+          Ok(Json.toJson(res))
         case None =>
           logger.debug(s"Could not find a record with the ID $id")
           NoContent
