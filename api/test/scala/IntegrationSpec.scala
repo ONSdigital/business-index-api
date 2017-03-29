@@ -11,7 +11,7 @@ class IntegrationSpec extends PlaySpec with GuiceOneServerPerSuite with OneBrows
   "Data Application" should {
 
     // wait while all data loaded into elastic
-    Thread.sleep(500)
+    Thread.sleep(5000)
 
     val baseApiUri = s"http://localhost:$port"
 
