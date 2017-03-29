@@ -68,7 +68,8 @@ class IntegrationSpec extends PlaySpec with GuiceOneServerPerSuite with OneBrows
       val postcode = "SE13 6AS"
       go to s"$baseApiUri/v1/search/PostCode:($postcode)"
       val res = extractData(pageSource)
-      ((res.length == 1) && (res(0).postCode.getOrElse(throw new Exception(s"Postcode $postcode is empty in test/sample.csv data")) == postcode)) mustBe true
+      res.length mustBe 1
+      res.head.postCode.getOrElse(sys.error(s"Postcode $postcode is empty in sample data")) mustBe postcode
     }
 
     "check if wildcard postcode search works correctly" in {
@@ -77,6 +78,15 @@ class IntegrationSpec extends PlaySpec with GuiceOneServerPerSuite with OneBrows
       val res = extractData(pageSource)
       res.length mustBe 2
     }
+
+    "invalid search must generate exception" in {
+      go to s"$baseApiUri/v1/search/PostCode:^&%"
+      val res = pageSource
+      res must include (""""status":500""")
+      println(pageSource)
+    }
+
+
   }
 
   private def extractData(s: String) = Json.fromJson[List[BusinessIndexRec]](Json.parse(s)).getOrElse(sys.error(s"error while parsing data from elastic: $s"))
