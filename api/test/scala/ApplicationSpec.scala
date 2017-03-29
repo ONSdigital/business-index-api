@@ -15,14 +15,6 @@ class ApplicationSpec extends PlaySpec with OneAppPerTest {
   private[this] def fakeRequest(uri: String, method: String = GET) =
     route(app, FakeRequest(method, uri)).getOrElse(sys.error(s"Can not find route $uri."))
 
-  "HomeController" should {
-    "render the index page" in {
-      val home = fakeRequest("/")
-
-      status(home) mustBe OK
-      contentType(home) mustBe Some("text/html")
-    }
-  }
 
   "HealthController" should {
     "render the index page" in {

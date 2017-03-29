@@ -2,7 +2,6 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 
-GET     /                           controllers.HomeController.index
 GET     /v1/business/:id            controllers.v1.SearchController.searchBusinessById(id)
 GET     /v1/search                  controllers.v1.SearchController.searchBusiness(term: Option[String] ?= None, suggest: Boolean ?= false)
 GET     /v1/search/:term            controllers.v1.SearchController.searchTerm(term, suggest: Boolean ?= false)
