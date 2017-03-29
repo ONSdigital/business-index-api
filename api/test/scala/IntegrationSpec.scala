@@ -39,6 +39,14 @@ class IntegrationSpec extends PlaySpec with GuiceOneServerPerSuite with OneBrows
       check
     }
 
+    "get by id" in {
+      val id = 21840175L
+      go to s"$baseApiUri/v1/business/$id"
+      val rec = Json.fromJson[BusinessIndexRec](Json.parse(pageSource)).getOrElse(sys.error(s"Non parsed obj $pageSource"))
+      rec.id mustBe id
+    }
+
+
     "search with limit" in {
       val limit = 5
       go to s"$baseApiUri/v1/search/BusinessName:*?limit=$limit"

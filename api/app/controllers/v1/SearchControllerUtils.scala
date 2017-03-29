@@ -1,6 +1,5 @@
 package controllers.v1
 
-import com.outworkers.util.catsparsers.{parse => cparse}
 import com.sksamuel.elastic4s.RichGetResponse
 import com.typesafe.scalalogging.StrictLogging
 import controllers.v1.BusinessIndexObj._
