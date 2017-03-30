@@ -122,7 +122,6 @@ class SearchController @Inject()(elastic: ElasticClient, val config: Config)(
     cparse[Long](id) fold(_.response.future, value =>
       findById(value) map {
         case Some(res) =>
-          println(res)
           Ok(Json.toJson(res))
         case None =>
           logger.debug(s"Could not find a record with the ID $id")
