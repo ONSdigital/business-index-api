@@ -117,8 +117,7 @@ class SearchController @Inject()(elastic: ElasticClient, val config: Config)(
     new ApiResponse(code = 503, message = "Elastic search is not available")))
   def searchTerm(@ApiParam(value = "Query to elastic search") term: String, suggest: Boolean = false): Action[AnyContent] = searchBusiness(Some(term), suggest)
 
-  // public API
-  def findById(businessId: Long): Future[Option[BusinessIndexRec]] = {
+  private[this] def findById(businessId: Long): Future[Option[BusinessIndexRec]] = {
     logger.debug(s"Searching for business with ID $businessId")
     elastic.execute {
       get id businessId from index
@@ -126,7 +125,11 @@ class SearchController @Inject()(elastic: ElasticClient, val config: Config)(
   }
 
   // public API
-  def searchBusinessById(id: String): Action[AnyContent] = Action.async {
+  @ApiOperation(
+    value = "Search businesses by UBRN",
+    notes = "Returns exact business index record for particular UBRN Request",
+    httpMethod = "GET")
+  def searchBusinessById(@ApiParam(value = "UBRN to search") id: String): Action[AnyContent] = Action.async {
     cparse[Long](id) fold(_.response.future, value =>
       findById(value) map {
         case Some(res) =>
@@ -139,7 +142,10 @@ class SearchController @Inject()(elastic: ElasticClient, val config: Config)(
   }
 
   // public api
-  def searchBusiness(term: Option[String], suggest: Boolean = false): Action[AnyContent] = {
+  @ApiOperation(value = "Search businesses by query",
+    notes = "Returns list of available businesses. Additional parameters: offset, limit, default_operator",
+    httpMethod = "GET")
+  def searchBusiness(@ApiParam(value = "Query to elastic search") term: Option[String], suggest: Boolean = false): Action[AnyContent] = {
     Action.async { implicit request =>
       // getOrElseWrap(term)
       requestMeter.mark()
