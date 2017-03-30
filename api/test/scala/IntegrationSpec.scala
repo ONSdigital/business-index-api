@@ -8,25 +8,28 @@ import controllers.v1.BusinessIndexObj._
 
 class IntegrationSpec extends PlaySpec with GuiceOneServerPerSuite with OneBrowserPerSuite with HtmlUnitFactory {
 
+
+  val baseApiUri = s"http://localhost:$port"
+
   "Data Application" should {
 
     // wait while all data loaded into elastic
-    Thread.sleep(500)
+    "init service" in {
+      go to s"$baseApiUri/v1/search/BusinessName:*"
+      Thread.sleep(1000)
+    }
 
-    val baseApiUri = s"http://localhost:$port"
 
     // following tests rely on @InsertDemoData -
     // local elastic with few loaded records
-    "search for any data" in {
-      def check = pageSource must include("TORUS DEVELOPMENT CONSULTANTS LIMITED")
-      def request = "BusinessName:TORUS*"
+    "search for everything" in {
+      go to s"$baseApiUri/v1/search/BusinessName:*"
+      extractData(pageSource).size mustBe 20
+    }
 
-      // check directly elastic
-      //go to s"http://localhost:9200/bi-dev/business/_search?q=$request"
-      //check
-      // check via api
-      go to s"$baseApiUri/v1/search/$request"
-      check
+    "search for any data" in {
+      go to s"$baseApiUri/v1/search/BusinessName:TORUS*"
+      pageSource must include("TORUS DEVELOPMENT CONSULTANTS LIMITED")
     }
 
     "get by id" in {
