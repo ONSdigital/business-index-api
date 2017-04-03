@@ -155,13 +155,14 @@ class SearchController @Inject()(elastic: ElasticClient, val config: Config)(
       val offset = Try(request.getQueryString("offset").getOrElse("0").toInt).getOrElse(0)
       val limit = Try(request.getQueryString("limit").getOrElse("100").toInt).getOrElse(100)
       val defaultOperator = request.getQueryString("default_operator").getOrElse("AND")
+      val failOnQueryError = Try(request.getQueryString("fail_on_bad_query").getOrElse("true").toBoolean).getOrElse(true)
 
       searchTerm match {
         case Some(query) if query.length > 0 =>
           // if suggest, match on the BusinessName only, else assume it's an ElasticSearch query
           getOrElseWrap(query) {
             businessSearch(query, offset, limit, suggest, defaultOperator)
-          } map response recover responseRecover
+          } map response recover responseRecover(failOnQueryError)
         case _ =>
           BadRequest(errAsJson(400, "missing_query", "No query specified.")).future
       }

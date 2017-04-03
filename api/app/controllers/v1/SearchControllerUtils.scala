@@ -3,7 +3,12 @@ package controllers.v1
 import com.sksamuel.elastic4s.RichGetResponse
 import com.typesafe.scalalogging.StrictLogging
 import controllers.v1.BusinessIndexObj._
+import org.elasticsearch.ElasticsearchException
+import org.elasticsearch.action.search.SearchPhaseExecutionException
 import org.elasticsearch.client.transport.NoNodeAvailableException
+import org.elasticsearch.common.io.stream.NotSerializableExceptionWrapper
+import org.elasticsearch.index.query.QueryParsingException
+import org.elasticsearch.transport.RemoteTransportException
 import play.api.libs.json.{JsObject, Json}
 import play.api.mvc.{Controller, Result}
 import uk.gov.ons.bi.models.BusinessIndexRec
@@ -34,8 +39,17 @@ trait SearchControllerUtils extends Controller with StrictLogging {
     )
   }
 
-  protected[this] def responseRecover: PartialFunction[Throwable, Result] = {
+  private[this] def expectedCause(ex: Throwable): Boolean = Option(ex.getCause).exists {
+    case _: ElasticsearchException => true
+    case cc => expectedCause(cc)
+  }
+
+  protected[this] def responseRecover(failOnQueryError: Boolean): PartialFunction[Throwable, Result] = {
     case e: NoNodeAvailableException => ServiceUnavailable(errAsJson(503, "es_down", buildErrMsg(e)))
+    case e: RuntimeException if expectedCause(e) =>
+      def err(txt: String) = errAsJson(500, txt, buildErrMsg(e))
+
+      if (failOnQueryError) InternalServerError(err("query_error")) else Ok(err("query_warn"))
     case NonFatal(e) =>
       logger.error(s"Internal error ${e.getMessage}", e)
       InternalServerError(errAsJson(500, "internal_error", buildErrMsg(e)))
