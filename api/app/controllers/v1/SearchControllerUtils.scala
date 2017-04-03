@@ -39,16 +39,15 @@ trait SearchControllerUtils extends Controller with StrictLogging {
     )
   }
 
-  private[this] def expectedCause(ex: Throwable): Boolean = Option(ex.getCause).exists {
+  private[this] def isElasticFailed(ex: Throwable): Boolean = Option(ex.getCause).exists {
     case _: ElasticsearchException => true
-    case cc => expectedCause(cc)
+    case cc => isElasticFailed(cc)
   }
 
   protected[this] def responseRecover(failOnQueryError: Boolean): PartialFunction[Throwable, Result] = {
     case e: NoNodeAvailableException => ServiceUnavailable(errAsJson(503, "es_down", buildErrMsg(e)))
-    case e: RuntimeException if expectedCause(e) =>
+    case e: RuntimeException if isElasticFailed(e) =>
       def err(txt: String) = errAsJson(500, txt, buildErrMsg(e))
-
       if (failOnQueryError) InternalServerError(err("query_error")) else Ok(err("query_warn"))
     case NonFatal(e) =>
       logger.error(s"Internal error ${e.getMessage}", e)

@@ -90,6 +90,13 @@ class IntegrationSpec extends PlaySpec with GuiceOneServerPerSuite with OneBrows
       res.length mustBe 2
     }
 
+
+    "empty results returns properly" in {
+      go to s"$baseApiUri/v1/search/PostCode:UNEXISTED"
+      val res = pageSource
+      res must be("{}")
+    }
+
     "invalid search must generate exception" in {
       go to s"$baseApiUri/v1/search/PostCode:^&%"
       val res = pageSource
