@@ -32,6 +32,12 @@ To package the project in a runnable fat-jar:
 sbt assembly
 ```
 
+### API Documentation: swagger-ui
+
+Swagger UI is integrated into business-api. Exposed API documented and available within url:
+ 
+ ``` http://localhost:9000/assets/lib/swagger-ui/index.html?/url=http://localhost:9000/swagger.json ```
+
 ### Response Time
 
 Each request-response interaction carries a `X-Response-Time` header with a millisecond value indicating the server

@@ -29,7 +29,7 @@ class JsonParseTest extends FlatSpec with Matchers {
 
   "It" should "create json from obj" in {
     val data = BusinessIndexRec(16332123, "B.M.J. HOMES CO. LTD", Some(316786), Some("RJ87 4WK"),
-      Some(19946), Some("6"), Some("D"), Some("F"), Some("L"), Some(Seq(12076)), Some(Seq("24152")))
+      Some(19946), Some("6"), Some("D"), Some("F"), Some("L"), Some(Seq(12076)), Some(Seq("24152")), Some("AB123456"))
     Json.toJson(data)
   }
 

@@ -8,6 +8,7 @@ import com.outworkers.util.play._
 import com.sksamuel.elastic4s._
 import com.typesafe.config.Config
 import controllers.v1.BusinessIndexObj._
+import io.swagger.annotations._
 import nl.grons.metrics.scala.DefaultInstrumented
 import play.api.libs.json._
 import play.api.mvc._
@@ -28,6 +29,7 @@ object BusinessIndexObj {
   * @param context
   * @param config
   */
+@Api("Search")
 @Singleton
 class SearchController @Inject()(elastic: ElasticClient, val config: Config)(
   implicit context: ExecutionContext
@@ -107,10 +109,15 @@ class SearchController @Inject()(elastic: ElasticClient, val config: Config)(
   }
 
   // public API
-  def searchTerm(term: String, suggest: Boolean = false): Action[AnyContent] = searchBusiness(Some(term), suggest)
+  @ApiOperation(value = "Search businesses by query",
+    notes = "Returns list of available businesses",
+    httpMethod = "GET")
+  @ApiResponses(Array(
+    new ApiResponse(code = 500, message = "Internal server error"),
+    new ApiResponse(code = 503, message = "Elastic search is not available")))
+  def searchTerm(@ApiParam(value = "Query to elastic search") term: String, suggest: Boolean = false): Action[AnyContent] = searchBusiness(Some(term), suggest)
 
-  // public API
-  def findById(businessId: Long): Future[Option[BusinessIndexRec]] = {
+  private[this] def findById(businessId: Long): Future[Option[BusinessIndexRec]] = {
     logger.debug(s"Searching for business with ID $businessId")
     elastic.execute {
       get id businessId from index
@@ -118,7 +125,11 @@ class SearchController @Inject()(elastic: ElasticClient, val config: Config)(
   }
 
   // public API
-  def searchBusinessById(id: String): Action[AnyContent] = Action.async {
+  @ApiOperation(
+    value = "Search businesses by UBRN",
+    notes = "Returns exact business index record for particular UBRN Request",
+    httpMethod = "GET")
+  def searchBusinessById(@ApiParam(value = "UBRN to search") id: String): Action[AnyContent] = Action.async {
     cparse[Long](id) fold(_.response.future, value =>
       findById(value) map {
         case Some(res) =>
@@ -131,7 +142,10 @@ class SearchController @Inject()(elastic: ElasticClient, val config: Config)(
   }
 
   // public api
-  def searchBusiness(term: Option[String], suggest: Boolean = false): Action[AnyContent] = {
+  @ApiOperation(value = "Search businesses by query",
+    notes = "Returns list of available businesses. Additional parameters: offset, limit, default_operator",
+    httpMethod = "GET")
+  def searchBusiness(@ApiParam(value = "Query to elastic search") term: Option[String], suggest: Boolean = false): Action[AnyContent] = {
     Action.async { implicit request =>
       // getOrElseWrap(term)
       requestMeter.mark()

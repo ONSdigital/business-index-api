@@ -17,13 +17,21 @@ class ApplicationSpec extends PlaySpec with OneAppPerTest {
 
 
   "HealthController" should {
-    "render the index page" in {
+    "get the health status" in {
       val health = fakeRequest("/health")
       status(health) mustBe OK
       contentType(health) mustBe Some("text/plain")
       contentAsString(health) must include("Uptime")
       val health2 = fakeRequest("/health") // uptime value is changing
       contentAsString(health) mustNot be(contentAsString(health2))
+    }
+  }
+
+  "VersionController" should {
+    "get the version" in {
+      val health = fakeRequest("/version")
+      status(health) mustBe OK
+      contentType(health) mustBe Some("application/json")
     }
   }
 
