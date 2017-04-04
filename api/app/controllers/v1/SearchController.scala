@@ -162,7 +162,7 @@ class SearchController @Inject()(elastic: ElasticClient, val config: Config)(
           // if suggest, match on the BusinessName only, else assume it's an ElasticSearch query
           getOrElseWrap(query) {
             businessSearch(query, offset, limit, suggest, defaultOperator)
-          } map response recover responseRecover(failOnQueryError)
+          } map response recover responseRecover(query, failOnQueryError)
         case _ =>
           BadRequest(errAsJson(400, "missing_query", "No query specified.")).future
       }
