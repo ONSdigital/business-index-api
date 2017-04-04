@@ -44,10 +44,10 @@ trait SearchControllerUtils extends Controller with StrictLogging {
     case cc => isElasticFailed(cc)
   }
 
-  protected[this] def responseRecover(failOnQueryError: Boolean): PartialFunction[Throwable, Result] = {
+  protected[this] def responseRecover(query: String, failOnQueryError: Boolean): PartialFunction[Throwable, Result] = {
     case e: NoNodeAvailableException => ServiceUnavailable(errAsJson(503, "es_down", buildErrMsg(e)))
     case e: RuntimeException if isElasticFailed(e) =>
-      def err(txt: String) = errAsJson(500, txt, buildErrMsg(e))
+      def err(txt: String) = errAsJson(500, txt, s"Can not perform search for request: $query")
       if (failOnQueryError) InternalServerError(err("query_error")) else Ok(err("query_warn"))
     case NonFatal(e) =>
       logger.error(s"Internal error ${e.getMessage}", e)
