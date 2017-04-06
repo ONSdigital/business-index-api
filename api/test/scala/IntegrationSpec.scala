@@ -54,6 +54,18 @@ class IntegrationSpec extends PlaySpec with GuiceOneServerPerSuite with OneBrows
       rec.employmentBands mustNot be(None)
     }
 
+    "check if industry code normalized" in {
+      go to s"$baseApiUri/v1/search/IndustryCode:742?limit=1"
+      val rec = extractFirstData(pageSource)
+      rec.industryCode mustBe Some("00742")
+    }
+
+    "check if company no non empty" in {
+      go to s"$baseApiUri/v1/search/IndustryCode:742?limit=1"
+      val rec = extractFirstData(pageSource)
+      rec.companyNo mustBe Some("11111111")
+    }
+
     "check if elasticsearch analyzers works" in {
       val name = "GRAFIXSTAR LTD. CORP'S & BRTHR'S"
 
