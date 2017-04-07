@@ -21,3 +21,7 @@ GET     /webjars/*file              controllers.WebJarAssets.at(file)
 
 # Swagger API
 GET   /swagger.json                 controllers.ApiHelpController.getResources
+
+# Modification API
+GET   /v1/delete/:id            controllers.v1.PutController.deleteById(id)
+PUT   /v1/store                 controllers.v1.PutController.store
