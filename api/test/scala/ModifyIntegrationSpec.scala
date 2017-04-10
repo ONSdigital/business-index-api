@@ -1,5 +1,6 @@
 package scala
 
+import controllers.v1.OpStatus._
 import org.scalatestplus.play._
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 
@@ -16,9 +17,9 @@ class ModifyIntegrationSpec extends PlaySpec with GuiceOneServerPerSuite with On
       go to s"$baseApiUri/v1/business/38557538"
       pageSource must include("38557538")
       go to s"$baseApiUri/v1/delete/38557538"
-      pageSource mustBe "{'deleted'='true'}"
+      fromJson(pageSource) mustBe opDelete("38557538", true)
       go to s"$baseApiUri/v1/delete/38557538"
-      pageSource mustBe "{'deleted'='false'}" // already removed.
+      fromJson(pageSource) mustBe opDelete("38557538", false) // already removed.
     }
 
   }
