@@ -38,6 +38,9 @@ Swagger UI is integrated into business-api. Exposed API documented and available
  
  ``` http://localhost:9000/assets/lib/swagger-ui/index.html?/url=http://localhost:9000/swagger.json ```
 
+short path:
+ ``` http://localhost:9000/docs ```
+
 ### Response Time
 
 Each request-response interaction carries a `X-Response-Time` header with a millisecond value indicating the server
