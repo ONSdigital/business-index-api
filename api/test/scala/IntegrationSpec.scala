@@ -57,7 +57,7 @@ class IntegrationSpec extends PlaySpec with GuiceOneServerPerSuite with OneBrows
     "search for special chars" in {
       go to s"$baseApiUri/v1/search/BusinessName:" + "$$$"
       val rec = extractFirstData(pageSource)
-      rec.companyNo mustBe Some(77777777)
+      rec.companyNo mustBe Some("77777777")
     }
 
     "check if industry code normalized" in {
