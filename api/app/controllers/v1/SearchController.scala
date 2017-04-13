@@ -33,7 +33,7 @@ object BusinessIndexObj {
 @Singleton
 class SearchController @Inject()(elastic: ElasticClient, val config: Config)(
   implicit context: ExecutionContext
-) extends SearchControllerUtils with ElasticDsl with DefaultInstrumented with HBaseCache {
+) extends SearchControllerUtils with ElasticDsl with DefaultInstrumented with HBaseCache with ElasticUtils {
 
   implicit object LongParser extends CatsParser[Long] {
     override def parse(str: String): ValidatedNel[String, Long] = {
@@ -46,8 +46,6 @@ class SearchController @Inject()(elastic: ElasticClient, val config: Config)(
   // metrics
   private[this] val requestMeter = metrics.meter("search-requests", "requests")
   private[this] val totalHitsHistogram = metrics.histogram("totalHits", "es-searches")
-
-  private[this] val index = config.getString("elasticsearch.bi.name").concat("/business")
 
   // mapper from ElasticSearch result to Business case class
   implicit object BusinessHitAs extends HitAs[BusinessIndexRec] {
@@ -63,7 +61,7 @@ class SearchController @Inject()(elastic: ElasticClient, val config: Config)(
       QueryStringQueryDefinition(term).defaultOperator(defaultOperator)
     }
     elastic.execute {
-      search.in(index)
+      search.in(indexName)
         .query(definition)
         .start(offset)
         .limit(limit)
@@ -120,7 +118,7 @@ class SearchController @Inject()(elastic: ElasticClient, val config: Config)(
   private[this] def findById(businessId: Long): Future[Option[BusinessIndexRec]] = {
     logger.debug(s"Searching for business with ID $businessId")
     elastic.execute {
-      get id businessId from index
+      get id businessId from indexName
     } map (resultAsBusiness(businessId, _))
   }
 

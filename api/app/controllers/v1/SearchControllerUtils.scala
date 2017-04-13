@@ -4,19 +4,16 @@ import com.sksamuel.elastic4s.RichGetResponse
 import com.typesafe.scalalogging.StrictLogging
 import controllers.v1.BusinessIndexObj._
 import org.elasticsearch.ElasticsearchException
-import org.elasticsearch.action.search.SearchPhaseExecutionException
 import org.elasticsearch.client.transport.NoNodeAvailableException
-import org.elasticsearch.common.io.stream.NotSerializableExceptionWrapper
-import org.elasticsearch.index.query.QueryParsingException
-import org.elasticsearch.transport.RemoteTransportException
 import play.api.libs.json.{JsObject, Json}
 import play.api.mvc.{Controller, Result}
 import uk.gov.ons.bi.models.BusinessIndexRec
 
 import scala.annotation.tailrec
 import scala.collection.JavaConverters._
-import scala.util.Try
+import scala.concurrent.Future
 import scala.util.control.NonFatal
+import scala.util.{Failure, Success, Try}
 
 /**
   * Created by Volodymyr.Glushak on 22/03/2017.
@@ -75,5 +72,14 @@ trait SearchControllerUtils extends Controller with StrictLogging {
     BusinessIndexRec.fromMap(businessId, Option(resp.source).map(
       _.asScala.toMap[String, AnyRef]
     ).getOrElse(Map.empty[String, AnyRef]))).toOption
+
+  protected[this] def errAsResponse(f: => Future[Result]): Future[Result] = Try(f) match {
+    case Success(g) => g
+    case Failure(err) =>
+      logger.error("Unable to produce response.", err)
+      Future.successful {
+        InternalServerError(s"{err = '${buildErrMsg(err)}'}")
+      }
+  }
 
 }

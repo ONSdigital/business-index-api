@@ -12,7 +12,6 @@ class IntegrationSpec extends PlaySpec with GuiceOneServerPerSuite with OneBrows
   val baseApiUri = s"http://localhost:$port"
 
   "Data Application" should {
-
     // wait while all data loaded into elastic
     "init service" in {
       go to s"$baseApiUri/v1/search/BusinessName:*"
@@ -52,6 +51,25 @@ class IntegrationSpec extends PlaySpec with GuiceOneServerPerSuite with OneBrows
       rec.vatRefs mustBe None
       rec.payeRefs mustBe None
       rec.employmentBands mustNot be(None)
+      rec.companyNo mustNot be(None)
+    }
+
+    "search for special chars" in {
+      go to s"$baseApiUri/v1/search/BusinessName:" + "$$$"
+      val rec = extractFirstData(pageSource)
+      rec.companyNo mustBe Some("77777777")
+    }
+
+    "check if industry code normalized" in {
+      go to s"$baseApiUri/v1/search/IndustryCode:742?limit=1"
+      val rec = extractFirstData(pageSource)
+      rec.industryCode mustBe Some("00742")
+    }
+
+    "check if company no non empty" in {
+      go to s"$baseApiUri/v1/search/IndustryCode:742?limit=1"
+      val rec = extractFirstData(pageSource)
+      rec.companyNo mustBe Some("11111111")
     }
 
     "check if elasticsearch analyzers works" in {
