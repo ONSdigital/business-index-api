@@ -6,7 +6,6 @@
 
 * Java 8 or higher
 * SBT (http://www.scala-sbt.org/)
-* Business-index-data project
 
 ### Development Setup (MacOS)
 
