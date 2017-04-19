@@ -11,8 +11,8 @@ import nl.grons.metrics.scala.DefaultInstrumented
 import play.api.libs.Files.TemporaryFile
 import play.api.libs.json._
 import play.api.mvc._
-import uk.gov.ons.bi.ingest.helper.Utils
-import uk.gov.ons.bi.ingest.parsers.CsvProcessor
+import uk.gov.ons.bi.Utils
+import uk.gov.ons.bi.CsvProcessor
 import uk.gov.ons.bi.models.BusinessIndexRec
 
 import scala.concurrent.{ExecutionContext, Future}

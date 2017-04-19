@@ -48,9 +48,6 @@ compute time.
 
 ### Dependencies
 
-Project has one unmanaged dependency (lib folder) to business-index-data/biUtils project.
-If dependency need to be updated - package new jar in business-index-data project and copy it to specified dir.
-
 A graph detailing all project dependencies can be found [here](dependencies.txt). TODO: update
 If any sbt changes performed - please re-generate dependency graph by executing:
 ```shell
