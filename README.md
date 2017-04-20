@@ -31,6 +31,19 @@ To package the project in a runnable fat-jar:
 sbt assembly
 ```
 
+### Integration tests
+ 
+Integration tests (black box) expected external server to be up & running.
+
+Integration tests name are ends with ISpec or ITest.
+
+To execute integration test you need to pass system property with url of running server:
+
+```sbt api/box:test -Dtest.server=http://localhost:9000```
+
+Note: integration tests (as for now) are running in general case aswell. So, they need to be maintained for both cases. Build.sbt need to be modified, so integration tests filtered out from unit mode.
+In case if decision made to filter out integration tests from unit-tests mode - separate unit tests with similar logic need to be implemented.
+
 ### API Documentation: swagger-ui
 
 Swagger UI is integrated into business-api. Exposed API documented and available within url:

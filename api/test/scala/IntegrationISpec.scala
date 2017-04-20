@@ -6,10 +6,16 @@ import play.api.libs.json.Json
 import uk.gov.ons.bi.models.BusinessIndexRec
 import controllers.v1.BusinessIndexObj._
 
-class IntegrationSpec extends PlaySpec with GuiceOneServerPerSuite with OneBrowserPerSuite with HtmlUnitFactory {
+class IntegrationISpec extends PlaySpec with GuiceOneServerPerSuite with OneBrowserPerSuite with HtmlUnitFactory {
 
+  val mockUri = s"http://localhost:$port"
 
-  val baseApiUri = s"http://localhost:$port"
+  val realUri: Option[String] = sys.props.get("test.server")
+
+  println(realUri)
+
+  def baseApiUri: String = realUri.getOrElse(mockUri)
+
 
   "Data Application" should {
     // wait while all data loaded into elastic
@@ -21,11 +27,6 @@ class IntegrationSpec extends PlaySpec with GuiceOneServerPerSuite with OneBrows
 
     // following tests rely on @InsertDemoData -
     // local elastic with few loaded records
-    "search for everything" in {
-      go to s"$baseApiUri/v1/search/BusinessName:*"
-      extractData(pageSource).size mustBe 20
-    }
-
     "search for any data" in {
       go to s"$baseApiUri/v1/search/BusinessName:TORUS*"
       pageSource must include("TORUS DEVELOPMENT CONSULTANTS LIMITED")
@@ -57,7 +58,7 @@ class IntegrationSpec extends PlaySpec with GuiceOneServerPerSuite with OneBrows
     "search for special chars" in {
       go to s"$baseApiUri/v1/search/BusinessName:" + "$$$"
       val rec = extractFirstData(pageSource)
-      rec.companyNo mustBe Some("77777777")
+      rec.companyNo mustBe Some("OH989326")
     }
 
     "check if industry code normalized" in {
@@ -69,7 +70,7 @@ class IntegrationSpec extends PlaySpec with GuiceOneServerPerSuite with OneBrows
     "check if company no non empty" in {
       go to s"$baseApiUri/v1/search/IndustryCode:742?limit=1"
       val rec = extractFirstData(pageSource)
-      rec.companyNo mustBe Some("11111111")
+      rec.companyNo mustBe Some("LX756748")
     }
 
     "check if elasticsearch analyzers works" in {
@@ -105,7 +106,7 @@ class IntegrationSpec extends PlaySpec with GuiceOneServerPerSuite with OneBrows
       val postcode = "SE13"
       go to s"$baseApiUri/v1/search/PostCode:($postcode)"
       val res = extractData(pageSource)
-      res.length mustBe 2
+      res.length mustBe 4
     }
 
 

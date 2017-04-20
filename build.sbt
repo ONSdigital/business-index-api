@@ -9,12 +9,23 @@ lazy val Versions = new {
   val elasticSearchSpark = "2.4.0"
 }
 
-lazy val commonSettings = Seq(
+// special configuration for black box tests: integration tests of real server
+// all Test classes with name ends ITest or ISpec can be run on real server
+lazy val BoxTest = config("box") extend Test
+
+def boxFilter(name: String): Boolean = (name endsWith "ITest") || (name endsWith "ISpec")
+
+def unitFilter(name: String): Boolean = (name endsWith "Test") || (name endsWith "Spec")  // && !boxFilter(name)
+
+lazy val commonSettings =
+  Seq(
   scalaVersion := "2.11.8",
   resolvers ++= Seq(
     Resolver.bintrayRepo("outworkers", "oss-releases"),
     "splunk" at "http://splunk.artifactoryonline.com/splunk/ext-releases-local"
   ),
+  testOptions in BoxTest := Seq(Tests.Filter(boxFilter)),
+  testOptions in Test := Seq(Tests.Filter(unitFilter)),
   coverageExcludedPackages := ".*Routes.*;.*ReverseRoutes.*;.*javascript.*",
     scalacOptions in ThisBuild ++= Seq(
     "-language:experimental.macros",
@@ -58,16 +69,18 @@ lazy val businessIndex = (project in file("."))
 
 lazy val api = (project in file("api"))
   .enablePlugins(BuildInfoPlugin, PlayScala)
-  .settings(commonSettings: _*)
-  .settings(
+  .configs(BoxTest)
+  .settings(commonSettings,
+    inConfig(BoxTest)(Defaults.testTasks),
     name := "ons-bi-api",
     scalaVersion := "2.11.8",
     buildInfoPackage := "controllers",
     resolvers ++= Seq(
       "Hadoop Releases" at "https://repository.cloudera.com/content/repositories/releases/"
     ),
-    javaOptions in Test ++= Seq("-Denvironment=test","-Dsample.folder=test"),
+    javaOptions in Test ++= Seq("-Denvironment=test","-Dsample.folder=test") ++ sys.props.map { case (k,v) => s"-D$k=$v" },
     fork in run := true,
+    fork in BoxTest := true,
     buildInfoKeys ++= Seq[BuildInfoKey](
       resolvers,
       libraryDependencies,
