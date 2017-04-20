@@ -3,18 +3,21 @@ package controllers.v1
 import java.io.File
 import javax.inject.{Inject, Singleton}
 
+import ch.qos.logback.classic.LoggerContext
+import ch.qos.logback.core.FileAppender
 import com.sksamuel.elastic4s.{ElasticClient, ElasticDsl}
 import com.typesafe.config.Config
 import controllers.v1.BusinessIndexObj._
 import io.swagger.annotations.Api
 import nl.grons.metrics.scala.DefaultInstrumented
+import org.slf4j.LoggerFactory
 import play.api.libs.Files.TemporaryFile
 import play.api.libs.json._
 import play.api.mvc._
-import uk.gov.ons.bi.Utils
-import uk.gov.ons.bi.CsvProcessor
+import uk.gov.ons.bi.{CsvProcessor, Utils}
 import uk.gov.ons.bi.models.BusinessIndexRec
 
+import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, Future}
 
 
@@ -27,6 +30,9 @@ class PutController @Inject()(elastic: ElasticClient, val config: Config)(
   implicit context: ExecutionContext
 ) extends SearchControllerUtils with ElasticDsl with DefaultInstrumented with ElasticUtils {
 
+  private[this] val EVENT_APPENDER = "OVERLOAD_LOG"
+  private[this] val eventStorage = LoggerFactory.getLogger(EVENT_APPENDER)
+
   def deleteById(businessId: String): Action[AnyContent] = Action.async {
     errAsResponse {
       deleteByIdImpl(businessId).map(x => Ok(x.toString))
@@ -38,6 +44,8 @@ class PutController @Inject()(elastic: ElasticClient, val config: Config)(
     elastic.execute {
       delete id businessId.toLong from indexName
     } map { r =>
+      val bir = BusinessIndexRec(businessId.toLong, "", None, None, None, None, None, None, None, None, None, None)
+      eventStorage.info(s"""DELETE,${bir.toCsv}""")
       OpStatus.opDelete(businessId, r.isFound)
     }
   }
@@ -59,11 +67,32 @@ class PutController @Inject()(elastic: ElasticClient, val config: Config)(
     }
   }
 
+  def eventLog = Action {
+    val z = LoggerFactory.getILoggerFactory match {
+      case x: LoggerContext => x.getLoggerList.asScala.flatMap { logger =>
+        logger.iteratorForAppenders().asScala.find { appender =>
+          appender.getName == EVENT_APPENDER
+        }
+      }
+    }
+    logger.debug(s"Found appender[s] for event log $z")
+    z.collect {
+      case app: FileAppender[_] => app.getFile
+    }.map { f =>
+      logger.debug(s"Display file $f")
+      Utils.readFile(f).mkString("\n")
+    }.headOption match {
+      case None => Ok("no_data")
+      case Some(str) =>  Ok(str)
+    }
+  }
+
   private[this] def storeImpl(bir: BusinessIndexRec) = {
     elastic execute {
       index into indexName id bir.id fields BusinessIndexRec.toMap(bir)
     } map { r =>
       import OpStatus._
+      eventStorage.info(s"""STORE,${bir.toCsv}""")
       if (r.getVersion > 1) opUpdate(bir.id.toString, success = true) else opCreate(bir.id.toString, success = true)
     }
   }

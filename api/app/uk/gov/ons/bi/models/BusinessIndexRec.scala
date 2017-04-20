@@ -29,7 +29,7 @@ case class BusinessIndexRec(
     tradingStatus, turnover, employmentBands))
 
   def toCsv: String = BusinessIndexRec.toString(List(id, businessName, uprn, industryCode, legalStatus,
-    tradingStatus, turnover, employmentBands, vatRefs, payeRefs, companyNo))
+    tradingStatus, turnover, employmentBands, vatRefs.map(seq => seq.mkString(",")), payeRefs.map(seq => seq.mkString(",")), companyNo))
 
 }
 
@@ -41,7 +41,7 @@ object BusinessIndexRec {
     case Some(a) => s"$a"
     case None => ""
     case z => s"$z"
-  }.mkString(Delim)
+  }.map(x => s""" "$x" """).mkString(Delim)
 
   private[this] def industryCodeNormalize(s: Option[String]) = s match {
     case None | Some("") | Some("0") => None
