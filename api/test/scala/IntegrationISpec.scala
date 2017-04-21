@@ -11,6 +11,8 @@ class IntegrationISpec extends PlaySpec with GuiceOneServerPerSuite with OneBrow
   val mockUri = s"http://localhost:$port"
 
   val realUri: Option[String] = sys.props.get("test.server")
+  val integrationMode: Option[String] = sys.props.get("integration.test")
+  if (integrationMode.exists(_.toBoolean) && realUri.isEmpty) sys.error("test.server property must be defined in integration mode")
 
   println(realUri)
 
