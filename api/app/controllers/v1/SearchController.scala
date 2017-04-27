@@ -13,14 +13,13 @@ import nl.grons.metrics.scala.DefaultInstrumented
 import play.api.libs.json._
 import play.api.mvc._
 import services.HBaseCache
+import services.JsonHelpers._
 import uk.gov.ons.bi.models.{BIndexConsts, BusinessIndexRec}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
 object BusinessIndexObj {
-
-  import services.JsonHelpers._
 
   private[this] val requiredFields = List("postCode", "industryCode", "legalStatus", "tradingStatus", "turnover",
     "employmentBands", "companyNo")
