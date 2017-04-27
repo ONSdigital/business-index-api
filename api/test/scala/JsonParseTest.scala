@@ -1,5 +1,6 @@
 package scala
 
+import controllers.v1.BusinessIndexObj
 import controllers.v1.BusinessIndexObj.businessHitFormat
 import org.scalatest.{FlatSpec, Matchers}
 import play.api.libs.json.Json
@@ -19,18 +20,20 @@ class JsonParseTest extends FlatSpec with Matchers {
     """{"id":85282745,"businessName":"BI (2018) LIMITED","uprn":977146940701,"postCode":"SE","industryCode":"42751","legalStatus":"1"}"""
 
   "It" should "create proper json" in {
-    parseJson(fullJson).map(_.id).getOrElse(0L) shouldBe 85282744
-    parseJson(smallerJson).map(_.id).getOrElse(0L) shouldBe 85282745
+    BusinessIndexObj.fromJson(fullJson).id shouldBe 85282744
+    BusinessIndexObj.fromJson(smallerJson).id shouldBe 85282745
 
     Json.toJson(parseJson(smallerJson).getOrElse(sys.error("Can't parse"))).toString() shouldBe smallerJson
   }
-
-  private[this] def parseJson(x: String) = Json.fromJson[BusinessIndexRec](Json.parse(x))
 
   "It" should "create json from obj" in {
     val data = BusinessIndexRec(16332123, "B.M.J. HOMES CO. LTD", Some(316786), Some("RJ87 4WK"),
       Some("19946"), Some("6"), Some("D"), Some("F"), Some("L"), Some(Seq(12076)), Some(Seq("24152")), Some("AB123456"))
     Json.toJson(data)
+  }
+
+  "It" should "produce some empty values in smaller json" in {
+    Json.toJson(parseJson(smallerJson).getOrElse(sys.error("Can't parse"))).toString() shouldBe smallerJson
   }
 
 }

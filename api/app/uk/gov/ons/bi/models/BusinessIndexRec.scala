@@ -49,7 +49,7 @@ object BusinessIndexRec {
     case Some(v) => Some(v)
   }
 
-  def normalize(b: BusinessIndexRec): BusinessIndexRec = b.copy(industryCode =  industryCodeNormalize(b.industryCode))
+  def normalize(b: BusinessIndexRec): BusinessIndexRec = b.copy(industryCode = industryCodeNormalize(b.industryCode))
 
   // build business index from elastic search map of fields
   def fromMap(id: Long, map: Map[String, Any]) = BusinessIndexRec(

@@ -19,7 +19,20 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
 object BusinessIndexObj {
+
   implicit val businessHitFormat: OFormat[BusinessIndexRec] = Json.format[BusinessIndexRec]
+
+  def fromJson(x: String): BusinessIndexRec = {
+    Json.fromJson[BusinessIndexRec](Json.parse(x)) match {
+      case JsSuccess(xv, _) => xv
+      case JsError(err) => sys.error(s"Unable to parse business index JSON $x -> $err")
+    }
+  }
+
+  def toJson(obj: BusinessIndexRec) = {
+    Json.toJson[BusinessIndexRec](obj)
+  }
+
 }
 
 /**
