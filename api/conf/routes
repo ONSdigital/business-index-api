@@ -27,3 +27,7 @@ GET   /docs                     controllers.HomeController.swagger
 DELETE  /v1/delete/:id          controllers.v1.PutController.deleteById(id)
 PUT     /v1/store               controllers.v1.PutController.store
 POST    /v1/update/bulk         controllers.v1.PutController.bulkUpdate
+
+
+# Feedback
+POST    /v1/feedback            controllers.v1.FeedbackController.feedback
