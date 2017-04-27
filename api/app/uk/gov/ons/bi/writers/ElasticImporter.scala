@@ -45,7 +45,7 @@ class ElasticImporter()(implicit val config: Config, elastic: ElasticClient) {
         bulk(
           biMap.map { bi  =>
             logger.trace(s"Indexing entry in ElasticSearch $bi")
-            index into indexName / cBiType id bi.id fields BusinessIndexRec.toMap(bi).filter(_._2.toString.nonEmpty)
+            index into indexName / cBiType id bi.id fields BusinessIndexRec.toMap(bi)
           })
       }
     }
