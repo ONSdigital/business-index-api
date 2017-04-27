@@ -11,6 +11,13 @@
         </encoder>
     </appender>
 
+    <appender name="OVERLOAD_LOG" class="ch.qos.logback.core.FileAppender">
+        <file>${application.home:-.}/logs/events.log</file>
+        <encoder>
+            <pattern>%msg %n</pattern>
+        </encoder>
+    </appender>
+
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>%coloredLevel %logger{15} - %message%n%xException{10}</pattern>
@@ -38,6 +45,10 @@
     <logger name="play" level="INFO"/>
     <logger name="application" level="DEBUG"/>
 
+    <logger name="OVERLOAD_LOG" level="INFO" additivity="false">
+        <appender-ref ref="OVERLOAD_LOG" />
+    </logger>
+
     <!-- Off these ones as they are annoying, and anyway we manage configuration ourselves -->
     <logger name="com.avaje.ebean.config.PropertyMapLoader" level="WARN"/>
     <logger name="com.avaje.ebeaninternal.server.core.XmlConfigLoader" level="WARN"/>
@@ -50,6 +61,7 @@
     <logger name="com.google.inject" level="WARN"/>
     <logger name="org.elasticsearch.env" level="WARN"/>
     <logger name="io.netty" level="WARN"/>
+    <logger name="io.swagger" level="INFO"/>
 
     <root level="DEBUG">
         <!--<appender-ref ref="ASYNCFILE" />-->

@@ -26,6 +26,8 @@ import scala.concurrent.Future
 class ModifyAppSpec extends PlaySpec with GuiceOneServerPerSuite with OneBrowserPerSuite with HtmlUnitFactory {
 
 
+  private[this] def doGet(uri: String) = doRequest(FakeRequest("GET", uri))
+
   private[this] def doDelete(uri: String) = doRequest(FakeRequest("DELETE", uri))
 
   private[this] def doRequest[T](request: Request[T])(implicit w: Writeable[T]): Future[Result] = route(app, request).getOrElse(sys.error("can't get response"))
@@ -51,6 +53,9 @@ class ModifyAppSpec extends PlaySpec with GuiceOneServerPerSuite with OneBrowser
 
       val response3 = doDelete("/v1/delete/90001")
       fromJson(contentAsString(response3)) mustBe opDelete("90001", false) // already removed.
+
+      val resp = doGet("/v1/event/log")
+      contentAsString(resp) must include("90001")
     }
 
 
