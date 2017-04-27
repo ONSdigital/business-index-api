@@ -84,26 +84,6 @@ class PutController @Inject()(elastic: ElasticClient, val config: Config)(
     }
   }
 
-  def eventLog = Action {
-    val z = LoggerFactory.getILoggerFactory match {
-      case x: LoggerContext => x.getLoggerList.asScala.flatMap { logger =>
-        logger.iteratorForAppenders().asScala.find { appender =>
-          appender.getName == EVENT_APPENDER
-        }
-      }
-    }
-    logger.debug(s"Found appender[s] for event log $z")
-    z.collect {
-      case app: FileAppender[_] => app.getFile
-    }.map { f =>
-      logger.debug(s"Display file $f")
-      Utils.readFile(f).mkString("\n")
-    }.headOption match {
-      case None => Ok("no_data")
-      case Some(str) =>  Ok(str)
-    }
-  }
-
   private[this] def storeImpl(bir: BusinessIndexRec) = {
     elastic execute {
       index into indexName id bir.id fields BusinessIndexRec.toMap(bir)
