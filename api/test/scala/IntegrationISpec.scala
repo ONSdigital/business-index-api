@@ -1,10 +1,8 @@
 package scala
 
+import controllers.v1.BusinessIndexObj._
 import org.scalatestplus.play._
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
-import play.api.libs.json.Json
-import uk.gov.ons.bi.models.BusinessIndexRec
-import controllers.v1.BusinessIndexObj._
 
 class IntegrationISpec extends PlaySpec with GuiceOneServerPerSuite with OneBrowserPerSuite with HtmlUnitFactory {
 
@@ -26,7 +24,6 @@ class IntegrationISpec extends PlaySpec with GuiceOneServerPerSuite with OneBrow
       Thread.sleep(1000)
     }
 
-
     // following tests rely on @InsertDemoData -
     // local elastic with few loaded records
     "search for any data" in {
@@ -37,7 +34,7 @@ class IntegrationISpec extends PlaySpec with GuiceOneServerPerSuite with OneBrow
     "get by id" in {
       val id = 21840175L
       go to s"$baseApiUri/v1/business/$id"
-      val rec = Json.fromJson[BusinessIndexRec](Json.parse(pageSource)).getOrElse(sys.error(s"Non parsed obj $pageSource"))
+      val rec = biFromJson(pageSource)
       rec.id mustBe id
     }
 
@@ -132,10 +129,9 @@ class IntegrationISpec extends PlaySpec with GuiceOneServerPerSuite with OneBrow
       res must include("query_warn")
     }
 
-
   }
 
-  private def extractData(s: String) = Json.fromJson[List[BusinessIndexRec]](Json.parse(s)).getOrElse(sys.error(s"error while parsing data from elastic: $s"))
+  private def extractData(s: String) = biListFromJson(s)
 
   private def extractFirstData(s: String) = extractData(s).headOption.getOrElse(sys.error(s"no business data returned by elastic: $s"))
 }

@@ -60,10 +60,7 @@ class PutController @Inject()(elastic: ElasticClient, val config: Config)(
         case _ => sys.error(s"Unsupported input type ${request.body}")
       }
 
-      storeImpl(Json.fromJson[BusinessIndexRec](json) match {
-        case JsSuccess(js, _) => js
-        case err => sys.error(s"Unable to parse json. $err")
-      }).map(x => Ok(x.toString))
+      storeImpl(biFromJson(json)).map(x => Ok(x.toString))
     }
   }
 
@@ -119,23 +116,23 @@ class PutController @Inject()(elastic: ElasticClient, val config: Config)(
 }
 
 case class OpStatus(id: String, clazz: String, success: Boolean) {
-  override def toString: String = OpStatus.toJson(this).toString()
+  override def toString: String = OpStatus.opToJson(this).toString()
 }
 
 object OpStatus {
   implicit val opStatusFormat: OFormat[OpStatus] = Json.format[OpStatus]
 
-  def fromJson(x: String): OpStatus = Json.fromJson[OpStatus](Json.parse(x)) match {
+  def opFromJson(x: String): OpStatus = Json.fromJson[OpStatus](Json.parse(x)) match {
     case JsSuccess(xv, _) => xv
     case JsError(err) => sys.error(s"Can not parse op status json $x -> $err")
   }
 
-  def listFromJson(x: String): List[OpStatus] = Json.fromJson[List[OpStatus]](Json.parse(x)) match {
+  def opListFromJson(x: String): List[OpStatus] = Json.fromJson[List[OpStatus]](Json.parse(x)) match {
     case JsSuccess(xv, _) => xv
     case JsError(err) => sys.error(s"Can not parse op status json $x -> $err")
   }
 
-  def toJson(ob: OpStatus): JsValue = Json.toJson[OpStatus](ob)
+  def opToJson(ob: OpStatus): JsValue = Json.toJson[OpStatus](ob)
 
   def opDelete(id: String, success: Boolean) = OpStatus(id, "delete", success)
 
