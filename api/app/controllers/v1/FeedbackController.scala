@@ -21,6 +21,9 @@ class FeedbackController @Inject()(implicit val config: Config) extends Controll
   import FeedbackObj._
 
   def feedback = Action { request =>
+    // check if its json if so do json
+    // else: if its text then convert it to json
+    // else show error message
     val json = request.body.asJson.get
     val feedbackObj = Json.fromJson[FeedbackObj](json) match {
       case JsSuccess(x, _) => x
