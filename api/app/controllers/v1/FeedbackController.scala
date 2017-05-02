@@ -79,7 +79,7 @@ class FeedbackController @Inject()(implicit val config: Config) extends Controll
       feedbackObj.ubrn.map { urbn => urbn}
       Ok (s"Email with subject: $response")
     } else {
-      Ok (s"Email Server Is Disable! Feedback wasn't sent for $response")
+      Ok (s"Email Server Is Disabled! Feedback won't be sent for $response")
     }
   }
 

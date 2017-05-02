@@ -22,12 +22,12 @@ class MailAgent(implicit config: Config) {
   }
 
   private[this] val auth = if (configOverride("mail.smtp.auth").toBoolean)
-    new Authenticator {
+    Some(new Authenticator {
       override def getPasswordAuthentication: PasswordAuthentication = {
         new PasswordAuthentication(configOverride("mail.smtp.user"), configOverride("mail.smtp.password"))
       }
-    }
-  else null
+    })
+    else None
 
   // throws MessagingException
   def sendMessage(subject: String, content: String, to: String, from: String): Unit = {
@@ -43,7 +43,7 @@ class MailAgent(implicit config: Config) {
   }
 
   private[this] def createMessage: Message = {
-    val session = Session.getDefaultInstance(properties, auth)
+    val session = Session.getDefaultInstance(properties, auth.orNull)
     new MimeMessage(session)
   }
 
