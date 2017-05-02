@@ -7,7 +7,7 @@ import javax.mail.internet._
 
 import com.typesafe.config.Config
 import org.slf4j.LoggerFactory
-import uk.gov.ons.bi.ingest.helper.Utils._
+import uk.gov.ons.bi.Utils._
 
 /**
   * Created by Volodymyr.Glushak on 09/03/2017.

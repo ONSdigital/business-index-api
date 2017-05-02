@@ -9,10 +9,10 @@ import play.api.test._
 
 class FeedbackControllerSpec extends PlaySpec with GuiceOneAppPerTest {
 
-    private[this] def fakeRequest(uri: String, testObj: FeedbackObj, method: String = POST) =
-      route(app, FakeRequest(method, uri).withJsonBody(Json.toJson(testObj))).getOrElse(sys.error(s"Can not find route $uri."))
+  private[this] def fakeRequest(uri: String, testObj: FeedbackObj, method: String = POST) =
+    route(app, FakeRequest(method, uri).withJsonBody(Json.toJson(testObj))).getOrElse(sys.error(s"Can not find route $uri."))
 
-    val uri = "/v1/feedback"
+  val uri = "/v1/feedback"
 
   "FeedbackController" should {
 
@@ -53,11 +53,9 @@ class FeedbackControllerSpec extends PlaySpec with GuiceOneAppPerTest {
     "fail to parse json string to object" in {
       val jsonString = """{ "username":"doej", "date":"01/01/2000" , "subject":"Data Issue", "ubrn": 898989898989, "query": "BusinessName:test&limit1000", "comments":"UBRN does not match given company name."}"""
       val feedback = route(app, FakeRequest(POST, uri).withTextBody(jsonString)).getOrElse(sys.error(s"Cannot find route $uri."))
-      println("Pre Print: " + feedback)
       contentAsString(feedback) must include("Invalid Feedback")
       status(feedback) mustBe(BAD_REQUEST)
     }
-
 
   }
 }
