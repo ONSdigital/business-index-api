@@ -21,12 +21,16 @@ class FeedbackController @Inject()(implicit val config: Config) extends Controll
   import FeedbackObj._
 
   def feedback = Action { request =>
-    // check if its json if so do json
-    // else: if its text then convert it to json
-    // else show error message
-    val json = request.body.asJson.get
+    val json = request.body match {
+      case AnyContentAsRaw(raw) => Json.parse(raw.asBytes().getOrElse(sys.error("Invalid or empty input")).utf8String)
+      case AnyContentAsText(text) => Json.parse(text)
+      case AnyContentAsJson(jsonStr) => jsonStr
+      case _ => sys.error(s"Unsupported input type ${request.body}")
+    }
+
+//    val json = request.body.asJson.get
     val feedbackObj = Json.fromJson[FeedbackObj](json) match {
-      case JsSuccess(x, _) => x
+      case JsSuccess(js, _) => js
       case JsError(err) => sys.error(s"Invalid Feedback! Please give properly parsable feedback $json -> $err")
     }
 
