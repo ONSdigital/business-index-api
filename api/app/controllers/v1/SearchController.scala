@@ -13,13 +13,40 @@ import nl.grons.metrics.scala.DefaultInstrumented
 import play.api.libs.json._
 import play.api.mvc._
 import services.HBaseCache
+import services.JsonHelpers._
 import uk.gov.ons.bi.models.{BIndexConsts, BusinessIndexRec}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
 object BusinessIndexObj {
-  implicit val businessHitFormat: OFormat[BusinessIndexRec] = Json.format[BusinessIndexRec]
+
+  private[this] val requiredFields = List("postCode", "industryCode", "legalStatus", "tradingStatus", "turnover",
+    "employmentBands", "companyNo")
+
+  implicit private[this] val businessReads = Json.reads[BusinessIndexRec]
+  implicit private[this] val businessWrites = Json.writes[BusinessIndexRec].ensureFields(requiredFields: _*)(JsString(""))
+
+  def biListFromJson(x: String): List[BusinessIndexRec] = {
+    Json.fromJson[List[BusinessIndexRec]](Json.parse(x)) match {
+      case JsSuccess(xv, _) => xv
+      case JsError(err) => sys.error(s"Unable to parse business index list JSON $x -> $err")
+    }
+  }
+
+  def biFromJson(x: String): BusinessIndexRec = biFromJson(Json.parse(x))
+
+  def biFromJson(x: JsValue): BusinessIndexRec = {
+    Json.fromJson[BusinessIndexRec](x) match {
+      case JsSuccess(xv, _) => xv
+      case JsError(err) => sys.error(s"Unable to parse business index JSON $x -> $err")
+    }
+  }
+
+  def biToJson(obj: BusinessIndexRec): JsValue = Json.toJson[BusinessIndexRec](obj)
+
+  def biListToJson(obj: List[BusinessIndexRec]): JsValue = Json.toJson[List[BusinessIndexRec]](obj)
+
 }
 
 /**
@@ -94,10 +121,10 @@ class SearchController @Inject()(elastic: ElasticClient, val config: Config)(
     if (isCaching) {
       getFromCache(request) match {
         case Some(s) =>
-          val cachedBus = Json.fromJson[List[BusinessIndexRec]](Json.parse(s)).getOrElse(sys.error("Unable to extract json"))
+          val cachedBus = biListFromJson(s)
           Future.successful((SearchData(cachedBus.size.toLong, 100f), cachedBus))
         case None => f.map { case (r, businesses) =>
-          updateCache(request, Json.toJson(businesses).toString())
+          updateCache(request, biListToJson(businesses).toString())
           (SearchData(r.totalHits, r.maxScore), businesses)
         }
       }
@@ -131,7 +158,7 @@ class SearchController @Inject()(elastic: ElasticClient, val config: Config)(
     cparse[Long](id) fold(_.response.future, value =>
       findById(value) map {
         case Some(res) =>
-          Ok(Json.toJson(res))
+          Ok(biToJson(res))
         case None =>
           logger.debug(s"Could not find a record with the ID $id")
           NoContent

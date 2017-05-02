@@ -6,7 +6,6 @@
 
 * Java 8 or higher
 * SBT (http://www.scala-sbt.org/)
-* Business-index-data project
 
 ### Development Setup (MacOS)
 
@@ -32,6 +31,19 @@ To package the project in a runnable fat-jar:
 sbt assembly
 ```
 
+### Integration tests
+ 
+Integration tests (black box) expected external server to be up & running.
+
+Integration tests name are ends with ISpec or ITest.
+
+To execute integration test you need to pass system property with url of running server:
+
+```sbt api/box:test -Dtest.server=http://localhost:9000```
+
+Note: integration tests (as for now) are running in general case aswell. So, they need to be maintained for both cases. Build.sbt need to be modified, so integration tests filtered out from unit mode.
+In case if decision made to filter out integration tests from unit-tests mode - separate unit tests with similar logic need to be implemented.
+
 ### API Documentation: swagger-ui
 
 Swagger UI is integrated into business-api. Exposed API documented and available within url:
@@ -47,9 +59,6 @@ Each request-response interaction carries a `X-Response-Time` header with a mill
 compute time.
 
 ### Dependencies
-
-Project has one unmanaged dependency (lib folder) to business-index-data/biUtils project.
-If dependency need to be updated - package new jar in business-index-data project and copy it to specified dir.
 
 A graph detailing all project dependencies can be found [here](dependencies.txt). TODO: update
 If any sbt changes performed - please re-generate dependency graph by executing:

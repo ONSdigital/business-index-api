@@ -31,3 +31,7 @@ POST    /v1/update/bulk         controllers.v1.PutController.bulkUpdate
 
 # Feedback
 POST    /v1/feedback            controllers.v1.FeedbackController.feedback
+
+# Log
+GET    /v1/event/log            controllers.v1.PutController.eventLog
+

@@ -57,7 +57,7 @@ trait SearchControllerUtils extends Controller with StrictLogging {
   protected def response(tp: (SearchData, List[BusinessIndexRec])): Result = {
     val (resp, businesses) = tp
     businesses match {
-      case _ :: _ => responseWithHTTPHeaders(resp, Ok(Json.toJson(businesses.map(_.secured))))
+      case _ :: _ => responseWithHTTPHeaders(resp, Ok(biListToJson(businesses.map(_.secured))))
       case _ => responseWithHTTPHeaders(resp, Ok("{}").as(JSON))
     }
   }
