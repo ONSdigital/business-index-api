@@ -29,43 +29,49 @@ class FeedbackController @Inject()(implicit val config: Config) extends Controll
     }
 
 //    val json = request.body.asJson.get
-    val feedbackObj = Json.fromJson[FeedbackObj](json) match {
-      case JsSuccess(js, _) => js
-      case JsError(err) => sys.error(s"Invalid Feedback! Please give properly parsable feedback $json -> $err")
-    }
+    Json.fromJson[FeedbackObj](json) match {
+      case JsSuccess(feedbackObj, _) => {
 
-    logger.debug(s"Feedback Received: $feedbackObj")
+        logger.debug(s"Feedback Received: $feedbackObj")
 
-    val firstLine = feedbackObj.ubrn.map { ubrn => s"${feedbackObj.subject} with UBRN: $ubrn" }.getOrElse(feedbackObj.subject)
-    val subject = s"[${feedbackObj.subject}] Feedback About Business Index From ${feedbackObj.name} at ${feedbackObj.date}"
+        val firstLine = feedbackObj.ubrn.map { ubrn => s"${feedbackObj.subject} with UBRN: $ubrn" }.getOrElse(feedbackObj.subject)
+        val subject = s"[${feedbackObj.subject}] Feedback About Business Index From ${feedbackObj.name} at ${feedbackObj.date}"
 
-    val content =
-      s"""
-         | $firstLine
-         | ${feedbackObj.query.map(q => s"Query: $q").getOrElse("")}
-         |
+        val content =
+          s"""
+             | $firstLine
+             | ${feedbackObj.query.map(q => s"Query: $q").getOrElse("")}
+             |
          | ${feedbackObj.comments}
-         |
+             |
       """.stripMargin
 
-    val response =
-      s"""
-         |Email with subject: $subject
-         |${feedbackObj.query.map(q => s"with query of $q").getOrElse("")}
-         |${feedbackObj.ubrn.map(u => s"and with UBRN of $u").getOrElse("")}
+        val response =
+          s"""
+             |Email with subject: $subject
+             |${feedbackObj.query.map(q => s"with query of $q").getOrElse("")}
+             |${feedbackObj.ubrn.map(u => s"and with UBRN of $u").getOrElse("")}
        """.stripMargin
 
-    if (configOverride("email.service.enabled").toBoolean) {
-      mailObj.sendMessage(
-        subject = subject,
-        content = content,
-        from = configOverride("feedback.email.from"),
-        to = configOverride("feedback.email.to"))
-      feedbackObj.ubrn.map { urbn => urbn}
-      Ok (s"Email with subject: $response")
-    } else {
-      Ok (s"Email Server Is Disable! Feedback wasn't sent for $response")
+        if (configOverride("email.service.enabled").toBoolean) {
+          mailObj.sendMessage(
+            subject = subject,
+            content = content,
+            from = configOverride("feedback.email.from"),
+            to = configOverride("feedback.email.to"))
+          feedbackObj.ubrn.map { urbn => urbn}
+          Ok (s"Email with subject: $response")
+        } else {
+          Ok (s"Email Server Is Disable! Feedback wasn't sent for $response")
+        }
+
+      }
+      case JsError(err) =>
+        logger.error(s"Invalid Feedback! Please give properly parsable feedback $json -> $err")
+        BadRequest(s"Invalid Feedback! Please give properly parsable feedback $json -> $err")
+//         sys.error(s"Invalid Feedback! Please give properly parsable feedback $json -> $err")
     }
+
 
   }
 }
