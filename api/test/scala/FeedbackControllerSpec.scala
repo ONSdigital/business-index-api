@@ -17,11 +17,12 @@ class FeedbackControllerSpec extends PlaySpec with GuiceOneAppPerTest {
   "FeedbackController" should {
 
     "be able to take valid Json object and be parsable" in {
-      val testObj = FeedbackObj("doej", "John Doe", "01/01/2000", "Data Issue", Some(List(898989898989L)), Some("BusinessName:test&limit1000"), "UBRN does not match given company name.")
+      val testObj = FeedbackObj("doej", "John Doe", "01/01/2000", "Data Issue", Some(List(898989898989L, 111189898989L)), Some("BusinessName:test&limit1000"), "UBRN does not match given company name.")
       val feedback = fakeRequest(uri, testObj)
       status(feedback) mustBe OK
       contentType(feedback) mustBe Some("text/plain")
-      contentAsString(feedback) must include("query of BusinessName:test&limit1000\nand with UBRN of 898989898989")
+      val eol = System.lineSeparator()
+      contentAsString(feedback) must include(s"UBRN(s) of 898989898989, 111189898989${eol}and with query of BusinessName:test&limit1000")
     }
 
     "accept a data issue without a query param" in {
@@ -29,7 +30,7 @@ class FeedbackControllerSpec extends PlaySpec with GuiceOneAppPerTest {
       val feedback = fakeRequest(uri, testObj)
       status(feedback) mustBe OK
       contentType(feedback) mustBe Some("text/plain")
-      contentAsString(feedback) must include("and with UBRN of 898989898989")
+      contentAsString(feedback) must include("with UBRN(s) of 898989898989")
       contentAsString(feedback) mustNot include("query")
     }
 

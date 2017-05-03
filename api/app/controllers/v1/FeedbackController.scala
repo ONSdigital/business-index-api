@@ -51,7 +51,7 @@ class FeedbackController @Inject()(implicit val config: Config) extends Controll
   def email (feedbackObj: FeedbackObj): Result = {
     logger.debug(s"Feedback Received: $feedbackObj")
 
-    val firstLine = feedbackObj.ubrn.map { ubrn => s"${feedbackObj.subject} with UBRN: ${ubrn.mkString(", ")}" }.getOrElse(feedbackObj.subject)
+    val firstLine = feedbackObj.ubrn.map { ubrn => s"${feedbackObj.subject} with UBRN(s): ${ubrn.mkString(", ")}" }.getOrElse(feedbackObj.subject)
     val subject = s"[${feedbackObj.subject}] Feedback About Business Index From ${feedbackObj.name} at ${feedbackObj.date}"
 
     val content =
@@ -59,15 +59,15 @@ class FeedbackController @Inject()(implicit val config: Config) extends Controll
          | $firstLine
          | ${feedbackObj.query.map(q => s"Query: $q").getOrElse("")}
          |
-             | ${feedbackObj.comments}
+         | ${feedbackObj.comments}
          |
           """.stripMargin
 
     val response =
       s"""
          |Email with subject: $subject
-         |${feedbackObj.query.map(q => s"with query of $q").getOrElse("")}
-         |${feedbackObj.ubrn.map(u => s"and with UBRNs of ${u.mkString(", ")}").getOrElse("")}
+         |${feedbackObj.ubrn.map(u => s"with UBRN(s) of ${u.mkString(", ")}").getOrElse("")}
+         |${feedbackObj.query.map(q => s"and with query of $q").getOrElse("")}
           """.stripMargin
 
     if (configOverride("email.service.enabled").toBoolean) {
