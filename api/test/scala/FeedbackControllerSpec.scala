@@ -17,7 +17,7 @@ class FeedbackControllerSpec extends PlaySpec with GuiceOneAppPerTest {
   "FeedbackController" should {
 
     "be able to take valid Json object and be parsable" in {
-      val testObj = FeedbackObj("doej", "John Doe", "01/01/2000", "Data Issue", Some(898989898989L), Some("BusinessName:test&limit1000"), "UBRN does not match given company name.")
+      val testObj = FeedbackObj("doej", "John Doe", "01/01/2000", "Data Issue", Some(List(898989898989L)), Some("BusinessName:test&limit1000"), "UBRN does not match given company name.")
       val feedback = fakeRequest(uri, testObj)
       status(feedback) mustBe OK
       contentType(feedback) mustBe Some("text/plain")
@@ -25,7 +25,7 @@ class FeedbackControllerSpec extends PlaySpec with GuiceOneAppPerTest {
     }
 
     "accept a data issue without a query param" in {
-      val testObj = FeedbackObj("doej", "John Doe", "01/01/2000", "UI Issue", Some(898989898989L), None, "UBRN does not match given company name.")
+      val testObj = FeedbackObj("doej", "John Doe", "01/01/2000", "UI Issue", Some(List(898989898989L)), None, "UBRN does not match given company name.")
       val feedback = fakeRequest(uri, testObj)
       status(feedback) mustBe OK
       contentType(feedback) mustBe Some("text/plain")
@@ -42,7 +42,7 @@ class FeedbackControllerSpec extends PlaySpec with GuiceOneAppPerTest {
     }
 
     "successfully parse json string to object" in {
-      val jsonString = """{ "username":"doej", "name":"John Doe", "date":"01/01/2000" , "subject":"Data Issue", "ubrn": 898989898989, "query": "BusinessName:test&limit1000", "comments":"UBRN does not match given company name."}"""
+      val jsonString = """{ "username":"doej", "name":"John Doe", "date":"01/01/2000" , "subject":"Data Issue", "ubrn": [898989898989], "query": "BusinessName:test&limit1000", "comments":"UBRN does not match given company name."}"""
       val feedback = route(app, FakeRequest(POST, uri).withTextBody(jsonString)).getOrElse(sys.error(s"Cannot find route $uri."))
       status(feedback) mustBe(OK)
       contentType(feedback) mustBe Some("text/plain")
@@ -51,7 +51,7 @@ class FeedbackControllerSpec extends PlaySpec with GuiceOneAppPerTest {
     }
 
     "fail to parse json string to object" in {
-      val jsonString = """{ "username":"doej", "date":"01/01/2000" , "subject":"Data Issue", "ubrn": 898989898989, "query": "BusinessName:test&limit1000", "comments":"UBRN does not match given company name."}"""
+      val jsonString = """{ "username":"doej", "date":"01/01/2000" , "subject":"Data Issue", "ubrn": [898989898989], "query": "BusinessName:test&limit1000", "comments":"UBRN does not match given company name."}"""
       val feedback = route(app, FakeRequest(POST, uri).withTextBody(jsonString)).getOrElse(sys.error(s"Cannot find route $uri."))
       contentAsString(feedback) must include("Invalid Feedback")
       status(feedback) mustBe(BAD_REQUEST)

@@ -51,7 +51,7 @@ class FeedbackController @Inject()(implicit val config: Config) extends Controll
   def email (feedbackObj: FeedbackObj): Result = {
     logger.debug(s"Feedback Received: $feedbackObj")
 
-    val firstLine = feedbackObj.ubrn.map { ubrn => s"${feedbackObj.subject} with UBRN: $ubrn" }.getOrElse(feedbackObj.subject)
+    val firstLine = feedbackObj.ubrn.map { ubrn => s"${feedbackObj.subject} with UBRN: ${ubrn.mkString(", ")}" }.getOrElse(feedbackObj.subject)
     val subject = s"[${feedbackObj.subject}] Feedback About Business Index From ${feedbackObj.name} at ${feedbackObj.date}"
 
     val content =
@@ -67,7 +67,7 @@ class FeedbackController @Inject()(implicit val config: Config) extends Controll
       s"""
          |Email with subject: $subject
          |${feedbackObj.query.map(q => s"with query of $q").getOrElse("")}
-         |${feedbackObj.ubrn.map(u => s"and with UBRN of $u").getOrElse("")}
+         |${feedbackObj.ubrn.map(u => s"and with UBRNs of ${u.mkString(", ")}").getOrElse("")}
           """.stripMargin
 
     if (configOverride("email.service.enabled").toBoolean) {
@@ -86,7 +86,7 @@ class FeedbackController @Inject()(implicit val config: Config) extends Controll
 }
 
 
-case class FeedbackObj(username: String, name: String, date: String, subject: String, ubrn: Option[Long], query: Option[String], comments: String)
+case class FeedbackObj(username: String, name: String, date: String, subject: String, ubrn: Option[List[Long]], query: Option[String], comments: String)
 
 object FeedbackObj {
   implicit val feedbackFormatter: OFormat[FeedbackObj] = Json.format[FeedbackObj]
