@@ -44,9 +44,13 @@ trait HBaseCache {
     ConnectionFactory.createConnection(conf)
   }
 
+  // kerberos ticket will expire in 24h of application running - we want to make sure we've got new ticket when required
+  private[this] def refreshTicket() = UserGroupInformation.getLoginUser.checkTGTAndReloginFromKeytab()
+
   protected lazy val table: Table = connection.getTable(TableName.valueOf(tableName))
 
   protected def getFromCache(request: String): Option[String] = {
+    refreshTicket()
     logger.debug(s"Requesting value from cache for $request")
     val result = table.get(new Get(request))
     if (result.isEmpty) None else {
