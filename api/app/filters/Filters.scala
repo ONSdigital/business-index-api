@@ -22,7 +22,11 @@ class XResponseTimeHeader @Inject()(implicit val mat: Materializer) extends Filt
 
       result.withHeaders(
         "X-Response-Time" -> responseTime.toString,
-        "Server" -> (BuildInfo.name + "/" + BuildInfo.version)
+        "Server" -> (BuildInfo.name + "/" + BuildInfo.version),
+        "Access-Control-Allow-Origin" -> "*",
+        "Access-Control-Allow-Methods" -> "OPTIONS, GET, POST, PUT, DELETE, HEAD",
+        "Access-Control-Allow-Headers" -> "Accept, Content-Type, Origin, X-Json, X-Prototype-Version, X-Requested-With",
+        "Access-Control-Allow-Credentials" -> "true"
       )
     }
   }
