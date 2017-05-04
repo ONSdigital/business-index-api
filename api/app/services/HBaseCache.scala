@@ -4,6 +4,7 @@ import com.typesafe.config.Config
 import org.apache.hadoop.hbase.client._
 import org.apache.hadoop.hbase.util.Bytes
 import org.apache.hadoop.hbase.{CellUtil, HBaseConfiguration, TableName}
+import org.apache.hadoop.security.UserGroupInformation
 import org.slf4j.LoggerFactory
 
 trait HBaseCache {
@@ -28,17 +29,28 @@ trait HBaseCache {
     * use the HBASE_MANAGES_ZK variable in conf/hbase-env.sh. This variable, which defaults to true, tells HBase whether to
     * start/stop the ZooKeeper ensemble servers as part of HBase start/stop.
     */
-  conf.set("hbase.zookeeper.quorum", config.getString("hbase.zookeeper.quorum"))
+
+  config.getString("hbase.props").split(",").map(_.trim).foreach { pr =>
+    conf.set(pr, config.getString(pr))
+  }
 
   // everything lazy: initialized only when used...
-  protected lazy val connection: Connection = ConnectionFactory.createConnection(conf)
+  protected lazy val connection: Connection = {
+    val username = config.getString("hbase.login")
+    val keytab = config.getString("hbase.keytab.path")
+    logger.info(s"Starting kerberos authentication with $username and path to key: $keytab")
+    UserGroupInformation.setConfiguration(conf)
+    UserGroupInformation.loginUserFromKeytab(username, keytab)
+    ConnectionFactory.createConnection(conf)
+  }
 
   protected lazy val table: Table = connection.getTable(TableName.valueOf(tableName))
 
   protected def getFromCache(request: String): Option[String] = {
+    logger.debug(s"Requesting value from cache for $request")
     val result = table.get(new Get(request))
     if (result.isEmpty) None else {
-      logger.debug(s"Value from cache for $request")
+      logger.debug(s"Got value from cache for $request")
       result.rawCells().map(cell => Bytes.toString(CellUtil.cloneValue(cell))).headOption
     }
   }

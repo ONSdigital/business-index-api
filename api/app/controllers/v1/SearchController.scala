@@ -68,7 +68,7 @@ class SearchController @Inject()(elastic: ElasticClient, val config: Config)(
     }
   }
 
-  override protected def tableName = "es_requests"
+  override protected def tableName: String = config.getString("hbase.requests.table.name")
 
   // metrics
   private[this] val requestMeter = metrics.meter("search-requests", "requests")
