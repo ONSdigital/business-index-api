@@ -105,7 +105,7 @@ lazy val api = (project in file("api"))
     resolvers ++= Seq(
       "Hadoop Releases" at "https://repository.cloudera.com/content/repositories/releases/"
     ),
-    javaOptions in Test ++= Seq("-Denvironment=test","-Dsample.folder=test") ++ sys.props.map { case (k,v) => s"-D$k=$v" },
+    javaOptions in Test ++= Seq("-Denvironment=test","-Dsample.folder=test", "-Dhbase.zookeeper.quorum=Mac.local") ++ sys.props.map { case (k,v) => s"-D$k=$v" },
     javaOptions in BoxTest ++= Seq("-Dintegration.test=true"),
     fork in run := true,
     fork in BoxTest := true,
@@ -153,14 +153,29 @@ lazy val api = (project in file("api"))
       "com.outworkers" %% "util-testing" % Versions.util % Test,
       "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.0-M1" % Test,
       "org.scalatest" %% "scalatest" % "3.0.0" % Test,
-      "com.google.guava" % "guava" % "18.0",
+      "com.google.guava" % "guava" % "12.0",
+
       "org.apache.hadoop" % "hadoop-common" % "2.6.0",
-      "org.apache.hadoop" % "hadoop-mapred" % "0.22.0",
-      "org.apache.hbase" % "hbase-common" % "1.3.0",
-      "org.apache.hbase" % "hbase-client" % "1.3.0",
+      "org.apache.hbase" % "hbase-common" % "1.3.1",
+      "org.apache.hbase" % "hbase-client" % "1.3.1",
+
+      // below are set of jars required for testing hbase.
+
+      "org.apache.hadoop" % "hadoop-common" % "2.6.0" % Test classifier "tests",
+      "org.apache.hadoop" % "hadoop-hdfs" % "2.6.0" % Test classifier "tests",
+      "org.apache.hadoop" % "hadoop-hdfs" % "2.6.0" % Test,
+      "org.apache.hbase" % "hbase-common" % "1.3.1" % Test classifier "tests",
+      "org.apache.hbase" % "hbase-client" % "1.3.1" % Test classifier "tests",
+      "org.apache.hbase" % "hbase-server" % "1.3.1" % Test,
+      "org.apache.hbase" % "hbase-server" % "1.3.1" % Test classifier "tests",
+      "org.apache.hbase" % "hbase-hadoop-compat" % "1.3.1" % Test,
+      "org.apache.hbase" % "hbase-hadoop2-compat" % "1.3.1" % Test,
+      "org.apache.hbase" % "hbase-hadoop-compat" % "1.3.1" % Test classifier "tests",
+      "org.apache.hbase" % "hbase-hadoop2-compat" % "1.3.1" % Test classifier "tests",
+
       "io.swagger" %% "swagger-play2" % "1.5.3",
       "org.webjars" % "swagger-ui" % "2.2.10-1"
     ),
 
-    dependencyOverrides += "com.google.guava" % "guava" % "18.0"
+    dependencyOverrides += "com.google.guava" % "guava" % "12.0"
   )
