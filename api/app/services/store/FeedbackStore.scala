@@ -1,6 +1,6 @@
 package services.store
 
-import controllers.v1.FeedbackObj
+import controllers.v1.feedback.FeedbackObj
 import org.apache.hadoop.hbase.CellUtil
 import org.apache.hadoop.hbase.client.{Delete, Put, Scan}
 import org.apache.hadoop.hbase.util.Bytes
@@ -16,27 +16,25 @@ trait FeedbackStore extends HBaseCore {
 
   protected val columnFamily = "feedback"
 
-  def store(feedback: FeedbackObj): String = {
+  protected def store(feedback: FeedbackObj): String = {
     val id = feedback.username + feedback.date
-    logger.debug(s"A new record with id $id has been added to the HBase table feedback_tbl")
+    logger.debug(s"A new record with id ${id} has been added to the HBase table feedback_tbl")
     val put = new Put(id)
     // same each element of feedbackobject as a colum in tbl
-    FeedbackObj.toMap(feedback).foreach { case (k, v) =>
+    FeedbackObj.toMap(feedback, id).foreach { case (k, v) =>
       put.addColumn(columnFamily, k, v.toString)
     }
     table.put(put)
     id
   }
 
-  def delete(id : String) = {
+  protected def delete(id : String) = {
     table.delete(new Delete(id))
     logger.debug(s"The record with id $id has been deleted from HBase table feedback_tbl")
     id
   }
 
-  def toCC(res: List[Map[String, String]]) = ???
-
-  def getAll(): List[FeedbackObj] = {
+  protected def getAll(statusChecker: Boolean): List[FeedbackObj] = {
     val scan = table.getScanner(new Scan())
 
     val res = scan.asScala.map { res =>
@@ -44,16 +42,17 @@ trait FeedbackStore extends HBaseCore {
         Bytes.toString(CellUtil.cloneQualifier(cell)) -> Bytes.toString(CellUtil.cloneValue(cell))
       }.toMap
       FeedbackObj.fromMap(map)
+
     }.toList
     res
   }
 
-
-  // create a method to hide the feedback row with number - estentially changes the hide status boolean to true
-
-
-//  List(Map(name -> Tom Colling, subject -> UI Issue, username -> coolit, query -> None, ubrn -> Some(List(117485788989)), date -> 03/11/2011, comments -> UBRN does match for test company.), Map(name -> John Doe, subject -> UI Issue, username -> doej, query -> None, ubrn -> Some(List(898989898989)), date -> 01/01/2000, comments -> UBRN does not match given company name.))
-
+  protected def hide (id: String, status: Option[Boolean] = Some(true)) = {
+    val put = new Put (id)
+    put.addColumn(columnFamily, "hideStatus", status.toString )
+    table.put(put)
+    logger.debug(s"The data row ${id} has been set to hide.")
+  }
 
 
 

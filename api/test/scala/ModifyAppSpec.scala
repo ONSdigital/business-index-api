@@ -3,8 +3,8 @@ package scala
 import java.io.File
 
 import controllers.v1.BusinessIndexObj._
-import controllers.v1.OpStatus
-import controllers.v1.OpStatus._
+import controllers.v1.event.OpStatus
+import controllers.v1.event.OpStatus._
 import org.apache.commons.io.FileUtils
 import org.scalatestplus.play._
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite

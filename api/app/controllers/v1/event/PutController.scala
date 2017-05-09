@@ -1,4 +1,4 @@
-package controllers.v1
+package controllers.v1.event
 
 import java.io.File
 import javax.inject.{Inject, Singleton}
@@ -8,6 +8,7 @@ import ch.qos.logback.core.FileAppender
 import com.sksamuel.elastic4s.{ElasticClient, ElasticDsl}
 import com.typesafe.config.Config
 import controllers.v1.BusinessIndexObj._
+import controllers.v1.{ElasticUtils, SearchControllerUtils}
 import io.swagger.annotations.Api
 import nl.grons.metrics.scala.DefaultInstrumented
 import org.slf4j.LoggerFactory
