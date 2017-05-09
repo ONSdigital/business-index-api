@@ -71,7 +71,7 @@ trait SearchControllerUtils extends Controller with StrictLogging {
   protected[this] def resultAsBusiness(businessId: Long, resp: RichGetResponse): Option[BusinessIndexRec] = Try(
     BusinessIndexRec.fromMap(businessId, Option(resp.source).map(
       _.asScala.toMap[String, AnyRef]
-    ).getOrElse(Map.empty[String, AnyRef]))).toOption
+    ).getOrElse(sys.error("no data")))).toOption
 
   protected[this] def errAsResponse(f: => Future[Result]): Future[Result] = Try(f) match {
     case Success(g) => g
@@ -81,5 +81,4 @@ trait SearchControllerUtils extends Controller with StrictLogging {
         InternalServerError(s"{err = '${buildErrMsg(err)}'}")
       }
   }
-
 }
