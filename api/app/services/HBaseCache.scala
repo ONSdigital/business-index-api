@@ -7,6 +7,7 @@ import org.apache.hadoop.hbase.client._
 import org.apache.hadoop.hbase.util.Bytes
 import org.apache.hadoop.hbase.{CellUtil, HBaseConfiguration, TableName}
 import org.apache.hadoop.security.UserGroupInformation
+import uk.gov.ons.bi.Utils
 
 trait HBaseCache extends HBaseCore {
   protected val columnFamily = "d"
@@ -29,9 +30,16 @@ trait HBaseCache extends HBaseCore {
   }
 }
 
-trait HBaseCore extends StrictLogging {
+trait HBaseImplicitUtils {
   // All HBase API rely on this function: it expect byte[] everywhere, instead of Strings.
   implicit protected def asBytes(s: String): Array[Byte] = Bytes.toBytes(s)
+
+  implicit class BytesArr(b: Array[Byte]) {
+    def asString(): String = Bytes.toString(b)
+  }
+}
+
+trait HBaseCore extends StrictLogging with HBaseImplicitUtils {
 
   def config: Config
 
@@ -42,7 +50,9 @@ trait HBaseCore extends StrictLogging {
   protected def conf: Configuration = {
     val c = HBaseConfiguration.create()
     config.getString("hbase.props").split(",").map(_.trim).foreach { pr =>
-      c.set(pr, config.getString(pr))
+      val v = Utils.configOverride(pr)(config)
+      logger.debug(s"Setup prop $pr with value $v")
+      c.set(pr, v)
     }
     c
   }
