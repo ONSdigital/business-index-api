@@ -27,5 +27,6 @@ GET   /docs                     controllers.HomeController.swagger
 DELETE  /v1/delete/:id          controllers.v1.PutController.deleteById(id)
 PUT     /v1/store               controllers.v1.PutController.store
 POST    /v1/update/bulk         controllers.v1.PutController.bulkUpdate
+OPTIONS /*all                   controllers.HomeController.preflight(all: String)
 
 GET    /v1/event/log            controllers.v1.PutController.eventLog

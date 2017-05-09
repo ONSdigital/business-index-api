@@ -70,6 +70,7 @@ object BusinessIndexRec {
           case z: Long => z
         }
       case e: Seq[Long] => e
+      case "" => Seq.empty[Long]
       case e: String => e.split(",").map(_.toLong)
     },
     payeRefs = map.get(cBiPayeRefs).map {
