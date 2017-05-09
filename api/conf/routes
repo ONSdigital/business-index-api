@@ -29,3 +29,6 @@ PUT     /v1/store               controllers.v1.PutController.store
 POST    /v1/update/bulk         controllers.v1.PutController.bulkUpdate
 
 GET    /v1/event/log            controllers.v1.PutController.eventLog
+
+# Feedback
+POST    /v1/feedback            controllers.v1.FeedbackController.feedback

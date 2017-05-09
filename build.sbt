@@ -153,7 +153,7 @@ lazy val api = (project in file("api"))
       "com.outworkers" %% "util-testing" % Versions.util % Test,
       "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.0-M1" % Test,
       "org.scalatest" %% "scalatest" % "3.0.0" % Test,
-      "com.google.guava" % "guava" % "12.0",
+      "com.google.guava" % "guava" % "18.0",
 
       "org.apache.hadoop" % "hadoop-common" % "2.6.0",
       "org.apache.hbase" % "hbase-common" % "1.3.1",
@@ -177,5 +177,5 @@ lazy val api = (project in file("api"))
       "org.webjars" % "swagger-ui" % "2.2.10-1"
     ),
 
-    dependencyOverrides += "com.google.guava" % "guava" % "12.0"
+    dependencyOverrides += "com.google.guava" % "guava" % "18.0"
   )
