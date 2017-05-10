@@ -65,7 +65,8 @@ class PutController @Inject()(elastic: ElasticClient, val config: Config)(
   }
 
   def eventLog = Action {
-    Ok(getAll.map { case (_, v) => v }.mkString("\n"))
+    val header = "\"COMMNAD\"," + BusinessIndexRec.cBiSecuredHeader + "\n"
+    Ok(header + getAll.map { case (_, v) => v }.mkString("\n"))
   }
 
   private[this] def storeImpl(bir: BusinessIndexRec) = {
