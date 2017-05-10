@@ -159,7 +159,9 @@ lazy val api = (project in file("api"))
       "org.apache.hbase" % "hbase-common" % "1.3.0",
       "org.apache.hbase" % "hbase-client" % "1.3.0",
       "io.swagger" %% "swagger-play2" % "1.5.3",
-      "org.webjars" % "swagger-ui" % "2.2.10-1"
+      "org.webjars" % "swagger-ui" % "2.2.10-1",
+      "javax.mail" % "mail" % "1.4",
+      "org.scalamock" %% "scalamock-scalatest-support" % "3.5.0" % Test
     ),
 
     dependencyOverrides += "com.google.guava" % "guava" % "18.0"

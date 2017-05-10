@@ -29,4 +29,11 @@ PUT     /v1/store               controllers.v1.PutController.store
 POST    /v1/update/bulk         controllers.v1.PutController.bulkUpdate
 OPTIONS /*all                   controllers.HomeController.preflight(all: String)
 
+
+# Feedback
+POST    /v1/feedback            controllers.v1.FeedbackController.feedback
+OPTIONS /*all                   controllers.HomeController.preflight(all: String)
+
+# Log
 GET    /v1/event/log            controllers.v1.PutController.eventLog
+
