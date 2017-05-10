@@ -17,9 +17,9 @@ class EventStoreTest extends FlatSpec with Matchers with EventStore with BeforeA
     }
     utility.countRows(table) shouldBe before + 11
     getAll.length shouldBe before + 11
-    val firstTime = getAll.head._1.toLong
-    getAll.tail.foreach { rec =>
-      rec._1.toLong shouldBe >(firstTime)
+    val firstTime = getAll.headOption.map { case (k, _) => k.toLong }.getOrElse(sys.error("No data in HBase"))
+    getAll.tail.foreach { case (rc, _) =>
+      rc.toLong shouldBe >(firstTime)
     }
     cleanAll()
     storeEvent(instructions)

@@ -105,7 +105,7 @@ lazy val api = (project in file("api"))
     resolvers ++= Seq(
       "Hadoop Releases" at "https://repository.cloudera.com/content/repositories/releases/"
     ),
-    javaOptions in Test ++= Seq("-Denvironment=test","-Dsample.folder=test", "-Dhbase.zookeeper.quorum=Mac.local") ++ sys.props.map { case (k,v) => s"-D$k=$v" },
+    javaOptions in Test ++= Seq("-Denvironment=test","-Dsample.folder=test") ++ sys.props.map { case (k,v) => s"-D$k=$v" },
     javaOptions in BoxTest ++= Seq("-Dintegration.test=true"),
     fork in run := true,
     fork in BoxTest := true,

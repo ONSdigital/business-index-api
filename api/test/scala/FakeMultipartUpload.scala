@@ -17,9 +17,9 @@ object FakeMultipartUpload {
     val builder = MultipartEntityBuilder.create().setBoundary("12345678")
 
     def transform(multipart: AnyContentAsMultipartFormData): ByteString = {
-      multipart.mdf.dataParts.foreach { part =>
-        part._2.foreach { p2 =>
-          builder.addPart(part._1, new StringBody(p2, ContentType.create("text/plain", "UTF-8")))
+      multipart.mdf.dataParts.foreach { case (pk, pv) =>
+        pv.foreach { p2 =>
+          builder.addPart(pk, new StringBody(p2, ContentType.create("text/plain", "UTF-8")))
         }
       }
       multipart.mdf.files.foreach { file =>

@@ -86,7 +86,7 @@ class PutController @Inject()(elastic: ElasticClient, val config: Config)(
       val outFile = s"${System.getProperty("java.io.tmpdir")}/${System.currentTimeMillis()}_${file.filename}"
       val workFile = file.ref.moveTo(new File(outFile))
       CsvProcessor.csvToMap(Utils.readFile(workFile.getAbsolutePath)).map { rec =>
-        val id = rec.map(e => e._1.toUpperCase -> e._2).getOrElse("ID", sys.error("ID column not found."))
+        val id = rec.map {case (k,v) => k.toUpperCase -> v}.getOrElse("ID", sys.error("ID column not found."))
         rec("COMMAND") match {
           case "DELETE" => deleteByIdImpl(id)
           case "STORE" | "PUT" => storeImpl(BusinessIndexRec.fromMap(id.toLong, rec))
