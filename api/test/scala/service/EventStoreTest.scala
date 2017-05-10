@@ -8,7 +8,6 @@ import uk.gov.ons.bi.writers.BiConfigManager
 class EventStoreTest extends FlatSpec with Matchers with EventStore with BeforeAndAfterAll {
 
   private[this] val utility = HBaseTesting.hBaseServer
-  utility.createTable(tableName, columnFamily)
 
   "It" should "store events properly" in {
     val instructions = "{command: DELETE, id: 1}"
@@ -27,5 +26,5 @@ class EventStoreTest extends FlatSpec with Matchers with EventStore with BeforeA
 
   override def config: Config = BiConfigManager.envConf(ConfigFactory.load())
 
-  override protected def tableName: String = config.getString("hbase.events.table.name") + "_es_test"
+  override protected def tableName: String = config.getString("hbase.events.table.name")
 }
