@@ -17,6 +17,8 @@ To install/run ElasticSearch on MacOS, use Homebrew (http://brew.sh):
 The last command runs an interactive Elasticsearch 2.4.1 session that the application can connect to using cluster name
 `elasticsearch_<your username>`. 
 
+Download, install and configure HBase (see below)
+
 ### Running
 
 To compile, build and run the application (by default it will connect to your local ElasticSearch):
@@ -84,7 +86,10 @@ Open hbase shell and execute:
 ```shell
 hbase shell
 create 'es_requests', 'd'
+create 'es_events', 'event'
+create 'es_feedback', 'feedback'
 ```
+Note: tables names should be in sync with application.conf
 
 Other useful shell commands:
 
