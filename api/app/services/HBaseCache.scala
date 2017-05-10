@@ -34,6 +34,8 @@ trait HBaseImplicitUtils {
   // All HBase API rely on this function: it expect byte[] everywhere, instead of Strings.
   implicit protected def asBytes(s: String): Array[Byte] = Bytes.toBytes(s)
 
+
+
   implicit class BytesArr(b: Array[Byte]) {
     def asString(): String = Bytes.toString(b)
   }
@@ -44,6 +46,8 @@ trait HBaseCore extends StrictLogging with HBaseImplicitUtils {
   def config: Config
 
   protected def tableName: String
+
+  protected def asString(bytes: Array[Byte]): String = Bytes.toString(bytes)
 
   // it's a method: assume to use only on initialization stage
   // overriden for tests
@@ -72,7 +76,7 @@ trait HBaseCore extends StrictLogging with HBaseImplicitUtils {
   }
 
   // kerberos ticket will expire in 24h of application running - we want to make sure we've got new ticket when required
-  protected[this] def refreshTicket() = if (secureConnection) UserGroupInformation.getLoginUser.checkTGTAndReloginFromKeytab()
+  protected[this] def refreshTicket(): Unit = if (secureConnection) UserGroupInformation.getLoginUser.checkTGTAndReloginFromKeytab()
 
   protected lazy val table: Table = connection.getTable(TableName.valueOf(tableName))
 }

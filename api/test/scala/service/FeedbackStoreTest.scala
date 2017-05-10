@@ -12,7 +12,7 @@ class FeedbackStoreTest extends FlatSpec with Matchers with FeedbackStore with B
   private[this] val utility = HBaseTesting.hBaseServer
 
   override protected val conf: Configuration = utility.getHBaseAdmin.getConfiguration
-  val before = utility.countRows(table)
+  private[this] val before = utility.countRows(table)
 
   def recordObj (id: Option[String] = None, username: String = "doej", name: String = "John Doe", date: String = "01:01:2000", subject: String = "Data Issue", ubrn: Option[List[Long]] = Some(List(898989898989L, 111189898989L)), query: Option[String] = Some("BusinessName:test&limit=100"), comments: String = "UBRN does not match given company name.", hideStatus: Option[Boolean] = Some(false)) = FeedbackObj(id, username, name, date, subject, ubrn, query, comments, hideStatus )
 
@@ -29,7 +29,7 @@ class FeedbackStoreTest extends FlatSpec with Matchers with FeedbackStore with B
     store(recordObj())
     store(recordObj(username = "drake", name = "drake", date = "03:11:2011", ubrn = Some(List(117485788989L)), query = None))
     utility.countRows(table) shouldBe >= (before + 2)
-    val objList = getAll(false)
+    val objList = getAll()
     objList.length shouldBe >= (before + 2)
     objList.toString should include ("doej01:01:2000")
     objList.toString should include ("drake03:11:2011")
@@ -39,23 +39,19 @@ class FeedbackStoreTest extends FlatSpec with Matchers with FeedbackStore with B
     val key = "doej01:01:2000"
     store(recordObj(username = "kali", name = "kali", date = "13:11:2015", ubrn = Some(List(896767288989L)), query = None))
     store(recordObj(username = "sungj", name = "Jim Sung", date = "03:11:2011", ubrn = Some(List(117485788989L)), query = None))
-//    hide(key)
+    hide(key)
 
-    utility.countRows(table) shouldBe >= (before + 2)
-    val objList = getAll(false)
-    objList.length shouldBe >= (before + 2)
+    utility.countRows(table) shouldBe >= (before + 1)
 
-    objList.toString should include ("kali13:11:2015")
-    objList.toString should include ("sungj03:11:2011")
+    val objList = getAll()
+    objList.length shouldBe >= (before + 1)
 
-    objList.foreach {
-      x => x.hideStatus shouldBe Some(false)
+    val ids = List("kali13:11:2015", "sungj03:11:2011", "drake03:11:2011" )
+    println("vlod: " + objList)
+    objList.foreach { x =>
+      ids.count( idd => x.id.contains(idd)) shouldBe 1
+      x.hideStatus shouldBe Some(false)
     }
-  }
-
-
-  override def afterAll(): Unit = {
-    super.afterAll()
   }
 
   override def config: Config = BiConfigManager.envConf(ConfigFactory.load())
