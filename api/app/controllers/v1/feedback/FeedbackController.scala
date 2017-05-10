@@ -52,14 +52,14 @@ class FeedbackController @Inject()(implicit val config: Config) extends Controll
 
     def deleteFeedback (id: String) = Action  {
       logger.debug(s"Processing deletion of HBase record: $id")
-      hide(id)
-      Ok("")
+      val res = hide(id)
+      Ok(s"The following record has been modified: $res")
     }
 
     def display = Action {
       logger.debug(s"Request received to display all feedback records [with status hide as FALSE]")
-      getAll(true)
-      Ok("")
+      val res = getAll(true)
+      Ok(s"HBase has the following stored: $res")
     }
 
   override protected def tableName: String = config.getString("hbase.feedback.table.name")
