@@ -48,7 +48,6 @@ class FeedbackController @Inject()(implicit val config: Config) extends Controll
         logger.error(s"Invalid Feedback! Please give properly parsable feedback $json -> $err")
         BadRequest(s"Invalid Feedback! Please give properly parsable feedback $json -> $err")
     }
-
   }
 
     def deleteFeedback (id: String) = Action  {
@@ -63,7 +62,7 @@ class FeedbackController @Inject()(implicit val config: Config) extends Controll
       Ok("")
     }
 
-  override protected def tableName: String = "feedback_tbl"
+  override protected def tableName: String = config.getString("hbase.feedback.table.name")
 }
 
 case class FeedbackObj(id: Option[String], username: String, name: String, date: String, subject: String, ubrn: Option[List[Long]], query: Option[String], comments: String, hideStatus: Option[Boolean] = Some(false))
