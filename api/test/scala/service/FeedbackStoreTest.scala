@@ -13,32 +13,40 @@ class FeedbackStoreTest extends FlatSpec with Matchers with FeedbackStore with B
 
   override protected val conf: Configuration = utility.getHBaseAdmin.getConfiguration
   val before = utility.countRows(table)
-  val record1 = FeedbackObj(None, "doej", "John Doe", "01/01/2000", "UI Issue", Some(List(898989898989L)), Some("BusinessName:test&limit=100"), "UBRN does not match given company name.")
-  val record2 = FeedbackObj(None, "coolit", "Tom Colling", "03/11/2011", "UI Issue", Some(List(117485788989L)), None, "UBRN does match for test company.")
+
+  def recordObj (id: Option[String] = None, username: String = "doej", name: String = "John Doe", date: String = "01:01:2000", subject: String = "Data Issue", ubrn: Option[List[Long]] = Some(List(898989898989L, 111189898989L)), query: Option[String] = Some("BusinessName:test&limit=100"), comments: String = "UBRN does not match given company name.", hideStatus: Option[Boolean] = Some(false)) = FeedbackObj(id, username, name, date, subject, ubrn, query, comments, hideStatus )
+
 
   "It" should "accept a valid feedbackObj" in {
-    val expected = "doej01/01/2000"
-    val feedback = store(record1)
+    val expected = "doej01:01:2000"
+    val feedback = store(recordObj())
     feedback shouldBe expected
-    utility.countRows(table) shouldBe before + 1
+    utility.countRows(table) shouldBe > (before)
+
   }
 
   "It" should "show all (2) records in hbase" in {
-    store(record1)
-    store(record2)
-    utility.countRows(table) shouldBe before + 2
-    getAll(false).length shouldBe before + 2
+    store(recordObj())
+    store(recordObj(username = "drake", name = "drake", date = "03:11:2011", ubrn = Some(List(117485788989L)), query = None))
+    utility.countRows(table) shouldBe >= (before + 2)
+    val objList = getAll(false)
+    objList.length shouldBe >= (before + 2)
+    objList.toString should include ("doej01:01:2000")
+    objList.toString should include ("drake03:11:2011")
   }
 
   "It" should "only display records with hide status false" in {
-    val key = "doej01/01/2000"
-    store(record1)
-    store(record2)
+    val key = "doej01:01:2000"
+    store(recordObj(username = "kali", name = "kali", date = "13:11:2015", ubrn = Some(List(896767288989L)), query = None))
+    store(recordObj(username = "sungj", name = "Jim Sung", date = "03:11:2011", ubrn = Some(List(117485788989L)), query = None))
 //    hide(key)
 
-    utility.countRows(table) shouldBe before + 2
-    getAll(false).length shouldBe before + 2
+    utility.countRows(table) shouldBe >= (before + 2)
     val objList = getAll(false)
+    objList.length shouldBe >= (before + 2)
+
+    objList.toString should include ("kali13:11:2015")
+    objList.toString should include ("sungj03:11:2011")
 
     objList.foreach {
       x => x.hideStatus shouldBe Some(false)
