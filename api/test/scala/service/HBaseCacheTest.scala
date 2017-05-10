@@ -14,17 +14,7 @@ import uk.gov.ons.bi.writers.BiConfigManager
   */
 class HBaseCacheTest extends FlatSpec with Matchers with HBaseCache with BeforeAndAfterAll {
 
-//  val confg = new Configuration()
-//  confg.setBoolean
-//  val fileSystem: FileSystem = FileSystem.get(confg)
-
-  val zooServer = new TestZooKeeperMainServer
-  private[this] val utility = new HBaseTestingUtility()
-  utility.getConfiguration.setBoolean("fs.hdfs.impl.disable.cache", true)
-  utility.startMiniCluster
-  utility.createTable(tableName, columnFamily)
-
-  override protected val conf: Configuration = utility.getHBaseAdmin.getConfiguration
+  private[this] val utility = HBaseTesting.hBaseServer
 
   "It" should "cache values properly" in {
     val before = utility.countRows(table)
@@ -42,5 +32,5 @@ class HBaseCacheTest extends FlatSpec with Matchers with HBaseCache with BeforeA
 
   override def config: Config = BiConfigManager.envConf(ConfigFactory.load())
 
-  override protected def tableName: String = "es_requests"
+  override protected def tableName: String = config.getString("hbase.requests.table.name")
 }

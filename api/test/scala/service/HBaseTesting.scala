@@ -20,6 +20,7 @@ object HBaseTesting extends HBaseImplicitUtils {
     val config = BiConfigManager.envConf(ConfigFactory.load())
     u.createTable(config.getString("hbase.requests.table.name"), "d")
     u.createTable(config.getString("hbase.events.table.name"), "event")
+    u.createTable(config.getString("hbase.feedback.table.name"), "feedback")
     u
   }
 }
