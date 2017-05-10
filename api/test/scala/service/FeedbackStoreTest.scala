@@ -33,7 +33,6 @@ class FeedbackStoreTest extends FlatSpec with Matchers with FeedbackStore with B
     objList.length shouldBe >= (before + 2)
     objList.toString should include ("doej01:01:2000")
     objList.toString should include ("drake03:11:2011")
-    // check to see if it has a specific reecord by an id for each two case rather than just count
   }
 
   "It" should "only display records with hide status false" in {
