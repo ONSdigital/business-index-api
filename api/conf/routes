@@ -20,17 +20,17 @@ GET     /assets/*file               controllers.Assets.versioned(path="/public",
 GET     /webjars/*file              controllers.WebJarAssets.at(file)
 
 # Swagger API
-GET   /swagger.json                 controllers.ApiHelpController.getResources
-GET   /docs                         controllers.HomeController.swagger
+GET     /swagger.json               controllers.ApiHelpController.getResources
+GET     /docs                       controllers.HomeController.swagger
 
 # Modification API
-DELETE  /v1/event/delete/:id        controllers.v1.event.PutController.deleteById(id)
-PUT     /v1/event/store             controllers.v1.event.PutController.store
-POST    /v1/event/update/bulk       controllers.v1.event.PutController.bulkUpdate
+DELETE  /v1/event/:id               controllers.v1.event.PutController.deleteById(id)
+PUT     /v1/event                   controllers.v1.event.PutController.store
+POST    /v1/event/bulk              controllers.v1.event.PutController.bulkUpdate
 
-GET    /v1/event/log                controllers.v1.event.PutController.eventLog
+GET     /v1/event                   controllers.v1.event.PutController.eventLog
 
 # Feedback
-POST    /v1/feedback/store          controllers.v1.feedback.FeedbackController.storeFeedback
-GET     /v1/feedback/display        controllers.v1.feedback.FeedbackController.display
-DELETE  /v1/feedback/delete/:id     controllers.v1.feedback.FeedbackController.deleteFeedback(id)
+POST    /v1/feedback                controllers.v1.feedback.FeedbackController.storeFeedback
+GET     /v1/feedback                controllers.v1.feedback.FeedbackController.display
+DELETE  /v1/feedback/:id            controllers.v1.feedback.FeedbackController.deleteFeedback(id)
