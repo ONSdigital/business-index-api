@@ -51,7 +51,7 @@ trait FeedbackStore extends HBaseCore {
 
   protected def hide(id: String, status: Option[Boolean] = Some(true)): Unit = {
     val put = new Put(id)
-    put.addColumn(columnFamily, "hideStatus", status.get.toString)
+    put.addColumn(columnFamily, "hideStatus", status.getOrElse("true").toString )
     table.put(put)
     logger.debug(s"The data row $id has been set to hide.")
   }

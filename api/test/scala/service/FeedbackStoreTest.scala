@@ -14,8 +14,9 @@ class FeedbackStoreTest extends FlatSpec with Matchers with FeedbackStore with B
   override protected val conf: Configuration = utility.getHBaseAdmin.getConfiguration
   private[this] val before = utility.countRows(table)
 
-  def recordObj (id: Option[String] = None, username: String = "doej", name: String = "John Doe", date: String = "01:01:2000", subject: String = "Data Issue", ubrn: Option[List[Long]] = Some(List(898989898989L, 111189898989L)), query: Option[String] = Some("BusinessName:test&limit=100"), comments: String = "UBRN does not match given company name.", hideStatus: Option[Boolean] = Some(false)) = FeedbackObj(id, username, name, date, subject, ubrn, query, comments, hideStatus )
+//  def recordObj (id: Option[String] = None, username: String = "doej", name: String = "John Doe", date: String = "01:01:2000", subject: String = "Data Issue", ubrn: Option[List[Long]] = Some(List(898989898989L, 111189898989L)), query: Option[String] = Some("BusinessName:test&limit=100"), comments: String = "UBRN does not match given company name.", hideStatus: Option[Boolean] = Some(false)) = FeedbackObj(id, username, name, date, subject, ubrn, query, comments, hideStatus )
 
+  def recordObj (username: String = "doej", name: String = "John Doe", date: String = "01:01:2000", subject: String = "Data Issue", ubrn: Option[List[Long]] = Some(List(898989898989L, 111189898989L)), query: Option[String] = Some("BusinessName:test&limit=100")) = FeedbackObj(None, username, name, date, subject, ubrn, query, "UBRN does not match given company name." )
 
   "It" should "accept a valid feedbackObj" in {
     val expected = "doej01:01:2000"

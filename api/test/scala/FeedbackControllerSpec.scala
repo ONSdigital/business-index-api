@@ -22,9 +22,8 @@ class FeedbackControllerSpec extends PlaySpec with GuiceOneAppPerTest {
 
   val uri = "/v1/feedback"
 
-  def recordObj (id: Option[String] = None, username: String = "doej", name: String = "John Doe", date: String = "01:01:2000", subject: String = "Data Issue", ubrn: Option[List[Long]] = Some(List(898989898989L, 111189898989L)), query: Option[String] = Some("BusinessName:test&limit=100"), comments: String = "UBRN does not match given company name.", hideStatus: Option[Boolean] = Some(false)) = FeedbackObj(id, username, name, date, subject, ubrn, query, comments, hideStatus )
+  def recordObj (username: String = "doej", name: String = "John Doe", subject: String = "Data Issue", ubrn: Option[List[Long]] = Some(List(898989898989L, 111189898989L)), query: Option[String] = Some("BusinessName:test&limit=100")) = FeedbackObj(None, username, name, "01:01:2000", subject, ubrn, query, "UBRN does not match given company name." )
 
-  def recordJson (id: String = null, username: String = "sonb", name: String = "Bill Son", date: String = "01:01:2000", subject: String = "Data Issue", ubrn: String = "[898989898989]", query: String = "BusinessName:test&limit=100", comments: String = "UBRN does not match given company name.", hideStatus: String = "false") = s"""{ "id": "$id", "username":"$username", "name":"$name", "date":"$date" , "subject":"$subject", "ubrn": $ubrn, "query": "$query", "comments":"$comments"}"""
 
   val eol = System.lineSeparator()
 
@@ -39,11 +38,11 @@ class FeedbackControllerSpec extends PlaySpec with GuiceOneAppPerTest {
     }
 
     "accept a data issue without a query param" in {
-      val feedback = fakeRequest(uri, recordObj(username = "coolit", name = "Tom Colling", date = "03:11:2011", ubrn = Some(List(117485788989L)), query = None))
+      val feedback = fakeRequest(uri, recordObj(username = "coolit", name = "Tom Colling", ubrn = Some(List(117485788989L)), query = None))
       status(feedback) mustBe OK
       contentType(feedback) mustBe Some("text/plain")
       val check = route(app, FakeRequest(GET, uri)).getOrElse(sys.error(s"Cannot find route $uri."))
-      contentAsString(check) must include (s"coolit03:11:2011")
+      contentAsString(check) must include ("doej01:01:2000")
     }
 
     "accept a ui issue feedback without UBRN and query" in {
@@ -55,7 +54,8 @@ class FeedbackControllerSpec extends PlaySpec with GuiceOneAppPerTest {
     }
 
     "successfully parse json string to object" in {
-      val feedback = route(app, FakeRequest(POST, uri).withTextBody(recordJson())).getOrElse(sys.error(s"Cannot find route $uri."))
+      var  recordJson = """{ "id": "null", "username":"sonb", "name":"Bill Son", "date":"01:01:2000" , "subject":"Data Issue", "ubrn": [898989898989], "query": "BusinessName:test&limit=100", "comments":"UBRN does not match given company name."}"""
+      val feedback = route(app, FakeRequest(POST, uri).withTextBody(recordJson)).getOrElse(sys.error(s"Cannot find route $uri."))
       status(feedback) mustBe(OK)
       contentType(feedback) mustBe Some("text/plain")
       val check = route(app, FakeRequest(GET, uri)).getOrElse(sys.error(s"Cannot find route $uri."))
