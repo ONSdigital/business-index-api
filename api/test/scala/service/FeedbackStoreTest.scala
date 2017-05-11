@@ -30,9 +30,11 @@ class FeedbackStoreTest extends FlatSpec with Matchers with FeedbackStore with B
     store(recordObj(username = "drake", name = "drake", date = "03:11:2011", ubrn = Some(List(117485788989L)), query = None))
     utility.countRows(table) shouldBe >= (before + 2)
     val objList = getAll()
-    objList.length shouldBe >= (before + 2)
-    objList.toString should include ("doej01:01:2000")
-    objList.toString should include ("drake03:11:2011")
+    val ids = List("doej01:01:2000", "drake03:11:2011")
+    objList.foreach { x =>
+      ids.count(i => x.id.contains(i)) shouldBe 1
+      x.hideStatus shouldBe Some(false)
+    }
   }
 
   "It" should "only display records with hide status false" in {
@@ -47,7 +49,6 @@ class FeedbackStoreTest extends FlatSpec with Matchers with FeedbackStore with B
     objList.length shouldBe >= (before + 1)
 
     val ids = List("kali13:11:2015", "sungj03:11:2011", "drake03:11:2011" )
-    println("vlod: " + objList)
     objList.foreach { x =>
       ids.count( idd => x.id.contains(idd)) shouldBe 1
       x.hideStatus shouldBe Some(false)

@@ -74,9 +74,8 @@ class FeedbackControllerSpec extends PlaySpec with GuiceOneAppPerTest {
       status(feedback) mustBe(OK)
       contentType(feedback) mustBe Some("text/plain")
       val check = route(app, FakeRequest(GET, uri + "display")).getOrElse(sys.error(s"Cannot find route $uri."))
-//      contentAsString(check) mustNot include ("Some(true)")
-//      contentAsString(check) mustNot include ("sonb01:01:2000")
-      contentAsString(check) must include ("Some(true)")
+      contentAsString(check) mustNot include ("Some(true)")
+      contentAsString(check) mustNot include ("sonb01:01:2000")
     }
 
   }

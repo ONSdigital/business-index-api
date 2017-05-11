@@ -11,10 +11,6 @@ import play.api.mvc.{Controller, _}
 
 import services.store.FeedbackStore
 
-import uk.gov.ons.bi.Utils
-
-import scala.util.control.NonFatal
-//import services.MailAgent
 
 
 /**
@@ -24,7 +20,6 @@ import scala.util.control.NonFatal
 @Api("Feedback")
 class FeedbackController @Inject()(implicit val config: Config) extends Controller with FeedbackStore {
   private[this] val logger = LoggerFactory.getLogger(getClass)
-  //  private[this] val mailObj = new MailAgent()
 
 
   // public api
@@ -58,7 +53,7 @@ class FeedbackController @Inject()(implicit val config: Config) extends Controll
 
     def display = Action {
       logger.debug(s"Request received to display all feedback records [with status hide as FALSE]")
-      val res = getAll(true)
+      val res = getAll()
       Ok(s"HBase has the following stored: $res")
     }
 
