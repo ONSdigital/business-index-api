@@ -22,12 +22,21 @@ class FeedbackControllerSpec extends PlaySpec with GuiceOneAppPerTest {
 
   val uri = "/v1/feedback"
 
-  def recordObj (username: String = "doej", name: String = "John Doe", subject: String = "Data Issue", ubrn: Option[List[Long]] = Some(List(898989898989L, 111189898989L)), query: Option[String] = Some("BusinessName:test&limit=100")) = FeedbackObj(None, username, name, "01:01:2000", subject, ubrn, query, "UBRN does not match given company name." )
+  def recordObj (username: String = "doej", name: String = "John Doe", subject: String = "Data Issue", ubrn: Option[List[Long]] = Some(List(898989898989L, 111189898989L)), query: Option[String] = Some("BusinessName:test&limit=100")) = FeedbackObj(None, username, name, Some("01:01:2000"), subject, ubrn, query, "UBRN does not match given company name." )
 
 
   val eol = System.lineSeparator()
 
   "FeedbackController" should {
+
+    "accept feedback without date override" in {
+      val testObj = FeedbackObj (id = None, username = "doej", name = "John Doe", date = None, subject = "UI Issue", ubrn = None, query = None, comments = "Just a simple test")
+      val feedback =  route(app, FakeRequest(POST, "/v1/feedback").withJsonBody(Json.toJson(testObj))).getOrElse(sys.error(s"Can not find route $uri."))
+      status(feedback) mustBe OK
+      contentType(feedback) mustBe Some("text/plain")
+      val check = route(app, FakeRequest(GET, uri)).getOrElse(sys.error(s"Cannot find route $uri."))
+      contentAsString(check) must include ("doej")
+    }
 
     "be able to take valid Json object and be parsable" in {
       val feedback = fakeRequest(uri, recordObj())
@@ -54,12 +63,12 @@ class FeedbackControllerSpec extends PlaySpec with GuiceOneAppPerTest {
     }
 
     "successfully parse json string to object" in {
-      var  recordJson = """{ "id": "null", "username":"sonb", "name":"Bill Son", "date":"01:01:2000" , "subject":"Data Issue", "ubrn": [898989898989], "query": "BusinessName:test&limit=100", "comments":"UBRN does not match given company name."}"""
+      val  recordJson = """{ "id":  "null", "username":"sonb", "name":"Bill Son", "subject":"Data Issue", "ubrn": [898989898989], "query": "BusinessName:test&limit=100", "comments":"This is just a test, please ignore."}"""
       val feedback = route(app, FakeRequest(POST, uri).withTextBody(recordJson)).getOrElse(sys.error(s"Cannot find route $uri."))
       status(feedback) mustBe(OK)
       contentType(feedback) mustBe Some("text/plain")
       val check = route(app, FakeRequest(GET, uri)).getOrElse(sys.error(s"Cannot find route $uri."))
-      contentAsString(check) must include ("sonb01:01:2000")
+      contentAsString(check) must include ("sonb")
     }
 
     "fail to parse json string to object" in {

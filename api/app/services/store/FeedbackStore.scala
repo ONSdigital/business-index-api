@@ -4,6 +4,7 @@ import controllers.v1.feedback.FeedbackObj
 import org.apache.hadoop.hbase.CellUtil
 import org.apache.hadoop.hbase.client.{Delete, Put, Scan}
 import org.apache.hadoop.hbase.filter.{CompareFilter, SingleColumnValueFilter}
+import org.joda.time.LocalDateTime
 import services.HBaseCore
 
 import scala.collection.JavaConverters._
@@ -17,7 +18,7 @@ trait FeedbackStore extends HBaseCore {
   protected val columnFamily = "feedback"
 
   protected def store(feedback: FeedbackObj): String = {
-    val id = feedback.username + feedback.date
+    val id = feedback.username + feedback.date.getOrElse(new LocalDateTime().toString).toString
     logger.debug(s"A new record with id $id has been added to the HBase table feedback_tbl")
     val put = new Put(id)
     // same each element of feedbackobject as a colum in tbl
@@ -41,6 +42,7 @@ trait FeedbackStore extends HBaseCore {
     }
     val scan = table.getScanner(s)
     val res = scan.asScala.map { res =>
+      println("moooooood22: " + res)
       val map = res.listCells().asScala.map { cell =>
         asString(CellUtil.cloneQualifier(cell)) -> asString(CellUtil.cloneValue(cell))
       }.toMap

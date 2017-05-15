@@ -14,9 +14,7 @@ class FeedbackStoreTest extends FlatSpec with Matchers with FeedbackStore with B
   override protected val conf: Configuration = utility.getHBaseAdmin.getConfiguration
   private[this] val before = utility.countRows(table)
 
-//  def recordObj (id: Option[String] = None, username: String = "doej", name: String = "John Doe", date: String = "01:01:2000", subject: String = "Data Issue", ubrn: Option[List[Long]] = Some(List(898989898989L, 111189898989L)), query: Option[String] = Some("BusinessName:test&limit=100"), comments: String = "UBRN does not match given company name.", hideStatus: Option[Boolean] = Some(false)) = FeedbackObj(id, username, name, date, subject, ubrn, query, comments, hideStatus )
-
-  def recordObj (username: String = "doej", name: String = "John Doe", date: String = "01:01:2000", subject: String = "Data Issue", ubrn: Option[List[Long]] = Some(List(898989898989L, 111189898989L)), query: Option[String] = Some("BusinessName:test&limit=100")) = FeedbackObj(None, username, name, date, subject, ubrn, query, "UBRN does not match given company name." )
+  def recordObj (username: String = "doej", name: String = "John Doe", date: Option[String] = Some("01:01:2000"), subject: String = "Data Issue", ubrn: Option[List[Long]] = Some(List(898989898989L, 111189898989L)), query: Option[String] = Some("BusinessName:test&limit=100")) = FeedbackObj(None, username, name, date, subject, ubrn, query, "UBRN does not match given company name." )
 
   "It" should "accept a valid feedbackObj" in {
     val expected = "doej01:01:2000"
@@ -28,7 +26,7 @@ class FeedbackStoreTest extends FlatSpec with Matchers with FeedbackStore with B
 
   "It" should "show all (2) records in hbase" in {
     store(recordObj())
-    store(recordObj(username = "drake", name = "drake", date = "03:11:2011", ubrn = Some(List(117485788989L)), query = None))
+    store(recordObj(username = "drake", name = "drake", date = Some("03:11:2011"), ubrn = Some(List(117485788989L)), query = None))
     utility.countRows(table) shouldBe >= (before + 2)
     val objList = getAll()
     val ids = List("doej01:01:2000", "drake03:11:2011")
@@ -40,8 +38,8 @@ class FeedbackStoreTest extends FlatSpec with Matchers with FeedbackStore with B
 
   "It" should "only display records with hide status false" in {
     val key = "doej01:01:2000"
-    store(recordObj(username = "kali", name = "kali", date = "13:11:2015", ubrn = Some(List(896767288989L)), query = None))
-    store(recordObj(username = "sungj", name = "Jim Sung", date = "03:11:2011", ubrn = Some(List(117485788989L)), query = None))
+    store(recordObj(username = "kali", name = "kali", date = Some("13:11:2015"), ubrn = Some(List(896767288989L)), query = None))
+    store(recordObj(username = "sungj", name = "Jim Sung", date = Some("03:11:2011"), ubrn = Some(List(117485788989L)), query = None))
     hide(key)
 
     utility.countRows(table) shouldBe >= (before + 1)

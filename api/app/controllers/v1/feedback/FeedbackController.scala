@@ -8,9 +8,8 @@ import io.swagger.annotations.{Api, ApiOperation}
 import org.slf4j.LoggerFactory
 import play.api.libs.json.{JsError, JsSuccess, Json, OFormat}
 import play.api.mvc.{Controller, _}
-
 import services.store.FeedbackStore
-
+import org.joda.time.LocalDateTime
 
 
 /**
@@ -23,8 +22,8 @@ class FeedbackController @Inject()(implicit val config: Config) extends Controll
 
 
   // public api
-  @ApiOperation(value = "Send feedback via email",
-    notes = "Parses input and formats to a feedback object and the sends it as email",
+  @ApiOperation(value = "Store Feedback to HBase",
+    notes = "Parses input and formats to a feedback object to store",
     httpMethod = "POST")
   def storeFeedback = Action { request =>
     val json = request.body match {
@@ -37,6 +36,7 @@ class FeedbackController @Inject()(implicit val config: Config) extends Controll
     Json.fromJson[FeedbackObj](json) match {
       case JsSuccess(feedbackObj, _) => {
         logger.debug(s"Feedback Received: $feedbackObj")
+        println("Received Feedback Object as2: " + feedbackObj + "\t\t Number #1")
         Ok(store(feedbackObj))
       }
       case JsError(err) =>
@@ -45,22 +45,30 @@ class FeedbackController @Inject()(implicit val config: Config) extends Controll
     }
   }
 
-    def deleteFeedback (id: String) = Action  {
-      logger.debug(s"Processing deletion of HBase record: $id")
-      val res = hide(id)
-      Ok(s"The following record has been modified: $res")
-    }
+  // public api
+  @ApiOperation(value = "Alters (single) feedback visibility status",
+    notes = "soft delete is produce using id",
+    httpMethod = "DELETE")
+  def deleteFeedback (id: String) = Action  {
+    logger.debug(s"Processing deletion of HBase record: $id")
+    val res = hide(id)
+    Ok(s"The following record has been modified: $res")
+  }
 
-    def display = Action {
-      logger.debug(s"Request received to display all feedback records [with status hide as FALSE]")
-      val res = getAll()
-      Ok(s"HBase has the following stored: $res")
-    }
+  // public api
+  @ApiOperation(value = "display all feedback",
+    notes = "displays only record with hide status false",
+    httpMethod = "GET")
+  def display = Action {
+    logger.debug(s"Request received to display all feedback records [with status hide as FALSE]")
+    val res = getAll()
+    Ok(s"HBase has the following stored: $res")
+  }
 
   override protected def tableName: String = config.getString("hbase.feedback.table.name")
 }
 
-case class FeedbackObj(id: Option[String], username: String, name: String, date: String, subject: String, ubrn: Option[List[Long]], query: Option[String], comments: String, hideStatus: Option[Boolean] = Some(false))
+case class FeedbackObj(id: Option[String], username: String, name: String, date: Option[String] = Some(new LocalDateTime().toString), subject: String, ubrn: Option[List[Long]], query: Option[String], comments: String, hideStatus: Option[Boolean] = Some(false))
 
 object FeedbackObj {
 
@@ -68,9 +76,10 @@ object FeedbackObj {
     "id" -> id,
     "username" -> o.username,
     "name" -> o.name,
-    "date" -> o.date,
     "subject" -> o.subject,
-    "comments" -> o.comments
+    "comments" -> o.comments,
+    "date" -> new LocalDateTime().toString,
+    "hideStatus" -> false
   ) ++
     o.ubrn.map(v => "ubrn" -> v.mkString(",")).toMap ++
     o.query.map(v => "query" -> v).toMap ++
@@ -78,7 +87,7 @@ object FeedbackObj {
 
 
   def fromMap(values: Map[String, String]) =
-    FeedbackObj(values.get("id"), values("username"), values("name"), values("date"), values("subject"),
+    FeedbackObj(values.get("id"), values("username"), values("name"), values.get("date").map(_.toString), values("subject"),
       values.get("ubrn").map(_.split(",").map(_.toLong).toList),
       values.get("query"), values("comments"), values.get("hideStatus").map(_.toBoolean))
 
