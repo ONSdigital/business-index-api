@@ -42,7 +42,6 @@ trait FeedbackStore extends HBaseCore {
     }
     val scan = table.getScanner(s)
     val res = scan.asScala.map { res =>
-      println("moooooood22: " + res)
       val map = res.listCells().asScala.map { cell =>
         asString(CellUtil.cloneQualifier(cell)) -> asString(CellUtil.cloneValue(cell))
       }.toMap

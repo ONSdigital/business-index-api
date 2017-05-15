@@ -36,7 +36,6 @@ class FeedbackController @Inject()(implicit val config: Config) extends Controll
     Json.fromJson[FeedbackObj](json) match {
       case JsSuccess(feedbackObj, _) => {
         logger.debug(s"Feedback Received: $feedbackObj")
-        println("Received Feedback Object as2: " + feedbackObj + "\t\t Number #1")
         Ok(store(feedbackObj))
       }
       case JsError(err) =>
