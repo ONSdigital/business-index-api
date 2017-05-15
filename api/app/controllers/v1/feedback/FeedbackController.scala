@@ -67,7 +67,7 @@ class FeedbackController @Inject()(implicit val config: Config) extends Controll
   override protected def tableName: String = config.getString("hbase.feedback.table.name")
 }
 
-case class FeedbackObj(id: Option[String], username: String, name: String, date: Option[String] = Some(new LocalDateTime().toString), subject: String, ubrn: Option[List[Long]], query: Option[String], comments: String, hideStatus: Option[Boolean] = Some(false))
+case class FeedbackObj(id: Option[String], username: String, name: String, date: Option[String] = Some(new LocalDateTime().toString), subject: String, ubrn: Option[List[Long]], query: Option[String], comments: String, progressStatus: Option[String] = Some("New"), hideStatus: Option[Boolean] = Some(false))
 
 object FeedbackObj {
 
@@ -82,13 +82,13 @@ object FeedbackObj {
   ) ++
     o.ubrn.map(v => "ubrn" -> v.mkString(",")).toMap ++
     o.query.map(v => "query" -> v).toMap ++
-    o.hideStatus.map(v => "hideStatus" -> v).toMap
+    o.progressStatus.map(v => "progressStatus" -> v).toMap
 
 
   def fromMap(values: Map[String, String]) =
     FeedbackObj(values.get("id"), values("username"), values("name"), values.get("date").map(_.toString), values("subject"),
       values.get("ubrn").map(_.split(",").map(_.toLong).toList),
-      values.get("query"), values("comments"), values.get("hideStatus").map(_.toBoolean))
+      values.get("query"), values("comments"), values.get("progressStatus"), values.get("hideStatus").map(_.toBoolean))
 
 
   implicit val feedbackFormatter: OFormat[FeedbackObj] = Json.format[FeedbackObj]

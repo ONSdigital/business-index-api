@@ -29,13 +29,14 @@ class FeedbackControllerSpec extends PlaySpec with GuiceOneAppPerTest {
 
   "FeedbackController" should {
 
-    "accept feedback without date override" in {
-      val testObj = FeedbackObj (id = None, username = "doej", name = "John Doe", date = None, subject = "UI Issue", ubrn = None, query = None, comments = "Just a simple test")
+    "accept feedback without date override and progress status" in {
+      val testObj = FeedbackObj (id = None, username = "doej", name = "John Doe", date = None, subject = "UI Issue", ubrn = None, query = None, comments = "Just a simple test", progressStatus = Some("In Progress"))
       val feedback =  route(app, FakeRequest(POST, "/v1/feedback").withJsonBody(Json.toJson(testObj))).getOrElse(sys.error(s"Can not find route $uri."))
       status(feedback) mustBe OK
       contentType(feedback) mustBe Some("text/plain")
       val check = route(app, FakeRequest(GET, uri)).getOrElse(sys.error(s"Cannot find route $uri."))
       contentAsString(check) must include ("doej")
+      contentAsString(check) must include ("In Progress")
     }
 
     "be able to take valid Json object and be parsable" in {
@@ -44,6 +45,7 @@ class FeedbackControllerSpec extends PlaySpec with GuiceOneAppPerTest {
       contentType(feedback) mustBe Some("text/plain")
       val check = route(app, FakeRequest(GET, uri)).getOrElse(sys.error(s"Cannot find route $uri."))
       contentAsString(check) must include ("doej01:01:2000")
+      contentAsString(check) must include ("New")
     }
 
     "accept a data issue without a query param" in {
@@ -62,16 +64,17 @@ class FeedbackControllerSpec extends PlaySpec with GuiceOneAppPerTest {
       contentAsString(check) must include ("doej01:01:2000")
     }
 
-    "successfully parse json string to object" in {
-      val  recordJson = """{ "id":  "null", "username":"sonb", "name":"Bill Son", "subject":"Data Issue", "ubrn": [898989898989], "query": "BusinessName:test&limit=100", "comments":"This is just a test, please ignore."}"""
+    "successfully parse json string to object with complete status" in {
+      val  recordJson = """{ "id":  "null", "username":"sonb", "name":"Bill Son", "subject":"Data Issue", "ubrn": [898989898989], "query": "BusinessName:test&limit=100", "comments":"This is just a test, please ignore.", "progressStatus" : "Complete"}"""
       val feedback = route(app, FakeRequest(POST, uri).withTextBody(recordJson)).getOrElse(sys.error(s"Cannot find route $uri."))
       status(feedback) mustBe(OK)
       contentType(feedback) mustBe Some("text/plain")
       val check = route(app, FakeRequest(GET, uri)).getOrElse(sys.error(s"Cannot find route $uri."))
       contentAsString(check) must include ("sonb")
+      contentAsString(check) must include ("Complete")
     }
 
-    "fail to parse json string to object" in {
+    "fail to parse json string to object with missing params" in {
       val jsonString = """{ "username":"doej", "date":"01:01:2000" , "subject":"Data Issue", "ubrn": [898989898989], "query": "BusinessName:test&limit=1000", "comments":"UBRN does not match given company name."}"""
       val feedback = route(app, FakeRequest(POST, uri).withTextBody(jsonString)).getOrElse(sys.error(s"Cannot find route $uri."))
       contentAsString(feedback) must include("Invalid Feedback")
