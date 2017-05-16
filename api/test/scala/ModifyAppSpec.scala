@@ -57,6 +57,12 @@ class ModifyAppSpec extends PlaySpec with GuiceOneServerPerSuite with OneBrowser
 
       val resp = doGet("/v1/event")
       contentAsString(resp) must include("90001")
+
+      // This test tests the OPTIONS route.
+      // Before a PUT/DELETE request on the API when it is running locally, requests are preceded by
+      // an OPTIONS request which is dealt with by returning Ok("").
+      val localResponse = doRequest(FakeRequest("OPTIONS", "/v1/store").withJsonBody(biToJson(bir)))
+      status(localResponse) mustBe OK
     }
 
     "bulk update" in {

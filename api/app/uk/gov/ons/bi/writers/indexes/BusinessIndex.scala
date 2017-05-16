@@ -41,9 +41,9 @@ class BusinessIndex(val indexName: String) extends Initializer {
     field(cBiLegalStatus, StringType) index "not_analyzed" includeInAll false,
     field(cBiTradingStatus, StringType) index "not_analyzed" includeInAll false,
 
-    field(cBiTurnover, StringType) index "not_analyzed" includeInAll false,
+    field(cBiTurnover, StringType) analyzer analyzerName,
 
-    field(cBiEmploymentBand, StringType) index "not_analyzed" includeInAll false,
+    field(cBiEmploymentBand, StringType) analyzer analyzerName,
 
     field(cBiPayeRefs, StringType) analyzer KeywordAnalyzer,
     field(cBiVatRefs, LongType) analyzer KeywordAnalyzer,
