@@ -25,8 +25,6 @@ class FeedbackControllerSpec extends PlaySpec with GuiceOneAppPerTest {
   def recordObj (username: String = "doej", name: String = "John Doe", subject: String = "Data Issue", ubrn: Option[List[Long]] = Some(List(898989898989L, 111189898989L)), query: Option[String] = Some("BusinessName:test&limit=100")) = FeedbackObj(None, username, name, Some("01:01:2000"), subject, ubrn, query, "UBRN does not match given company name." )
 
 
-  val eol = System.lineSeparator()
-
   "FeedbackController" should {
 
     "accept feedback without date override and progress status" in {
@@ -67,7 +65,7 @@ class FeedbackControllerSpec extends PlaySpec with GuiceOneAppPerTest {
     "successfully parse json string to object with complete status" in {
       val  recordJson = """{ "id":  "null", "username":"sonb", "name":"Bill Son", "subject":"Data Issue", "ubrn": [898989898989], "query": "BusinessName:test&limit=100", "comments":"This is just a test, please ignore.", "progressStatus" : "Complete"}"""
       val feedback = route(app, FakeRequest(POST, uri).withTextBody(recordJson)).getOrElse(sys.error(s"Cannot find route $uri."))
-      status(feedback) mustBe(OK)
+      status(feedback) mustBe OK
       contentType(feedback) mustBe Some("text/plain")
       val check = route(app, FakeRequest(GET, uri)).getOrElse(sys.error(s"Cannot find route $uri."))
       contentAsString(check) must include ("sonb")
@@ -78,12 +76,15 @@ class FeedbackControllerSpec extends PlaySpec with GuiceOneAppPerTest {
       val jsonString = """{ "username":"doej", "date":"01:01:2000" , "subject":"Data Issue", "ubrn": [898989898989], "query": "BusinessName:test&limit=1000", "comments":"UBRN does not match given company name."}"""
       val feedback = route(app, FakeRequest(POST, uri).withTextBody(jsonString)).getOrElse(sys.error(s"Cannot find route $uri."))
       contentAsString(feedback) must include("Invalid Feedback")
-      status(feedback) mustBe(BAD_REQUEST)
+      status(feedback) mustBe BAD_REQUEST
     }
 
     "change the hide status of an existing record by id" in {
+      val recordJson = """{ "id":  "sonb01:01:2000", "username":"sonb", "name":"Bill Son", "date" : "01:01:2000", "subject":"Data Issue", "ubrn": [898989898989], "query": "BusinessName:test&limit=100", "comments":"This is just a test, please ignore.", "progressStatus" : "Complete"}"""
+      val store = route(app, FakeRequest(POST, uri).withTextBody(recordJson)).getOrElse(sys.error(s"Cannot find route $uri."))
+      status(store) mustBe OK
       val feedback = doRequest(uri + "/sonb01:01:2000" )
-      status(feedback) mustBe(OK)
+      status(feedback) mustBe OK
       contentType(feedback) mustBe Some("text/plain")
       val check = route(app, FakeRequest(GET, uri)).getOrElse(sys.error(s"Cannot find route $uri."))
       contentAsString(check) mustNot include ("Some(true)")

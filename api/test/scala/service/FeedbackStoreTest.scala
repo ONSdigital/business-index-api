@@ -14,7 +14,7 @@ class FeedbackStoreTest extends FlatSpec with Matchers with FeedbackStore with B
   override protected val conf: Configuration = utility.getHBaseAdmin.getConfiguration
   private[this] val before = utility.countRows(table)
 
-  def recordObj (username: String = "doej", name: String = "John Doe", date: Option[String] = Some("01:01:2000"), subject: String = "Data Issue", ubrn: Option[List[Long]] = Some(List(898989898989L, 111189898989L)), query: Option[String] = Some("BusinessName:test&limit=100")) = FeedbackObj(None, username, name, date, subject, ubrn, query, "UBRN does not match given company name." )
+  def recordObj (username: String = "doej", name: String = "John Doe", date: Option[String] = Some("01:01:2000"), subject: String = "Data Issue", ubrn: Option[List[Long]] = Some(List(898989898989L, 111189898989L)), query: Option[String] = Some("BusinessName:test&limit=100"), progressStatus: Option[String] = Some("New")) = FeedbackObj(None, username, name, date, subject, ubrn, query, "UBRN does not match given company name.", progressStatus )
 
   "It" should "accept a valid feedbackObj" in {
     val expected = "doej01:01:2000"
@@ -52,6 +52,14 @@ class FeedbackStoreTest extends FlatSpec with Matchers with FeedbackStore with B
       ids.count( idd => x.id.contains(idd)) shouldBe 1
       x.hideStatus shouldBe Some(false)
     }
+
+
+//  "It" should "update the progress status of a given id" in {
+//    val idd = store(recordObj(username = "doej", name = "Max Mustermann", progressStatus = Some("Completed")))
+//
+//    progress(recordObj(id = idd, username = "doej", name = "Max Mustermann", progressStatus = Some("Completed")))
+//
+//  }
   }
 
   override def config: Config = BiConfigManager.envConf(ConfigFactory.load())
