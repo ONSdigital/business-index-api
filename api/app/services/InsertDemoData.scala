@@ -33,8 +33,8 @@ object InsertDemoUtils {
 
 /**
   * Class that imports sample.csv.
+  * If configured this class can (re)create index from scratch: @BusinessIndex is used as the index schema
   *
-  * CSV file header: "ID","BusinessName","UPRN","IndustryCode","LegalStatus","TradingStatus","Turnover","EmploymentBands"
   */
 @Singleton
 class InsertDemoData @Inject()(applicationLifecycle: ApplicationLifecycle)(

@@ -31,17 +31,39 @@ To package the project in a runnable fat-jar:
 sbt assembly
 ```
 
-### Integration tests
+#### Tests
+
+Each module is covered with set of unit tests.
+
+API is testing with "FakeApplication" mock - which enabled routing and in-memory application.
+Elastic is starting in-memory test mode likewise. 
+
+HBase is tested with in memory HBase server without any authorization.
+Same in memory HBase is used in integration tests mode.
+
+```shell
+// run all tests
+sbt test
+// run all tests for particular module
+sbt api/test
+// run test with name that matches provided substring
+sbt testOnly *ModifyAppSp*
+```
+
+
+#### Integration tests
  
 Integration tests (black box) expected external server to be up & running.
+`test.server` system property is mandatory for this mode.
 
-Integration tests name are ends with ISpec or ITest.
+Integration tests name are ends with `ISpec` or `ITest`.
 
 To execute integration test you need to pass system property with url of running server:
 
 ```sbt api/box:test -Dtest.server=http://localhost:9000```
 
-Note: integration tests (as for now) are running in general case aswell. So, they need to be maintained for both cases. Build.sbt need to be modified, so integration tests filtered out from unit mode.
+Note: integration tests (as for now) are running in general(unit) case as well. 
+So, they need to be maintained for both cases. Build.sbt can be modified, so integration tests filtered out from unit mode.
 In case if decision made to filter out integration tests from unit-tests mode - separate unit tests with similar logic need to be implemented.
 
 ### API Documentation: swagger-ui

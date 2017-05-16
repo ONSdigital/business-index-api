@@ -2,6 +2,18 @@ import play.sbt.PlayScala
 import sbtassembly.AssemblyPlugin.autoImport._
 import sbtbuildinfo.BuildInfoPlugin.autoImport._
 
+/**
+  * File with project description and configuration.
+  * Business-index-api project (build) contains one module: api.
+  *
+  * There are two sets of tests introduced in project:
+  * - unit (ends with Test or Spec)
+  * - integration/black box (ends with ITest or ISpec).
+  * Typical example of integration tests is: IntegrationISpec
+  * It's executing checks on external API server which is configured with system variable: "test.server"
+  *
+  */
+
 lazy val Versions = new {
   val util = "0.27.8"
   val elastic4s = "2.3.1"
@@ -13,15 +25,17 @@ lazy val Versions = new {
 // all Test classes with name ends ITest or ISpec can be run on real server
 lazy val BoxTest = config("box") extend Test
 
+// name filter for integration tests
 def boxFilter(name: String): Boolean = (name endsWith "ITest") || (name endsWith "ISpec")
 
-def unitFilter(name: String): Boolean = (name endsWith "Test") || (name endsWith "Spec")  // && !boxFilter(name)
+// name filter for unit tests
+def unitFilter(name: String): Boolean = (name endsWith "Test") || (name endsWith "Spec") // && !boxFilter(name)
 
 lazy val commonSettings =
   Seq(
-  scalaVersion := "2.11.8",
+    scalaVersion := "2.11.8",
     // next properties set required for sbt-assembly plugin,
-    // whe it finds two classes with same name in different JARs it does not know what to do
+    // when it finds two classes with the same name in different JARs it does not know what to do
     // we're defining merge strategy for problematic classes (mostly it's spark deps)
     assemblyMergeStrategy in assembly := {
       case PathList("io", "netty", xs@_*) => MergeStrategy.last
@@ -47,37 +61,39 @@ lazy val commonSettings =
         val oldStrategy = (assemblyMergeStrategy in assembly).value
         oldStrategy(x)
     },
-  resolvers ++= Seq(
-    Resolver.bintrayRepo("outworkers", "oss-releases"),
-    "splunk" at "http://splunk.artifactoryonline.com/splunk/ext-releases-local"
-  ),
-  testOptions in BoxTest := Seq(Tests.Filter(boxFilter)),
-  testOptions in Test := Seq(Tests.Filter(unitFilter)),
-  coverageExcludedPackages := ".*Routes.*;.*ReverseRoutes.*;.*javascript.*",
+    // in case if dependencies are missed in default repository, use additional repos
+    resolvers ++= Seq(
+      Resolver.bintrayRepo("outworkers", "oss-releases"),
+      "splunk" at "http://splunk.artifactoryonline.com/splunk/ext-releases-local"
+    ),
+    testOptions in BoxTest := Seq(Tests.Filter(boxFilter)),
+    testOptions in Test := Seq(Tests.Filter(unitFilter)),
+    coverageExcludedPackages := ".*Routes.*;.*ReverseRoutes.*;.*javascript.*",
+    // set of scala options to improve code quality and remove unnecessary warnings
     scalacOptions in ThisBuild ++= Seq(
-    "-language:experimental.macros",
-    "-target:jvm-1.8",
-    "-encoding", "UTF-8",
-    "-language:reflectiveCalls",
-    "-language:experimental.macros",
-    "-language:implicitConversions",
-    "-language:higherKinds",
-    "-language:postfixOps",
-    "-deprecation", // warning and location for usages of deprecated APIs
-    "-feature", // warning and location for usages of features that should be imported explicitly
-    "-unchecked", // additional warnings where generated code depends on assumptions
-    "-Xlint", // recommended additional warnings
-    "-Xcheckinit", // runtime error when a val is not initialized due to trait hierarchies (instead of NPE somewhere else)
-    "-Ywarn-adapted-args", // Warn if an argument list is modified to match the receiver
-    //"-Yno-adapted-args", // Do not adapt an argument list (either by inserting () or creating a tuple) to match the receiver
-    "-Ywarn-value-discard", // Warn when non-Unit expression results are unused
-    "-Ywarn-inaccessible", // Warn about inaccessible types in method signatures
-    "-Ywarn-dead-code", // Warn when dead code is identified
-    "-Ywarn-unused", // Warn when local and private vals, vars, defs, and types are unused
-    "-Ywarn-unused-import", //  Warn when imports are unused (don't want IntelliJ to do it automatically)
-    "-Ywarn-numeric-widen" // Warn when numerics are widened
+      "-language:experimental.macros",
+      "-target:jvm-1.8",
+      "-encoding", "UTF-8",
+      "-language:reflectiveCalls",
+      "-language:experimental.macros",
+      "-language:implicitConversions",
+      "-language:higherKinds",
+      "-language:postfixOps",
+      "-deprecation", // warning and location for usages of deprecated APIs
+      "-feature", // warning and location for usages of features that should be imported explicitly
+      "-unchecked", // additional warnings where generated code depends on assumptions
+      "-Xlint", // recommended additional warnings
+      "-Xcheckinit", // runtime error when a val is not initialized due to trait hierarchies (instead of NPE somewhere else)
+      "-Ywarn-adapted-args", // Warn if an argument list is modified to match the receiver
+      //"-Yno-adapted-args", // Do not adapt an argument list (either by inserting () or creating a tuple) to match the receiver
+      "-Ywarn-value-discard", // Warn when non-Unit expression results are unused
+      "-Ywarn-inaccessible", // Warn about inaccessible types in method signatures
+      "-Ywarn-dead-code", // Warn when dead code is identified
+      "-Ywarn-unused", // Warn when local and private vals, vars, defs, and types are unused
+      "-Ywarn-unused-import", //  Warn when imports are unused (don't want IntelliJ to do it automatically)
+      "-Ywarn-numeric-widen" // Warn when numerics are widened
+    )
   )
-)
 
 /**
   * The multi-module separation is necessary because the parsers module uses macros.
@@ -105,8 +121,11 @@ lazy val api = (project in file("api"))
     resolvers ++= Seq(
       "Hadoop Releases" at "https://repository.cloudera.com/content/repositories/releases/"
     ),
-    javaOptions in Test ++= Seq("-Denvironment=test","-Dsample.folder=test") ++ sys.props.map { case (k,v) => s"-D$k=$v" },
+    // unit tests are executed with set of predefined properties
+    javaOptions in Test ++= Seq("-Denvironment=test", "-Dsample.folder=test") ++ sys.props.map { case (k, v) => s"-D$k=$v" },
+    // system property that qualify that integration tests has been started.
     javaOptions in BoxTest ++= Seq("-Dintegration.test=true"),
+    // fork = create separate thread for task
     fork in run := true,
     fork in BoxTest := true,
     buildInfoKeys ++= Seq[BuildInfoKey](
@@ -125,6 +144,7 @@ lazy val api = (project in file("api"))
       _.filterNot(_.getName endsWith ".scala")
     },
 
+    // characteristics for assembly plugin
     assemblyJarName in assembly := "ons-bi-api.jar",
     assemblyMergeStrategy in assembly := {
       case PathList("META-INF", "io.netty.versions.properties", xs@_ *) => MergeStrategy.last
