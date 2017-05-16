@@ -27,27 +27,28 @@ class FeedbackStoreTest extends FlatSpec with Matchers with FeedbackStore with B
   "It" should "show all (2) records in hbase" in {
     store(recordObj())
     store(recordObj(username = "drake", name = "drake", date = Some("03:11:2011"), ubrn = Some(List(117485788989L)), query = None))
-    utility.countRows(table) shouldBe >= (before + 2)
     val objList = getAll()
     val ids = List("doej01:01:2000", "drake03:11:2011")
     objList.foreach { x =>
       ids.count(i => x.id.contains(i)) shouldBe 1
       x.hideStatus shouldBe Some(false)
     }
+
   }
 
   "It" should "only display records with hide status false" in {
-    val key = "doej01:01:2000"
+    val delete = List("doej01:01:2000", "drake03:11:2011")
+    delete.foreach { x =>  hide(x)}
     store(recordObj(username = "kali", name = "kali", date = Some("13:11:2015"), ubrn = Some(List(896767288989L)), query = None))
     store(recordObj(username = "sungj", name = "Jim Sung", date = Some("03:11:2011"), ubrn = Some(List(117485788989L)), query = None))
-    hide(key)
+
 
     utility.countRows(table) shouldBe >=(before + 1)
 
     val objList = getAll()
     objList.length shouldBe >=(before + 1)
 
-    val ids = List("kali13:11:2015", "sungj03:11:2011", "drake03:11:2011")
+    val ids = List("kali13:11:2015", "sungj03:11:2011")
     objList.foreach { x =>
       ids.count(idd => x.id.contains(idd)) shouldBe 1
       x.hideStatus shouldBe Some(false)
