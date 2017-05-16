@@ -28,12 +28,6 @@ trait FeedbackStore extends HBaseCore {
     id
   }
 
-  protected def delete(id: String): String = {
-    table.delete(new Delete(id))
-    logger.debug(s"The record with id $id has been deleted from HBase table feedback_tbl")
-    id
-  }
-
   protected def getAll(hidden: Boolean = false): List[FeedbackObj] = {
     val s = new Scan()
     if (!hidden) {
@@ -67,6 +61,13 @@ trait FeedbackStore extends HBaseCore {
     put.addColumn(columnFamily, "hideStatus", status.getOrElse("true").toString)
     table.put(put)
     logger.debug(s"The data row $id has been set to hide.")
+    id
+  }
+
+  protected def delete(id: String): String = {
+    getById(id).getOrElse(sys.error(s"Id $id is not found in database - can't hide."))
+    table.delete(new Delete(id))
+    logger.debug(s"The record with id $id has been deleted from HBase")
     id
   }
 

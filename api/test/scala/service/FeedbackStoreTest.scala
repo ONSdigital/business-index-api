@@ -14,13 +14,13 @@ class FeedbackStoreTest extends FlatSpec with Matchers with FeedbackStore with B
   override protected val conf: Configuration = utility.getHBaseAdmin.getConfiguration
   private[this] val before = utility.countRows(table)
 
-  def recordObj (username: String = "doej", name: String = "John Doe", date: Option[String] = Some("01:01:2000"), subject: String = "Data Issue", ubrn: Option[List[Long]] = Some(List(898989898989L, 111189898989L)), query: Option[String] = Some("BusinessName:test&limit=100"), progressStatus: Option[String] = Some("New")) = FeedbackObj(None, username, name, date, subject, ubrn, query, "UBRN does not match given company name.", progressStatus )
+  def recordObj (id : Option [String] = None, username: String = "doej", name: String = "John Doe", date: Option[String] = Some("01:01:2000"), subject: String = "Data Issue", ubrn: Option[List[Long]] = Some(List(898989898989L, 111189898989L)), query: Option[String] = Some("BusinessName:test&limit=100"), progressStatus: Option[String] = Some("New")) = FeedbackObj(id, username, name, date, subject, ubrn, query, "UBRN does not match given company name.", progressStatus )
 
   "It" should "accept a valid feedbackObj" in {
     val expected = "doej01:01:2000"
     val feedback = store(recordObj())
     feedback shouldBe expected
-    utility.countRows(table) shouldBe > (before)
+    utility.countRows(table) shouldBe >= (before)
 
   }
 
@@ -42,25 +42,26 @@ class FeedbackStoreTest extends FlatSpec with Matchers with FeedbackStore with B
     store(recordObj(username = "sungj", name = "Jim Sung", date = Some("03:11:2011"), ubrn = Some(List(117485788989L)), query = None))
     hide(key)
 
-    utility.countRows(table) shouldBe >= (before + 1)
+    utility.countRows(table) shouldBe >=(before + 1)
 
     val objList = getAll()
-    objList.length shouldBe >= (before + 1)
+    objList.length shouldBe >=(before + 1)
 
-    val ids = List("kali13:11:2015", "sungj03:11:2011", "drake03:11:2011" )
+    val ids = List("kali13:11:2015", "sungj03:11:2011", "drake03:11:2011")
     objList.foreach { x =>
-      ids.count( idd => x.id.contains(idd)) shouldBe 1
+      ids.count(idd => x.id.contains(idd)) shouldBe 1
       x.hideStatus shouldBe Some(false)
     }
 
-
-//  "It" should "update the progress status of a given id" in {
-//    val idd = store(recordObj(username = "doej", name = "Max Mustermann", progressStatus = Some("Completed")))
-//
-//    progress(recordObj(id = idd, username = "doej", name = "Max Mustermann", progressStatus = Some("Completed")))
-//
-//  }
   }
+
+  "It" should "update the progress status of a given id" in {
+    val idd = store(recordObj(username = "doej", name = "Max Mustermann", progressStatus = Some("Completed")))
+    utility.countRows(table) shouldBe >= (before + 1)
+    val change = progress(recordObj(id = Some(idd), progressStatus = Some("In Progress") ))
+    change.progressStatus == "In Progress"
+  }
+
 
   override def config: Config = BiConfigManager.envConf(ConfigFactory.load())
 

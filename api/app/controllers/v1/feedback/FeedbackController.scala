@@ -4,7 +4,7 @@ import javax.inject.Inject
 
 import com.typesafe.config.Config
 import controllers.v1.feedback.FeedbackObj._
-import io.swagger.annotations.{Api, ApiOperation}
+import io.swagger.annotations._
 import org.joda.time.LocalDateTime
 import org.slf4j.LoggerFactory
 import play.api.libs.json._
@@ -33,9 +33,14 @@ class FeedbackController @Inject()(implicit val config: Config) extends Controll
   }
 
   // public api
-  @ApiOperation(value = "Store Feedback to HBase",
+  @ApiOperation(value = "Submit feedback",
     notes = "Parses input and formats to a feedback object to store",
+    responseContainer = "String",
     httpMethod = "POST")
+  @ApiResponses(Array(
+    new ApiResponse(code = 200, message = "Success - New feedback has been stored."),
+    new ApiResponse(code = 400, message = "Client Side Error - Not input given/ found."),
+    new ApiResponse(code = 500, responseContainer = "Json", message = "Internal Server Error - Invalid id thereby cannot be found.")))
   def storeFeedback = Action { request =>
     val json = validate(request)
 
@@ -54,10 +59,14 @@ class FeedbackController @Inject()(implicit val config: Config) extends Controll
 
 
   // public api
-  @ApiOperation(value = "Update (single) feedback record of progress status",
-    notes = "progressStatus is the only single column changed (New/ In Progress/ Completed)",
+  @ApiOperation(value = "Update (single) progress status field of a given feedback record",
+    notes = "Field progressStatus is the only single column changed (New/ In Progress/ Completed)",
     httpMethod = "PUT")
-  def updateProgress() = Action { request =>
+  @ApiResponses(Array(
+    new ApiResponse(code = 200, message = "Success - 'progressStatus' has been successfully been modified."),
+    new ApiResponse(code = 400, message = "Client Side Error - Not input given/ found."),
+    new ApiResponse(code = 500, responseContainer = "Json", message = "Internal Server Error - Invalid id thereby cannot be found.")))
+  def updateProgress = Action { request =>
     val json = validate(request)
 
     withError {
@@ -65,7 +74,7 @@ class FeedbackController @Inject()(implicit val config: Config) extends Controll
         case JsSuccess(feedbackObj, _) =>
           logger.debug(s"Updated Feedback Received: $feedbackObj")
           val updated = progress(feedbackObj)
-          Ok(s""" { "id" : "${updated.id}", "progressStatus": "${updated.progressStatus}" } """)
+          Ok(s""" { "id" : "${updated.id.getOrElse("")}", "progressStatus": "${updated.progressStatus.getOrElse("")}" } """)
         case JsError(err) =>
           logger.error(s"Invalid Feedback! Please give properly parsable feedback $json -> $err")
           BadRequest(s"Invalid Feedback! Please give properly parsable feedback $json -> $err")
@@ -73,12 +82,31 @@ class FeedbackController @Inject()(implicit val config: Config) extends Controll
     }
   }
 
+  // public api
+  @ApiOperation(value = "Delete a feedback record from HBase",
+    hidden = true,
+    notes = "Hard delete - This will get rid of the entire record in HBase contrary to hide.",
+    httpMethod = "DELETE")
+  @ApiResponses(Array(
+    new ApiResponse(code = 200, message = "Success - Record successfully deleted."),
+    new ApiResponse(code = 500, responseContainer = "Json", message = "Internal Server Error - Invalid id thereby cannot be found.")))
+  def deleteFeedback(@ApiParam(value = "hbase record id", required = true) id: String) = Action {
+    logger.debug(s"Processing deletion of HBase record: $id")
+    withError {
+      val res = delete(id)
+      Ok(s""" { "id" : "$res" }   """)
+    }
+  }
+
 
   // public api
   @ApiOperation(value = "Toggle (single) feedback visibility status",
-    notes = "soft delete is produce using id",
+    notes = "Soft delete - a substitute for delete that allows to restore the feedback using a boolean paramater in hide function.",
     httpMethod = "DELETE")
-  def deleteFeedback(id: String) = Action {
+  @ApiResponses(Array(
+    new ApiResponse(code = 200, message = "Success - Hide Status of respective record toggled."),
+    new ApiResponse(code = 500, responseContainer = "Json", message = "Internal Server Error - Invalid id thereby cannot be found.")))
+  def hideFeedback(@ApiParam(value = "hbase record id", required = true) id: String) = Action {
     logger.debug(s"Processing deletion of HBase record: $id")
     withError {
       val res = hide(id)
@@ -88,9 +116,11 @@ class FeedbackController @Inject()(implicit val config: Config) extends Controll
 
 
   // public api
-  @ApiOperation(value = "display all feedback",
-    notes = "displays only record with hide status false",
+  @ApiOperation(value = "Display all feedback",
+    notes = "Displays all records found in HBase while filtering out those with a 'hideStatus' set to true",
     httpMethod = "GET")
+  @ApiResponses(Array(
+    new ApiResponse(code = 200, message = "Success - Displays all records in HBase.")))
   def display = Action {
     logger.debug(s"Request received to display all feedback records [with status hide as FALSE]")
     Ok(Json.toJson[List[FeedbackObj]](getAll()))
@@ -135,7 +165,7 @@ object FeedbackObj {
   def fromMap(values: Map[String, String]) =
     FeedbackObj(values.get("id"), values("username"), values("name"), values.get("date").map(_.toString), values("subject"),
       values.get("ubrn").map(_.split(",").map(_.toLong).toList),
-      values.get("query"), values("comments"), values.get("progressStatus"), values.get("hideStatus").map(_.toBoolean))
+      values.get("query"), values("comments"), values.get("progressStatus").map(_.toString), values.get("hideStatus").map(_.toBoolean))
 
 
   implicit val feedbackFormatter: OFormat[FeedbackObj] = Json.format[FeedbackObj]

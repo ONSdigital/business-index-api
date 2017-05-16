@@ -32,10 +32,10 @@ PUT     /v1/event                   controllers.v1.event.PutController.store
 POST    /v1/event/bulk              controllers.v1.event.PutController.bulkUpdate
 
 GET     /v1/event                   controllers.v1.event.PutController.eventLog
-POST    /v1/event/apply             controllers.v1.event.PutController.apply
+POST    /v1/event                   controllers.v1.event.PutController.apply
 
 # Feedback
 POST    /v1/feedback                controllers.v1.feedback.FeedbackController.storeFeedback
 GET     /v1/feedback                controllers.v1.feedback.FeedbackController.display
-DELETE  /v1/feedback/:id            controllers.v1.feedback.FeedbackController.deleteFeedback(id)
+DELETE  /v1/feedback/:id            controllers.v1.feedback.FeedbackController.hideFeedback(id)
 PUT     /v1/feedback                controllers.v1.feedback.FeedbackController.updateProgress

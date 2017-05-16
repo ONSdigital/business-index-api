@@ -91,6 +91,19 @@ class FeedbackControllerSpec extends PlaySpec with GuiceOneAppPerTest {
       contentAsString(check) mustNot include ("sonb01:01:2000")
     }
 
+
+    "store then update the progress status of a feedback with the same id" in {
+      val recordJson = """{ "id":  "sonb01:01:2001", "username":"sonb", "name":"Bill Son", "date" : "01:01:2001", "subject":"Data Issue", "ubrn": [898989898989], "query": "BusinessName:test&limit=100", "comments":"This is just a test, please ignore.", "progressStatus" : "In Progress"}"""
+      val store = route(app, FakeRequest(POST, uri).withTextBody(recordJson)).getOrElse(sys.error(s"Cannot find route $uri."))
+      status(store) mustBe OK
+      val modifiedJson = """{ "id":  "sonb01:01:2001", "username":"sonb", "name":"Bill Son", "date" : "01:01:2001", "subject":"Data Issue", "ubrn": [898989898989], "query": "BusinessName:test&limit=100", "comments":"This is just a test, please ignore.", "progressStatus" : "Completed"}"""
+      val update = route(app, FakeRequest(PUT, uri).withTextBody(modifiedJson)).getOrElse(sys.error(s"Cannot find route $uri."))
+      status(update) mustBe OK
+      contentType(update) mustBe Some("text/plain")
+      contentAsString(update) mustNot include ("In Progress")
+      contentAsString(update) must include ("Completed")
+    }
+
   }
 }
 
