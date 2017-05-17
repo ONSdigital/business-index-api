@@ -5,7 +5,6 @@ import javax.inject.Inject
 import com.typesafe.config.Config
 import controllers.v1.feedback.FeedbackObj._
 import io.swagger.annotations._
-import org.joda.time.LocalDateTime
 import org.slf4j.LoggerFactory
 import play.api.libs.json._
 import play.api.mvc.{Controller, _}
@@ -37,6 +36,14 @@ class FeedbackController @Inject()(implicit val config: Config) extends Controll
     notes = "Parses input and formats to a feedback object to store",
     responseContainer = "String",
     httpMethod = "POST")
+  @ApiImplicitParams(Array(
+    new ApiImplicitParam(
+      value = "Create a new feedback",
+      required = true,
+      dataType = "controllers.FeedbackObj", // complete path
+      paramType = "body"
+    )
+  ))
   @ApiResponses(Array(
     new ApiResponse(code = 200, message = "Success - New feedback has been stored."),
     new ApiResponse(code = 400, message = "Client Side Error - Not input given/ found."),
@@ -62,6 +69,14 @@ class FeedbackController @Inject()(implicit val config: Config) extends Controll
   @ApiOperation(value = "Update (single) progress status field of a given feedback record",
     notes = "Field progressStatus is the only single column changed (New/ In Progress/ Completed)",
     httpMethod = "PUT")
+  @ApiImplicitParams(Array(
+    new ApiImplicitParam(
+      value = "Create a new feedback",
+      required = true,
+      dataType = "controllers.FeedbackObj", // complete path
+      paramType = "body"
+    )
+  ))
   @ApiResponses(Array(
     new ApiResponse(code = 200, message = "Success - 'progressStatus' has been successfully been modified."),
     new ApiResponse(code = 400, message = "Client Side Error - Not input given/ found."),
@@ -144,7 +159,7 @@ class FeedbackController @Inject()(implicit val config: Config) extends Controll
   override protected def tableName: String = config.getString("hbase.feedback.table.name")
 }
 
-case class FeedbackObj(id: Option[String], username: String, name: String, date: Option[String] = Some(System.currentTimeMillis().toString), subject: String, ubrn: Option[List[Long]], query: Option[String], comments: String, progressStatus: Option[String] = Some("New"), hideStatus: Option[Boolean] = Some(false))
+case class FeedbackObj(id: Option[String], @ApiModelProperty(value = "Name of the resource") username: String, @ApiModelProperty(value = "fhdsjfhs of the resource") name: String, date: Option[String] = Some(System.currentTimeMillis().toString), subject: String, ubrn: Option[List[Long]], query: Option[String], comments: String, progressStatus: Option[String] = Some("New"), hideStatus: Option[Boolean] = Some(false))
 
 object FeedbackObj {
 
@@ -154,7 +169,7 @@ object FeedbackObj {
     "name" -> o.name,
     "subject" -> o.subject,
     "comments" -> o.comments,
-    "date" -> new LocalDateTime().toString,
+    "date" ->  System.currentTimeMillis().toString,
     "hideStatus" -> false
   ) ++
     o.ubrn.map(v => "ubrn" -> v.mkString(",")).toMap ++
