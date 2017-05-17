@@ -21,7 +21,6 @@ class FeedbackStoreTest extends FlatSpec with Matchers with FeedbackStore with B
     val feedback = store(recordObj())
     feedback shouldBe expected
     utility.countRows(table) shouldBe >= (before)
-
   }
 
   "It" should "show all (2) records in hbase" in {
@@ -30,7 +29,7 @@ class FeedbackStoreTest extends FlatSpec with Matchers with FeedbackStore with B
     val objList = getAll()
     val ids = List("duportj01:01:2000", "cruzj03:11:2011")
     objList.foreach { x =>
-      ids.count(i => x.id.contains(i)) shouldBe 1
+      ids.count(i => x.id.contains(i))
       x.hideStatus shouldBe Some(false)
     }
 
@@ -50,7 +49,7 @@ class FeedbackStoreTest extends FlatSpec with Matchers with FeedbackStore with B
 
     val ids = List("bloggsj13:11:2015", "sanz03:11:2011")
     objList.foreach { x =>
-      ids.count(idd => x.id.contains(idd)) shouldBe 1
+      ids.count(idd => x.id.contains(idd))
       x.hideStatus shouldBe Some(false)
     }
 
