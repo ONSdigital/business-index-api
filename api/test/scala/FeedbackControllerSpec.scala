@@ -63,12 +63,12 @@ class FeedbackControllerSpec extends PlaySpec with GuiceOneAppPerTest {
     }
 
     "successfully parse json string to object with complete status" in {
-      val  recordJson = """{ "id":  "null", "username":"sonb", "name":"Bill Son", "subject":"Data Issue", "ubrn": [898989898989], "query": "BusinessName:test&limit=100", "comments":"This is just a test, please ignore.", "progressStatus" : "Complete"}"""
+      val  recordJson = """{ "id":  "null", "username":"mustermannh", "name":"Hanz Mustermann", "subject":"Data Issue", "ubrn": [898989898989], "query": "BusinessName:test&limit=100", "comments":"This is just a test, please ignore.", "progressStatus" : "Complete"}"""
       val feedback = route(app, FakeRequest(POST, uri).withTextBody(recordJson)).getOrElse(sys.error(s"Cannot find route $uri."))
       status(feedback) mustBe OK
       contentType(feedback) mustBe Some("text/plain")
       val check = route(app, FakeRequest(GET, uri)).getOrElse(sys.error(s"Cannot find route $uri."))
-      contentAsString(check) must include ("sonb")
+      contentAsString(check) must include ("mustermannh")
       contentAsString(check) must include ("Complete")
     }
 
@@ -80,23 +80,23 @@ class FeedbackControllerSpec extends PlaySpec with GuiceOneAppPerTest {
     }
 
     "change the hide status of an existing record by id" in {
-      val recordJson = """{ "id":  "sonb01:01:2000", "username":"sonb", "name":"Bill Son", "date" : "01:01:2000", "subject":"Data Issue", "ubrn": [898989898989], "query": "BusinessName:test&limit=100", "comments":"This is just a test, please ignore.", "progressStatus" : "Complete"}"""
+      val recordJson = """{ "id":  "kowalskij01:01:2000", "username":"kowalskij", "name":"Jan Kowalski", "date" : "01:01:2000", "subject":"Data Issue", "ubrn": [898989898989], "query": "BusinessName:test&limit=100", "comments":"This is just a test, please ignore.", "progressStatus" : "Complete"}"""
       val store = route(app, FakeRequest(POST, uri).withTextBody(recordJson)).getOrElse(sys.error(s"Cannot find route $uri."))
       status(store) mustBe OK
-      val feedback = doRequest(uri + "/sonb01:01:2000" )
+      val feedback = doRequest(uri + "/kowalskij01:01:2000" )
       status(feedback) mustBe OK
       contentType(feedback) mustBe Some("text/plain")
       val check = route(app, FakeRequest(GET, uri)).getOrElse(sys.error(s"Cannot find route $uri."))
       contentAsString(check) mustNot include ("Some(true)")
-      contentAsString(check) mustNot include ("sonb01:01:2000")
+      contentAsString(check) mustNot include ("kowalskij01:01:2000")
     }
 
 
     "store then update the progress status of a feedback with the same id" in {
-      val recordJson = """{ "id":  "sonb01:01:2001", "username":"sonb", "name":"Bill Son", "date" : "01:01:2001", "subject":"Data Issue", "ubrn": [898989898989], "query": "BusinessName:test&limit=100", "comments":"This is just a test, please ignore.", "progressStatus" : "In Progress"}"""
+      val recordJson = """{ "id":  "rossim01:01:2001", "username":"rossim", "name":"Mario Rossi", "date" : "01:01:2001", "subject":"Data Issue", "ubrn": [898989898989], "query": "BusinessName:test&limit=100", "comments":"This is just a test, please ignore.", "progressStatus" : "In Progress"}"""
       val store = route(app, FakeRequest(POST, uri).withTextBody(recordJson)).getOrElse(sys.error(s"Cannot find route $uri."))
       status(store) mustBe OK
-      val modifiedJson = """{ "id":  "sonb01:01:2001", "username":"sonb", "name":"Bill Son", "date" : "01:01:2001", "subject":"Data Issue", "ubrn": [898989898989], "query": "BusinessName:test&limit=100", "comments":"This is just a test, please ignore.", "progressStatus" : "Completed"}"""
+      val modifiedJson = """{ "id":  "rossim01:01:2001", "username":"rossim", "name":"Mario Rossi", "date" : "01:01:2001", "subject":"Data Issue", "ubrn": [898989898989], "query": "BusinessName:test&limit=100", "comments":"This is just a test, please ignore.", "progressStatus" : "Completed"}"""
       val update = route(app, FakeRequest(PUT, uri).withTextBody(modifiedJson)).getOrElse(sys.error(s"Cannot find route $uri."))
       status(update) mustBe OK
       contentType(update) mustBe Some("text/plain")
