@@ -10,7 +10,7 @@ import play.api.test._
 
 import scala.service.HBaseTesting
 
-class FeedbackControllerSpec extends PlaySpec with GuiceOneAppPerTest {
+class FeedbackSpec extends PlaySpec with GuiceOneAppPerTest {
 
   HBaseTesting.hBaseServer // to make sure hBaseServer initialized and can be used in the test.
 
