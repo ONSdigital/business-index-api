@@ -38,13 +38,20 @@ sbt "api/run -Denvironment=local"
 sbt assembly
 // in a folder with binary:
  java -Denvironment=local -Dconfig.file=application.conf -Dhttp.port=9050 -jar ons-bi-api.jar
-
 ```
 
-#### How to fix a bug in API
+#### How to troubleshoot and fix a bug in API
 
 Can you reproduce it?
 If not - add more logging and find out more about environment where it was found initially.
+
+Is root cause clear?
+If not - divide and conquer.
+1. Find out if it's API issue or input/output data problem
+2. If it's API problem find specific module where issue present. 
+For ex. if it's problem with query, try to perform similar query on elastic directly, instead of through API.
+If it's problem with HBase - connect to it via shell and see what tables are present and what data its contains.
+3. Find out if other environments works correctly. What the difference between application? indexes? Check GIT history if required.
 
 Do tests failing? 
 If not - implement new test that will cover bug related scenario and fails on it.
