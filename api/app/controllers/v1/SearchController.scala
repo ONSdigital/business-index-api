@@ -138,9 +138,10 @@ class SearchController @Inject()(elastic: ElasticClient, val config: Config)(
     notes = "Returns list of available businesses",
     httpMethod = "GET")
   @ApiResponses(Array(
+    new ApiResponse(code = 200, message = "Success - Returns some result"),
     new ApiResponse(code = 500, message = "Internal server error"),
     new ApiResponse(code = 503, message = "Elastic search is not available")))
-  def searchTerm(@ApiParam(value = "Query to elastic search") term: String, suggest: Boolean = false): Action[AnyContent] = searchBusiness(Some(term), suggest)
+  def searchTerm(@ApiParam(value = "Query to elastic search", required = true) term: String, suggest: Boolean = false): Action[AnyContent] = searchBusiness(Some(term), suggest)
 
   private[this] def findById(businessId: Long): Future[Option[BusinessIndexRec]] = {
     logger.debug(s"Searching for business with ID $businessId")
@@ -154,7 +155,11 @@ class SearchController @Inject()(elastic: ElasticClient, val config: Config)(
     value = "Search businesses by UBRN",
     notes = "Returns exact business index record for particular UBRN Request",
     httpMethod = "GET")
-  def searchBusinessById(@ApiParam(value = "UBRN to search") id: String): Action[AnyContent] = Action.async {
+  @ApiResponses(Array(
+    new ApiResponse(code = 200, message = "Success - Returns some result"),
+    new ApiResponse(code = 500, message = "Internal server error"),
+    new ApiResponse(code = 503, message = "Elastic search is not available")))
+  def searchBusinessById(@ApiParam(value = "UBRN to search", required = true) id: String): Action[AnyContent] = Action.async {
     cparse[Long](id) fold(_.response.future, value =>
       findById(value) map {
         case Some(res) =>
@@ -170,7 +175,7 @@ class SearchController @Inject()(elastic: ElasticClient, val config: Config)(
   @ApiOperation(value = "Search businesses by query",
     notes = "Returns list of available businesses. Additional parameters: offset, limit, default_operator",
     httpMethod = "GET")
-  def searchBusiness(@ApiParam(value = "Query to elastic search") term: Option[String], suggest: Boolean = false): Action[AnyContent] = {
+  def searchBusiness(@ApiParam(value = "Query to elastic search", required = true) term: Option[String], suggest: Boolean = false): Action[AnyContent] = {
     Action.async { implicit request =>
       // getOrElseWrap(term)
       requestMeter.mark()

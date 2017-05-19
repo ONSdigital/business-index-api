@@ -20,15 +20,14 @@ import scala.util.control.NonFatal
 @Api("Feedback")
 class FeedbackController @Inject()(implicit val config: Config) extends Controller with FeedbackStore {
   private[this] val logger = LoggerFactory.getLogger(getClass)
-
   def validate(request: Request[AnyContent]): JsValue = {
-    val json = request.body match {
-      case AnyContentAsRaw(raw) => Json.parse(raw.asBytes().getOrElse(sys.error("Invalid or empty input")).utf8String)
-      case AnyContentAsText(text) => Json.parse(text)
-      case AnyContentAsJson(jsonStr) => jsonStr
-      case _ => sys.error(s"Unsupported input type ${request.body}")
-    }
-    json
+      val json = request.body match {
+        case AnyContentAsRaw(raw) => Json.parse(raw.asBytes().getOrElse(sys.error("Invalid or empty input")).utf8String)
+        case AnyContentAsText(text) => Json.parse(text)
+        case AnyContentAsJson(jsonStr) => jsonStr
+        case _ => sys.error(s"Unsupported input type ${request.body}")
+      }
+      json
   }
 
   // public api
@@ -40,7 +39,7 @@ class FeedbackController @Inject()(implicit val config: Config) extends Controll
     new ApiImplicitParam(
       value = "Create a new feedback",
       required = true,
-      dataType = "controllers.FeedbackObj", // complete path
+      dataType = "controllers.v1.feedback.FeedbackObj", // complete path
       paramType = "body"
     )
   ))
@@ -49,9 +48,8 @@ class FeedbackController @Inject()(implicit val config: Config) extends Controll
     new ApiResponse(code = 400, message = "Client Side Error - Not input given/ found."),
     new ApiResponse(code = 500, responseContainer = "Json", message = "Internal Server Error - Invalid id thereby cannot be found.")))
   def storeFeedback = Action { request =>
-    val json = validate(request)
-
     withError {
+      val json = validate(request)
       Json.fromJson[FeedbackObj](json) match {
         case JsSuccess(feedbackObj, _) =>
           logger.debug(s"Feedback Received: $feedbackObj")
@@ -71,9 +69,9 @@ class FeedbackController @Inject()(implicit val config: Config) extends Controll
     httpMethod = "PUT")
   @ApiImplicitParams(Array(
     new ApiImplicitParam(
-      value = "Create a new feedback",
+      value = "Update an existing feedback post.",
       required = true,
-      dataType = "controllers.FeedbackObj", // complete path
+      dataType = "controllers.v1.feedback.FeedbackObj", // complete path
       paramType = "body"
     )
   ))
@@ -82,9 +80,8 @@ class FeedbackController @Inject()(implicit val config: Config) extends Controll
     new ApiResponse(code = 400, message = "Client Side Error - Not input given/ found."),
     new ApiResponse(code = 500, responseContainer = "Json", message = "Internal Server Error - Invalid id thereby cannot be found.")))
   def updateProgress = Action { request =>
-    val json = validate(request)
-
     withError {
+      val json = validate(request)
       Json.fromJson[FeedbackObj](json) match {
         case JsSuccess(feedbackObj, _) =>
           logger.debug(s"Updated Feedback Received: $feedbackObj")
@@ -159,8 +156,18 @@ class FeedbackController @Inject()(implicit val config: Config) extends Controll
   override protected def tableName: String = config.getString("hbase.feedback.table.name")
 }
 
-case class FeedbackObj(id: Option[String], @ApiModelProperty(value = "Name of the resource") username: String, @ApiModelProperty(value = "fhdsjfhs of the resource") name: String, date: Option[String] = Some(System.currentTimeMillis().toString), subject: String, ubrn: Option[List[Long]], query: Option[String], comments: String, progressStatus: Option[String] = Some("New"), hideStatus: Option[Boolean] = Some(false))
-
+case class FeedbackObj(
+          @ApiModelProperty(value = "Auto-generated id", required = false, hidden = true) id: Option[String],
+          @ApiModelProperty(value = "User's username", dataType = "String", example = "user1487672388", required = true) username: String,
+          @ApiModelProperty(value = "User's Full Name", dataType = "String", example = "Max Mustermann", required = true) name: String,
+          @ApiModelProperty(value = "Time in Milliseconds", dataType = "String", example = "1487672388", required = false) date: Option[String] = Some(System.currentTimeMillis().toString),
+          @ApiModelProperty(value = "Type of Feedback (Data/ Ui)", dataType = "String", example = "Data Issue", required = true) subject: String,
+          @ApiModelProperty(value = "List of UBRNs (if applicable)", required = false) ubrn: Option[List[Long]],
+          @ApiModelProperty(value = "Related query (if applicable)", dataType = "String", example = "http://localhost:9000/v1/search/_id:86883196", required = false) query: Option[String],
+          @ApiModelProperty(value = "Brief description of the problem", dataType = "String", example = "This is just a comment.", required = true) comments: String,
+          @ApiModelProperty(value = "Time in Milliseconds", dataType = "String", example = "New", required = true) progressStatus: Option[String] = Some("New"),
+          @ApiModelProperty(value = "Toggle for record visibility", dataType = "boolean", required = false, hidden = true) hideStatus: Option[Boolean] = Some(false))
+//java.lang.Long
 object FeedbackObj {
 
   def toMap(o: FeedbackObj, id: String) = Map(

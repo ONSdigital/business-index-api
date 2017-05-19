@@ -7,7 +7,7 @@ import com.sksamuel.elastic4s.{ElasticClient, ElasticDsl}
 import com.typesafe.config.Config
 import controllers.v1.BusinessIndexObj._
 import controllers.v1.{ElasticUtils, SearchControllerUtils}
-import io.swagger.annotations.{Api, ApiOperation}
+import io.swagger.annotations._
 import nl.grons.metrics.scala.DefaultInstrumented
 import org.slf4j.LoggerFactory
 import play.api.libs.Files.TemporaryFile
@@ -32,6 +32,12 @@ class PutController @Inject()(elastic: ElasticClient, val config: Config)(
   private[this] val EVENT_APPENDER = "OVERLOAD_LOG"
   private[this] val eventStorage = LoggerFactory.getLogger(EVENT_APPENDER)
 
+  // public api
+  @ApiOperation(value = "Delete a single change record",
+    notes = "The id parameter is used to delete a change record in HBase.",
+    httpMethod = "DELETE")
+  @ApiResponses(Array(
+    new ApiResponse(code = 200, message = "Success - Deleted change by specified Id")))
   def deleteById(businessId: String): Action[AnyContent] = Action.async {
     errAsResponse {
       deleteByIdImpl(businessId).map(x => Ok(x.toString))
@@ -51,6 +57,22 @@ class PutController @Inject()(elastic: ElasticClient, val config: Config)(
     }
   }
 
+  // public api
+  @ApiOperation(value = "Request a change",
+    notes = "Process the input as Json and store th" +
+      "e record as a change in HBase to be import to Elasticsearch.",
+    httpMethod = "PUT")
+  @ApiImplicitParams(Array(
+    new ApiImplicitParam(
+      value = "Create a new Change record to HBase.",
+      required = true,
+      dataType = "uk.gov.ons.bi.models.BusinessIndexRec", // complete path
+      paramType = "body"
+    )
+  ))
+  @ApiResponses(Array(
+    new ApiResponse(code = 200, message = "Success - Change is accepted and stored in HBase"),
+    new ApiResponse(code = 500, message = "Internal Server Error - Invalid input or Elasticsearch has crashed.")))
   def store: Action[AnyContent] = Action.async { implicit request =>
     errAsResponse {
       logger.debug(s"Store requested ${request.body}")
@@ -64,6 +86,13 @@ class PutController @Inject()(elastic: ElasticClient, val config: Config)(
     }
   }
 
+  // public api
+  @ApiOperation(value = "Retrieve Changelog",
+    notes = "Gets listings of all stored changes to be made in HBase table 'es_modify'.",
+    httpMethod = "GET")
+  @ApiResponses(Array(
+    new ApiResponse(code = 200, message = "Success - Retrieved logs from HBase"),
+    new ApiResponse(code = 500, message = "Internal Server Error - Failed to get event log from HBase.")))
   def eventLog = Action {
     val header = "\"COMMNAD\"," + BusinessIndexRec.cBiSecuredHeader + "\n"
     Ok(header + getAll.map(_.event.toCsv).mkString("\n"))
@@ -83,8 +112,11 @@ class PutController @Inject()(elastic: ElasticClient, val config: Config)(
 
   // public api
   @ApiOperation(value = "Import event history changes to searching",
-    notes = "gets changes from hbase and replaces existing ones",
-    httpMethod = "GET")
+    notes = "Reapply the edit history stored in HBase after new data ingestion run has been executed. Deletions in Elastic occur with records conflicting with HBase changes.",
+    httpMethod = "POST")
+  @ApiResponses(Array(
+    new ApiResponse(code = 200, message = "Success - Import was successful to ElasticSearch."),
+    new ApiResponse(code = 500, responseContainer = "Json", message = "Internal Server Error - Could not perform action.")))
   def apply = Action {
     logger.debug(s"Request received to import HBase event records into Elastic")
     val data = getAll
@@ -107,6 +139,12 @@ class PutController @Inject()(elastic: ElasticClient, val config: Config)(
   // you will need to replace changes that are in elasticsearch in accordance to changes in
   // hbase
 
+  // public api
+  @ApiOperation(value = "Delete a single change record",
+    notes = "Applies changes stored in file to Elasticsearch - similar to apply function.",
+    httpMethod = "POST")
+  @ApiResponses(Array(
+    new ApiResponse(code = 200, message = "Success - Successfully imported file data.")))
   def bulkUpdate: Action[MultipartFormData[TemporaryFile]] = Action.async(parse.multipartFormData) { request =>
     val fs = request.body.files.flatMap { file => {
       logger.debug(s"Read file with instructions: ${file.filename}")
@@ -130,7 +168,10 @@ class PutController @Inject()(elastic: ElasticClient, val config: Config)(
   override protected def tableName: String = config.getString("hbase.events.table.name")
 }
 
-case class OpStatus(id: String, clazz: String, success: Boolean) {
+case class OpStatus( id: String,
+                     clazz: String,
+                     success: Boolean
+                   ) {
   override def toString: String = OpStatus.opToJson(this).toString()
 }
 
