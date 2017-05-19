@@ -5,8 +5,6 @@ import sbtbuildinfo.BuildInfoPlugin.autoImport._
 lazy val Versions = new {
   val util = "0.27.8"
   val elastic4s = "2.3.1"
-  val spark = "1.6.0"
-  val elasticSearchSpark = "2.4.0"
 }
 
 // special configuration for black box tests: integration tests of real server
@@ -15,11 +13,11 @@ lazy val BoxTest = config("box") extend Test
 
 def boxFilter(name: String): Boolean = (name endsWith "ITest") || (name endsWith "ISpec")
 
-def unitFilter(name: String): Boolean = (name endsWith "Test") || (name endsWith "Spec")  // && !boxFilter(name)
+def unitFilter(name: String): Boolean = (name endsWith "Test") || (name endsWith "Spec") // && !boxFilter(name)
 
 lazy val commonSettings =
   Seq(
-  scalaVersion := "2.11.8",
+    scalaVersion := "2.11.8",
     // next properties set required for sbt-assembly plugin,
     // whe it finds two classes with same name in different JARs it does not know what to do
     // we're defining merge strategy for problematic classes (mostly it's spark deps)
@@ -47,37 +45,38 @@ lazy val commonSettings =
         val oldStrategy = (assemblyMergeStrategy in assembly).value
         oldStrategy(x)
     },
-  resolvers ++= Seq(
-    Resolver.bintrayRepo("outworkers", "oss-releases"),
-    "splunk" at "http://splunk.artifactoryonline.com/splunk/ext-releases-local"
-  ),
-  testOptions in BoxTest := Seq(Tests.Filter(boxFilter)),
-  testOptions in Test := Seq(Tests.Filter(unitFilter)),
-  coverageExcludedPackages := ".*Routes.*;.*ReverseRoutes.*;.*javascript.*",
+    topLevelDirectory := None,
+    resolvers ++= Seq(
+      Resolver.bintrayRepo("outworkers", "oss-releases"),
+      "splunk" at "http://splunk.artifactoryonline.com/splunk/ext-releases-local"
+    ),
+    testOptions in BoxTest := Seq(Tests.Filter(boxFilter)),
+    testOptions in Test := Seq(Tests.Filter(unitFilter)),
+    coverageExcludedPackages := ".*Routes.*;.*ReverseRoutes.*;.*javascript.*",
     scalacOptions in ThisBuild ++= Seq(
-    "-language:experimental.macros",
-    "-target:jvm-1.8",
-    "-encoding", "UTF-8",
-    "-language:reflectiveCalls",
-    "-language:experimental.macros",
-    "-language:implicitConversions",
-    "-language:higherKinds",
-    "-language:postfixOps",
-    "-deprecation", // warning and location for usages of deprecated APIs
-    "-feature", // warning and location for usages of features that should be imported explicitly
-    "-unchecked", // additional warnings where generated code depends on assumptions
-    "-Xlint", // recommended additional warnings
-    "-Xcheckinit", // runtime error when a val is not initialized due to trait hierarchies (instead of NPE somewhere else)
-    "-Ywarn-adapted-args", // Warn if an argument list is modified to match the receiver
-    //"-Yno-adapted-args", // Do not adapt an argument list (either by inserting () or creating a tuple) to match the receiver
-    "-Ywarn-value-discard", // Warn when non-Unit expression results are unused
-    "-Ywarn-inaccessible", // Warn about inaccessible types in method signatures
-    "-Ywarn-dead-code", // Warn when dead code is identified
-    "-Ywarn-unused", // Warn when local and private vals, vars, defs, and types are unused
-    "-Ywarn-unused-import", //  Warn when imports are unused (don't want IntelliJ to do it automatically)
-    "-Ywarn-numeric-widen" // Warn when numerics are widened
+      "-language:experimental.macros",
+      "-target:jvm-1.8",
+      "-encoding", "UTF-8",
+      "-language:reflectiveCalls",
+      "-language:experimental.macros",
+      "-language:implicitConversions",
+      "-language:higherKinds",
+      "-language:postfixOps",
+      "-deprecation", // warning and location for usages of deprecated APIs
+      "-feature", // warning and location for usages of features that should be imported explicitly
+      "-unchecked", // additional warnings where generated code depends on assumptions
+      "-Xlint", // recommended additional warnings
+      "-Xcheckinit", // runtime error when a val is not initialized due to trait hierarchies (instead of NPE somewhere else)
+      "-Ywarn-adapted-args", // Warn if an argument list is modified to match the receiver
+      //"-Yno-adapted-args", // Do not adapt an argument list (either by inserting () or creating a tuple) to match the receiver
+      "-Ywarn-value-discard", // Warn when non-Unit expression results are unused
+      "-Ywarn-inaccessible", // Warn about inaccessible types in method signatures
+      "-Ywarn-dead-code", // Warn when dead code is identified
+      "-Ywarn-unused", // Warn when local and private vals, vars, defs, and types are unused
+      "-Ywarn-unused-import", //  Warn when imports are unused (don't want IntelliJ to do it automatically)
+      "-Ywarn-numeric-widen" // Warn when numerics are widened
+    )
   )
-)
 
 /**
   * The multi-module separation is necessary because the parsers module uses macros.
@@ -105,7 +104,7 @@ lazy val api = (project in file("api"))
     resolvers ++= Seq(
       "Hadoop Releases" at "https://repository.cloudera.com/content/repositories/releases/"
     ),
-    javaOptions in Test ++= Seq("-Denvironment=test","-Dsample.folder=test") ++ sys.props.map { case (k,v) => s"-D$k=$v" },
+    javaOptions in Test ++= Seq("-Denvironment=test", "-Dsample.folder=test") ++ sys.props.map { case (k, v) => s"-D$k=$v" },
     javaOptions in BoxTest ++= Seq("-Dintegration.test=true"),
     fork in run := true,
     fork in BoxTest := true,
