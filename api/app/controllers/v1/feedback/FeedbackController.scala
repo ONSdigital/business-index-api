@@ -10,6 +10,7 @@ import play.api.libs.json._
 import play.api.mvc.{Controller, _}
 import services.store.FeedbackStore
 
+import scala.util.{Failure, Success, Try}
 import scala.util.control.NonFatal
 
 
@@ -140,15 +141,18 @@ class FeedbackController @Inject()(implicit val config: Config) extends Controll
 
 
   private[this] def withError(f: => Result): Result = {
-    try {
-      f
-    } catch {
-      case NonFatal(ex) =>
+    val problem = Try (f)
+    problem match {
+      case Success(v) =>
+        logger.debug(s"Operation failed -> $v")
+        Success(v)
+      case Failure(ex) =>
         val err = Json.obj(
           "status" -> 500,
           "code" -> "internal_error",
           "message_en" -> ex.getMessage
         )
+        logger.debug(s"Operation failed -> $err")
         InternalServerError(err)
     }
   }
@@ -158,7 +162,7 @@ class FeedbackController @Inject()(implicit val config: Config) extends Controll
 
 case class FeedbackObj(
           @ApiModelProperty(value = "Auto-generated id", required = false, hidden = true) id: Option[String],
-          @ApiModelProperty(value = "User's username", dataType = "String", example = "user1487672388", required = true) username: String,
+          @ApiModelProperty(value = "User's username", dataType = "String", example = "mustermanm", required = true) username: String,
           @ApiModelProperty(value = "User's Full Name", dataType = "String", example = "Max Mustermann", required = true) name: String,
           @ApiModelProperty(value = "Time in Milliseconds", dataType = "String", example = "1487672388", required = false) date: Option[String] = Some(System.currentTimeMillis().toString),
           @ApiModelProperty(value = "Type of Feedback (Data/ Ui)", dataType = "String", example = "Data Issue", required = true) subject: String,

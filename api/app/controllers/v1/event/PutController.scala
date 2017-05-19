@@ -18,7 +18,7 @@ import uk.gov.ons.bi.models.BusinessIndexRec
 import uk.gov.ons.bi.{CsvProcessor, Utils}
 
 import scala.concurrent.{ExecutionContext, Future}
-
+import OpStatus._
 
 /**
   * Created by Volodymyr.Glushak on 06/04/2017.
@@ -29,11 +29,12 @@ class PutController @Inject()(elastic: ElasticClient, val config: Config)(
   implicit context: ExecutionContext
 ) extends SearchControllerUtils with ElasticDsl with DefaultInstrumented with ElasticUtils with EventStore {
 
-  private[this] val EVENT_APPENDER = "OVERLOAD_LOG"
-  private[this] val eventStorage = LoggerFactory.getLogger(EVENT_APPENDER)
+  private[this] val eventAppender = "OVERLOAD_LOG"
+  private[this] val eventStorage = LoggerFactory.getLogger(eventAppender)
 
   // public api
-  @ApiOperation(value = "Delete a single change record",
+  @ApiOperation(
+    value = "Delete a single change record",
     notes = "The id parameter is used to delete a change record in HBase.",
     httpMethod = "DELETE")
   @ApiResponses(Array(
@@ -58,9 +59,9 @@ class PutController @Inject()(elastic: ElasticClient, val config: Config)(
   }
 
   // public api
-  @ApiOperation(value = "Request a change",
-    notes = "Process the input as Json and store th" +
-      "e record as a change in HBase to be import to Elasticsearch.",
+  @ApiOperation(
+    value = "Request a change",
+    notes = "Process the input as Json and store the record as a change in HBase to be import to Elasticsearch.",
     httpMethod = "PUT")
   @ApiImplicitParams(Array(
     new ApiImplicitParam(
@@ -87,7 +88,8 @@ class PutController @Inject()(elastic: ElasticClient, val config: Config)(
   }
 
   // public api
-  @ApiOperation(value = "Retrieve Changelog",
+  @ApiOperation(
+    value = "Retrieve Changelog",
     notes = "Gets listings of all stored changes to be made in HBase table 'es_modify'.",
     httpMethod = "GET")
   @ApiResponses(Array(
@@ -102,7 +104,6 @@ class PutController @Inject()(elastic: ElasticClient, val config: Config)(
     elastic execute {
       index into indexName id bir.id fields BusinessIndexRec.toMap(bir)
     } map { r =>
-      import OpStatus._
       val event = s"""STORE,${bir.toCsv}"""
       eventStorage.info(event)
       if (logInHbase) storeEvent(EventCommand(bir, StoreCommand))

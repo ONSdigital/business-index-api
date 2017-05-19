@@ -35,4 +35,5 @@ class EventStoreTest extends FlatSpec with Matchers with EventStore with BeforeA
   override def config: Config = BiConfigManager.envConf(ConfigFactory.load())
 
   override protected def tableName: String = config.getString("hbase.events.table.name")
+
 }
