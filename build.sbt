@@ -45,6 +45,7 @@ lazy val commonSettings =
         val oldStrategy = (assemblyMergeStrategy in assembly).value
         oldStrategy(x)
     },
+    topLevelDirectory := None,
     resolvers ++= Seq(
       Resolver.bintrayRepo("outworkers", "oss-releases"),
       "splunk" at "http://splunk.artifactoryonline.com/splunk/ext-releases-local"
