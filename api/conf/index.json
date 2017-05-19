@@ -21,8 +21,7 @@
         },
         "EmploymentBands": {
           "type": "string",
-          "index": "not_analyzed",
-          "include_in_all": false
+          "analyzer": "bi-devAnalyzer"
         },
         "IndustryCode": {
           "type": "long"
@@ -47,8 +46,7 @@
         },
         "Turnover": {
           "type": "string",
-          "index": "not_analyzed",
-          "include_in_all": false
+          "analyzer": "bi-devAnalyzer"
         },
         "UPRN": {
           "type": "long"
