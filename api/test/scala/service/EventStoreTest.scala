@@ -20,12 +20,12 @@ class EventStoreTest extends FlatSpec with Matchers with EventStore with BeforeA
 
     data.size shouldBe 11
 
-    var i = 0L
-    data.map(_.event.id).foreach(id => {
-      id shouldBe >(i)
-      i = id
-    })
+    val ids = data.map(_.event.id)
 
+    (ids zip ids.tail).foreach {
+      case (p, n) =>
+        p shouldBe <(n)
+    }
 
     cleanAll()
     storeEvent(instructions.copy(event = bir.copy(businessName = "EventStoreName2")))
@@ -35,5 +35,6 @@ class EventStoreTest extends FlatSpec with Matchers with EventStore with BeforeA
   override def config: Config = BiConfigManager.envConf(ConfigFactory.load())
 
   override protected def tableName: String = config.getString("hbase.events.table.name")
+
 
 }

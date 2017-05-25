@@ -9,7 +9,8 @@ import org.slf4j.LoggerFactory
 import play.api.libs.json._
 import play.api.mvc.{Controller, _}
 import services.store.FeedbackStore
-
+import controllers.v1.{SearchControllerUtils}
+import scala.util.{Failure, Success, Try}
 import scala.util.control.NonFatal
 
 
@@ -18,7 +19,7 @@ import scala.util.control.NonFatal
   * @param config
   */
 @Api("Feedback")
-class FeedbackController @Inject()(implicit val config: Config) extends Controller with FeedbackStore {
+class FeedbackController @Inject()(implicit val config: Config) extends SearchControllerUtils with FeedbackStore {
   private[this] val logger = LoggerFactory.getLogger(getClass)
   def validate(request: Request[AnyContent]): JsValue = {
       val json = request.body match {
@@ -94,6 +95,7 @@ class FeedbackController @Inject()(implicit val config: Config) extends Controll
     }
   }
 
+
   // public api
   @ApiOperation(value = "Delete a feedback record from HBase",
     hidden = true,
@@ -105,8 +107,11 @@ class FeedbackController @Inject()(implicit val config: Config) extends Controll
   def deleteFeedback(@ApiParam(value = "hbase record id", required = true) id: String) = Action {
     logger.debug(s"Processing deletion of HBase record: $id")
     withError {
-      val res = delete(id)
-      Ok(s""" { "id" : "$res" }   """)
+      val res = Try(delete(id))
+      res match {
+        case Success(res) => Ok(s""" { "id" : "$res" }   """)
+        case Failure(ex) => BadRequest(errAsJson(502, ex.toString, "Could not perform operation delete record in HBase - may be caused by connection timeout or a failed to find HBase."))
+      }
     }
   }
 
@@ -118,11 +123,14 @@ class FeedbackController @Inject()(implicit val config: Config) extends Controll
   @ApiResponses(Array(
     new ApiResponse(code = 200, message = "Success - Hide Status of respective record toggled."),
     new ApiResponse(code = 500, responseContainer = "Json", message = "Internal Server Error - Invalid id thereby cannot be found.")))
-  def hideFeedback(@ApiParam(value = "hbase record id", required = true) id: String) = Action {
+  def hideFeedback(@ApiParam(value = "HBase record identifier", required = true) id: String) = Action {
     logger.debug(s"Processing deletion of HBase record: $id")
     withError {
-      val res = hide(id)
-      Ok(s""" { "id" : "$res" }   """)
+      val res = Try(hide(id))
+      res match {
+        case Success(res) => Ok(s""" { "id" : "$res" }   """)
+        case Failure(ex) => BadRequest(errAsJson(502, ex.toString , "Could not perform operation hide record in HBase - may be caused by connection timeout or a failed to find HBase."))
+      }
     }
   }
 
@@ -135,7 +143,11 @@ class FeedbackController @Inject()(implicit val config: Config) extends Controll
     new ApiResponse(code = 200, message = "Success - Displays all records in HBase.")))
   def display = Action {
     logger.debug(s"Request received to display all feedback records [with status hide as FALSE]")
-    Ok(Json.toJson[List[FeedbackObj]](getAll()))
+    val getFeedback = Try(Json.toJson[List[FeedbackObj]](getAll()))
+    getFeedback match {
+      case Success(res) => Ok(res)
+      case Failure(ex) => BadRequest(errAsJson(502, ex.toString , "Failed to retrieve data from HBase - may be caused by connection timeout or a failed to find HBase."))
+    }
   }
 
 
@@ -152,6 +164,7 @@ class FeedbackController @Inject()(implicit val config: Config) extends Controll
         InternalServerError(err)
     }
   }
+
 
   override protected def tableName: String = config.getString("hbase.feedback.table.name")
 }

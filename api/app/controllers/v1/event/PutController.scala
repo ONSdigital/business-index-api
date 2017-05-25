@@ -39,7 +39,7 @@ class PutController @Inject()(elastic: ElasticClient, val config: Config)(
     httpMethod = "DELETE")
   @ApiResponses(Array(
     new ApiResponse(code = 200, message = "Success - Deleted change by specified Id")))
-  def deleteById(businessId: String): Action[AnyContent] = Action.async {
+  def deleteById(@ApiParam(value = "A unique business identifier to identify and then delete", required = true) businessId: String): Action[AnyContent] = Action.async {
     errAsResponse {
       deleteByIdImpl(businessId).map(x => Ok(x.toString))
     }

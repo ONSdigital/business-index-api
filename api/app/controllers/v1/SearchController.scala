@@ -175,6 +175,10 @@ class SearchController @Inject()(elastic: ElasticClient, val config: Config)(
   @ApiOperation(value = "Search businesses by query",
     notes = "Returns list of available businesses. Additional parameters: offset, limit, default_operator",
     httpMethod = "GET")
+  @ApiResponses(Array(
+    new ApiResponse(code = 200, message = "Success - Returns some result"),
+    new ApiResponse(code = 500, message = "Internal server error"),
+    new ApiResponse(code = 503, message = "Elastic search is not available")))
   def searchBusiness(@ApiParam(value = "Query to elastic search", required = true) term: Option[String], suggest: Boolean = false): Action[AnyContent] = {
     Action.async { implicit request =>
       // getOrElseWrap(term)
