@@ -17,6 +17,8 @@ To install/run ElasticSearch on MacOS, use Homebrew (http://brew.sh):
 The last command runs an interactive Elasticsearch 2.4.1 session that the application can connect to using cluster name
 `elasticsearch_<your username>`. 
 
+Download, install and configure HBase (see below)
+
 ### Running
 
 To compile, build and run the application (by default it will connect to your local ElasticSearch):
@@ -88,7 +90,7 @@ If any sbt changes performed - please re-generate dependency graph by executing:
 sbt -no-colors dependencyTree > dependencies.txt
 ```
 
-#### HBase (experimental)
+## HBase (experimental)
 
 Introduced requests caching in HBase. By default caching is disabled (configurable in application.conf).
 HBase can be installed locally with
@@ -106,7 +108,10 @@ Open hbase shell and execute:
 ```shell
 hbase shell
 create 'es_requests', 'd'
+create 'es_events', 'event'
+create 'es_feedback', 'feedback'
 ```
+Note: tables names should be in sync with application.conf
 
 Other useful shell commands:
 
@@ -115,6 +120,42 @@ list
 scan 'es_requests'
 count 'es_requests'
 truncate 'es_requests'
+```
+
+#### HBASE with Kerberos
+
+In case if need to get access to HBase that with kerberos authentication, following system properties need to be setup:
+
+```groovy
+-Djava.security.krb5.realm=EXAMPLE.COM
+-Djava.security.krb5.kdc= EXAMPLE.COM
+-Djavax.security.auth.useSubjectCredsOnly=false
+-Djava.security.krb5.conf=/full/path/to/krb5.conf
+-Dsun.security.krb5.debug=true
+
+```
+
+
+Also following properties need to be adjusted based on Hbase/Kerberos configuration:
+
+```
+    hadoop.security.authentication=kerberos
+    hbase.security.authentication=kerberos
+    hbase.master.kerberos.principal=hbase/_HOST@EXAMPLE.COM
+    hbase.regionserver.kerberos.principal=hbase/_HOST@EXAMPLE.COM
+    hbase.rpc.protection=privacy
+    
+    hbase.login = "username"
+    hbase.keytab.path = "/path/to/keytab.file"
+```
+
+Keytab file can be generated using *ktutil*:
+```
+  > ktutil
+  ktutil:  addent -password -p username@EXAMPLE.COM -k 1 -e rc4-hmac
+  Password for username@EXAMPLE.COM: [enter your password]
+  ktutil:  wkt username.keytab
+  ktutil:  quit
 ```
 
 #### Configuring Splunk Logging
