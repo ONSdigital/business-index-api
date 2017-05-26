@@ -54,8 +54,11 @@ class FeedbackController @Inject()(implicit val config: Config) extends SearchCo
       Json.fromJson[FeedbackObj](json) match {
         case JsSuccess(feedbackObj, _) =>
           logger.debug(s"Feedback Received: $feedbackObj")
-          val id = store(feedbackObj)
-          Ok(s""" {"id": "$id"} """)
+          val id = Try(store(feedbackObj))
+          id match {
+            case Success (id) => Ok(s""" {"id": "$id"} """)
+            case Failure (ex) => BadRequest(errAsJson(502, ex.toString, "Could not perform operation delete record in source - may be caused by connection timeout or a failed to find endpoint."))
+          }
         case JsError(err) =>
           logger.error(s"Invalid Feedback! Please give properly parsable feedback $json -> $err")
           BadRequest(s"Invalid Feedback! Please give properly parsable feedback $json -> $err")
@@ -79,15 +82,19 @@ class FeedbackController @Inject()(implicit val config: Config) extends SearchCo
   @ApiResponses(Array(
     new ApiResponse(code = 200, message = "Success - 'progressStatus' has been successfully been modified."),
     new ApiResponse(code = 400, message = "Client Side Error - Not input given/ found."),
-    new ApiResponse(code = 500, responseContainer = "Json", message = "Internal Server Error - Invalid id thereby cannot be found.")))
+    new ApiResponse(code = 500, responseContainer = "Json", message = "Internal Server Error - Invalid id thereby cannot be found."),
+    new ApiResponse(code = 502, message = "Internal Server Error - Failed to connection or timeout with endpoint.")))
   def updateProgress = Action { request =>
     withError {
       val json = validate(request)
       Json.fromJson[FeedbackObj](json) match {
         case JsSuccess(feedbackObj, _) =>
           logger.debug(s"Updated Feedback Received: $feedbackObj")
-          val updated = progress(feedbackObj)
-          Ok(s""" { "id" : "${updated.id.getOrElse("")}", "progressStatus": "${updated.progressStatus.getOrElse("")}" } """)
+          val update = progress(feedbackObj)
+          update match {
+            case res => Ok(s""" { "id" : "${res.id.getOrElse("")}", "progressStatus": "${res.progressStatus.getOrElse("")}" } """)
+            case _ => BadRequest(errAsJson(502, "exception failed or timeout connection", "Could not perform operation delete record - may be caused by connection timeout or a failed to find endpoint."))
+          }
         case JsError(err) =>
           logger.error(s"Invalid Feedback! Please give properly parsable feedback $json -> $err")
           BadRequest(s"Invalid Feedback! Please give properly parsable feedback $json -> $err")
@@ -97,20 +104,21 @@ class FeedbackController @Inject()(implicit val config: Config) extends SearchCo
 
 
   // public api
-  @ApiOperation(value = "Delete a feedback record from HBase",
+  @ApiOperation(value = "Delete a feedback record",
     hidden = true,
-    notes = "Hard delete - This will get rid of the entire record in HBase contrary to hide.",
+    notes = "Hard delete - This will get rid of the entire record in the source contrary to hide.",
     httpMethod = "DELETE")
   @ApiResponses(Array(
     new ApiResponse(code = 200, message = "Success - Record successfully deleted."),
-    new ApiResponse(code = 500, responseContainer = "Json", message = "Internal Server Error - Invalid id thereby cannot be found.")))
-  def deleteFeedback(@ApiParam(value = "hbase record id", required = true) id: String) = Action {
-    logger.debug(s"Processing deletion of HBase record: $id")
+    new ApiResponse(code = 500, responseContainer = "Json", message = "Internal Server Error - Invalid id thereby cannot be found."),
+    new ApiResponse(code = 502, message = "Internal Server Error - Failed to connection or timeout with endpoint.")))
+  def deleteFeedback(@ApiParam(value = "record id", required = true) id: String) = Action {
+    logger.debug(s"Processing deletion of record $id in source")
     withError {
       val res = Try(delete(id))
       res match {
         case Success(res) => Ok(s""" { "id" : "$res" }   """)
-        case Failure(ex) => BadRequest(errAsJson(502, ex.toString, "Could not perform operation delete record in HBase - may be caused by connection timeout or a failed to find HBase."))
+        case Failure(ex) => BadRequest(errAsJson(502, ex.toString, "Could not perform operation delete record - may be caused by connection timeout or a failed to connect to endpoint."))
       }
     }
   }
@@ -129,7 +137,7 @@ class FeedbackController @Inject()(implicit val config: Config) extends SearchCo
       val res = Try(hide(id))
       res match {
         case Success(res) => Ok(s""" { "id" : "$res" }   """)
-        case Failure(ex) => BadRequest(errAsJson(502, ex.toString , "Could not perform operation hide record in HBase - may be caused by connection timeout or a failed to find HBase."))
+        case Failure(ex) => BadRequest(errAsJson(502, ex.toString , "Could not perform operation hide record - may be caused by connection timeout or a failed to connect to endpoint."))
       }
     }
   }
@@ -137,16 +145,16 @@ class FeedbackController @Inject()(implicit val config: Config) extends SearchCo
 
   // public api
   @ApiOperation(value = "Display all feedback",
-    notes = "Displays all records found in HBase while filtering out those with a 'hideStatus' set to true",
+    notes = "Displays all records found while filtering out those with a 'hideStatus' set to true",
     httpMethod = "GET")
   @ApiResponses(Array(
-    new ApiResponse(code = 200, message = "Success - Displays all records in HBase.")))
+    new ApiResponse(code = 200, message = "Success - Displays all records in source.")))
   def display = Action {
     logger.debug(s"Request received to display all feedback records [with status hide as FALSE]")
     val getFeedback = Try(Json.toJson[List[FeedbackObj]](getAll()))
     getFeedback match {
       case Success(res) => Ok(res)
-      case Failure(ex) => BadRequest(errAsJson(502, ex.toString , "Failed to retrieve data from HBase - may be caused by connection timeout or a failed to find HBase."))
+      case Failure(ex) => BadRequest(errAsJson(502, ex.toString , "Failed to retrieve data - may be caused by connection timeout or a failed to connect to endpoint."))
     }
   }
 

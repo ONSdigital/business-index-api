@@ -47,7 +47,7 @@ class FeedbackSpec extends PlaySpec with GuiceOneAppPerTest {
     }
 
     "accept a data issue without a query param" in {
-      val feedback = fakeRequest(uri, recordObj(username = "coolit", name = "Tom Colling", ubrn = Some(List(117485788989L)), query = None))
+      val feedback = fakeRequest(uri, recordObj(username = "brownj", name = "John Brown", ubrn = Some(List(117485788989L)), query = None))
       status(feedback) mustBe OK
       contentType(feedback) mustBe Some("text/plain")
       val check = route(app, FakeRequest(GET, uri)).getOrElse(sys.error(s"Cannot find route $uri."))
