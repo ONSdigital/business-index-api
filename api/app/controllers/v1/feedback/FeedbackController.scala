@@ -21,6 +21,8 @@ import scala.util.control.NonFatal
 @Api("Feedback")
 class FeedbackController @Inject()(implicit val config: Config) extends SearchControllerUtils with FeedbackStore {
   private[this] val logger = LoggerFactory.getLogger(getClass)
+
+
   def validate(request: Request[AnyContent]): JsValue = {
       val json = request.body match {
         case AnyContentAsRaw(raw) => Json.parse(raw.asBytes().getOrElse(sys.error("Invalid or empty input")).utf8String)
@@ -30,6 +32,23 @@ class FeedbackController @Inject()(implicit val config: Config) extends SearchCo
       }
       json
   }
+
+
+  def formatter[T](f: FeedbackObj => T, json: JsValue, message: String) = {
+    Json.fromJson[FeedbackObj](json) match {
+      case JsSuccess(feedbackObj, _) =>
+        logger.debug(s"Feedback Received: $feedbackObj")
+        val id = Try(f(feedbackObj))
+        id match {
+          case Success (id) => Ok(s""" {"id": "$id"} """)
+          case Failure (ex) => BadRequest(errAsJson(502, ex.toString, message))
+        }
+      case JsError(err) =>
+        logger.error(s"Invalid Feedback! Please give properly parsable feedback $json -> $err")
+        BadRequest(s"Invalid Feedback! Please give properly parsable feedback $json -> $err")
+    }
+  }
+
 
   // public api
   @ApiOperation(value = "Submit feedback",
@@ -52,18 +71,8 @@ class FeedbackController @Inject()(implicit val config: Config) extends SearchCo
   def storeFeedback = Action { request =>
     withError {
       val json = validate(request)
-      Json.fromJson[FeedbackObj](json) match {
-        case JsSuccess(feedbackObj, _) =>
-          logger.debug(s"Feedback Received: $feedbackObj")
-          val id = Try(store(feedbackObj))
-          id match {
-            case Success (id) => Ok(s""" {"id": "$id"} """)
-            case Failure (ex) => BadRequest(errAsJson(502, ex.toString, "Could not perform operation delete record in source - may be caused by connection timeout or a failed to find endpoint."))
-          }
-        case JsError(err) =>
-          logger.error(s"Invalid Feedback! Please give properly parsable feedback $json -> $err")
-          BadRequest(s"Invalid Feedback! Please give properly parsable feedback $json -> $err")
-      }
+      val message = "Could not perform operation delete record in source - may be caused by connection timeout or a failed to find endpoint."
+      formatter(store, json, message)
     }
   }
 
@@ -88,18 +97,8 @@ class FeedbackController @Inject()(implicit val config: Config) extends SearchCo
   def updateProgress = Action { request =>
     withError {
       val json = validate(request)
-      Json.fromJson[FeedbackObj](json) match {
-        case JsSuccess(feedbackObj, _) =>
-          logger.debug(s"Updated Feedback Received: $feedbackObj")
-          val update = progress(feedbackObj)
-          update match {
-            case update => Ok(s""" { "id" : "${update.id.getOrElse("")}", "progressStatus": "${update.progressStatus.getOrElse("")}" } """)
-            case _ => BadRequest(errAsJson(502, "exception failed or timeout connection", "Could not perform operation delete record - may be caused by connection timeout or a failed to find endpoint."))
-          }
-        case JsError(err) =>
-          logger.error(s"Invalid Feedback! Please give properly parsable feedback $json -> $err")
-          BadRequest(s"Invalid Feedback! Please give properly parsable feedback $json -> $err")
-      }
+      val message = "Could not perform operation delete record - may be caused by connection timeout or a failed to find endpoint."
+      formatter(progress, json, message)
     }
   }
 
