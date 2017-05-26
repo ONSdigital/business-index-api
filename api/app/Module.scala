@@ -26,6 +26,12 @@ class AvoidLogbackMemoryLeak @Inject()(lifecycle: ApplicationLifecycle) extends 
   }
 }
 
+/**
+  * Module is covering dependency injection for PlayScala.
+  * All complex binding (services) are defined in next class
+  * @param environment the environment of the application
+  * @param configuration wrapper on top of application.conf
+  */
 class Module(environment: Environment, configuration: Configuration) extends AbstractModule with DefaultInstrumented with ElasticDsl {
 
   override def configure(): Unit = {
@@ -50,6 +56,7 @@ class Module(environment: Environment, configuration: Configuration) extends Abs
       }
     }
 
+    // imp
     bind(classOf[InsertDemoData]).asEagerSingleton()
     bind(classOf[AvoidLogbackMemoryLeak]).asEagerSingleton()
 
