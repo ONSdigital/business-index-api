@@ -59,6 +59,7 @@ lazy val commonSettings =
         val oldStrategy = (assemblyMergeStrategy in assembly).value
         oldStrategy(x)
     },
+    topLevelDirectory := None,
     // in case if dependencies are missed in default repository, use additional repos
     resolvers ++= Seq(
       Resolver.bintrayRepo("outworkers", "oss-releases"),
