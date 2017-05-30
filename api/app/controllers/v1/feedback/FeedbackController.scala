@@ -38,10 +38,11 @@ class FeedbackController @Inject()(implicit val config: Config) extends SearchCo
     Json.fromJson[FeedbackObj](json) match {
       case JsSuccess(feedbackObj, _) =>
         logger.debug(s"Feedback Received: $feedbackObj")
-        val id = Try(f(feedbackObj))
-        id match {
-          case Success (id) => Ok(s""" {"id": "$id"} """)
-          case Failure (ex) => BadRequest(errAsJson(502, ex.toString, message))
+        val res = Try(f(feedbackObj))
+        res match {
+          case Success (res: String) => Created(s""" {"id": "$res"} """)
+          case Success (res: FeedbackObj) => Ok(s""" { "id" : "${res.id.getOrElse("")}", "progressStatus": "${res.progressStatus.getOrElse("")}" } """)
+          case _ => BadRequest(errAsJson(502, "exception failed or timeout connection", message))
         }
       case JsError(err) =>
         logger.error(s"Invalid Feedback! Please give properly parsable feedback $json -> $err")
@@ -64,7 +65,7 @@ class FeedbackController @Inject()(implicit val config: Config) extends SearchCo
     )
   ))
   @ApiResponses(Array(
-    new ApiResponse(code = 200, message = "Success - New feedback has been stored."),
+    new ApiResponse(code = 201, message = "Created - New feedback has been stored."),
     new ApiResponse(code = 400, message = "Client Side Error - Not input given/ found."),
     new ApiResponse(code = 500, responseContainer = "Json", message = "Internal Server Error - Invalid id thereby cannot be found."),
     new ApiResponse(code = 502, responseContainer = "Json", message = "Internal Server Error - Failed to connection or timeout with endpoint.")))
@@ -72,7 +73,7 @@ class FeedbackController @Inject()(implicit val config: Config) extends SearchCo
     withError {
       val json = validate(request)
       val message = "Could not perform operation delete record in source - may be caused by connection timeout or a failed to find endpoint."
-      formatter(store, json, message)
+      formatter(store,  json, message)
     }
   }
 
@@ -98,7 +99,7 @@ class FeedbackController @Inject()(implicit val config: Config) extends SearchCo
     withError {
       val json = validate(request)
       val message = "Could not perform operation delete record - may be caused by connection timeout or a failed to find endpoint."
-      formatter(progress, json, message)
+      formatter[FeedbackObj](progress, json, message)
     }
   }
 
@@ -109,7 +110,7 @@ class FeedbackController @Inject()(implicit val config: Config) extends SearchCo
     notes = "Hard delete - This will get rid of the entire record in the source contrary to hide.",
     httpMethod = "DELETE")
   @ApiResponses(Array(
-    new ApiResponse(code = 200, message = "Success - Record successfully deleted."),
+    new ApiResponse(code = 201, message = "Success - Record successfully deleted."),
     new ApiResponse(code = 500, responseContainer = "Json", message = "Internal Server Error - Invalid id thereby cannot be found."),
     new ApiResponse(code = 502, responseContainer = "Json", message = "Internal Server Error - Failed to connection or timeout with endpoint.")))
   def deleteFeedback(@ApiParam(value = "record id", required = true) id: String) = Action {

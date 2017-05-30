@@ -30,7 +30,7 @@ class FeedbackSpec extends PlaySpec with GuiceOneAppPerTest {
     "accept feedback without date override and progress status" in {
       val testObj = FeedbackObj (id = None, username = "doej", name = "John Doe", date = None, subject = "UI Issue", ubrn = None, query = None, comments = "Just a simple test", progressStatus = Some("In Progress"))
       val feedback =  route(app, FakeRequest(POST, "/v1/feedback").withJsonBody(Json.toJson(testObj))).getOrElse(sys.error(s"Can not find route $uri."))
-      status(feedback) mustBe OK
+      status(feedback) mustBe CREATED
       contentType(feedback) mustBe Some("text/plain")
       val check = route(app, FakeRequest(GET, uri)).getOrElse(sys.error(s"Cannot find route $uri."))
       contentAsString(check) must include ("doej")
@@ -39,7 +39,7 @@ class FeedbackSpec extends PlaySpec with GuiceOneAppPerTest {
 
     "be able to take valid Json object and be parsable" in {
       val feedback = fakeRequest(uri, recordObj())
-      status(feedback) mustBe OK
+      status(feedback) mustBe CREATED
       contentType(feedback) mustBe Some("text/plain")
       val check = route(app, FakeRequest(GET, uri)).getOrElse(sys.error(s"Cannot find route $uri."))
       contentAsString(check) must include ("doej01:01:2000")
@@ -48,7 +48,7 @@ class FeedbackSpec extends PlaySpec with GuiceOneAppPerTest {
 
     "accept a data issue without a query param" in {
       val feedback = fakeRequest(uri, recordObj(username = "brownj", name = "John Brown", ubrn = Some(List(117485788989L)), query = None))
-      status(feedback) mustBe OK
+      status(feedback) mustBe CREATED
       contentType(feedback) mustBe Some("text/plain")
       val check = route(app, FakeRequest(GET, uri)).getOrElse(sys.error(s"Cannot find route $uri."))
       contentAsString(check) must include ("doej01:01:2000")
@@ -56,7 +56,7 @@ class FeedbackSpec extends PlaySpec with GuiceOneAppPerTest {
 
     "accept a ui issue feedback without UBRN and query" in {
       val feedback = fakeRequest(uri, recordObj(ubrn = None, query = None))
-      status(feedback) mustBe OK
+      status(feedback) mustBe CREATED
       contentType(feedback) mustBe Some("text/plain")
       val check = route(app, FakeRequest(GET, uri)).getOrElse(sys.error(s"Cannot find route $uri."))
       contentAsString(check) must include ("doej01:01:2000")
@@ -65,7 +65,7 @@ class FeedbackSpec extends PlaySpec with GuiceOneAppPerTest {
     "successfully parse json string to object with complete status" in {
       val  recordJson = """{ "id":  "null", "username":"mustermannh", "name":"Hanz Mustermann", "subject":"Data Issue", "ubrn": [898989898989], "query": "BusinessName:test&limit=100", "comments":"This is just a test, please ignore.", "progressStatus" : "Complete"}"""
       val feedback = route(app, FakeRequest(POST, uri).withTextBody(recordJson)).getOrElse(sys.error(s"Cannot find route $uri."))
-      status(feedback) mustBe OK
+      status(feedback) mustBe CREATED
       contentType(feedback) mustBe Some("text/plain")
       val check = route(app, FakeRequest(GET, uri)).getOrElse(sys.error(s"Cannot find route $uri."))
       contentAsString(check) must include ("mustermannh")
@@ -82,7 +82,7 @@ class FeedbackSpec extends PlaySpec with GuiceOneAppPerTest {
     "change the hide status of an existing record by id" in {
       val recordJson = """{ "id":  "kowalskij01:01:2000", "username":"kowalskij", "name":"Jan Kowalski", "date" : "01:01:2000", "subject":"Data Issue", "ubrn": [898989898989], "query": "BusinessName:test&limit=100", "comments":"This is just a test, please ignore.", "progressStatus" : "Complete"}"""
       val store = route(app, FakeRequest(POST, uri).withTextBody(recordJson)).getOrElse(sys.error(s"Cannot find route $uri."))
-      status(store) mustBe OK
+      status(store) mustBe CREATED
       val feedback = doRequest(uri + "/kowalskij01:01:2000" )
       status(feedback) mustBe OK
       contentType(feedback) mustBe Some("text/plain")
@@ -95,7 +95,7 @@ class FeedbackSpec extends PlaySpec with GuiceOneAppPerTest {
     "store then update the progress status of a feedback with the same id" in {
       val recordJson = """{ "id":  "rossim01:01:2001", "username":"rossim", "name":"Mario Rossi", "date" : "01:01:2001", "subject":"Data Issue", "ubrn": [898989898989], "query": "BusinessName:test&limit=100", "comments":"This is just a test, please ignore.", "progressStatus" : "In Progress"}"""
       val store = route(app, FakeRequest(POST, uri).withTextBody(recordJson)).getOrElse(sys.error(s"Cannot find route $uri."))
-      status(store) mustBe OK
+      status(store) mustBe CREATED
       val modifiedJson = """{ "id":  "rossim01:01:2001", "username":"rossim", "name":"Mario Rossi", "date" : "01:01:2001", "subject":"Data Issue", "ubrn": [898989898989], "query": "BusinessName:test&limit=100", "comments":"This is just a test, please ignore.", "progressStatus" : "Completed"}"""
       val update = route(app, FakeRequest(PUT, uri).withTextBody(modifiedJson)).getOrElse(sys.error(s"Cannot find route $uri."))
       status(update) mustBe OK
