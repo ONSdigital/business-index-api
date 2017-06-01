@@ -77,12 +77,7 @@ class PutController @Inject()(elastic: ElasticClient, val config: Config)(
   def store: Action[AnyContent] = Action.async { implicit request =>
     errAsResponse {
       logger.debug(s"Store requested ${request.body}")
-      val json = request.body match {
-        case AnyContentAsRaw(raw) => Json.parse(raw.asBytes().getOrElse(sys.error("Invalid or empty input")).utf8String)
-        case AnyContentAsText(text) => Json.parse(text)
-        case AnyContentAsJson(jsonStr) => jsonStr
-        case _ => sys.error(s"Unsupported input type ${request.body}")
-      }
+      val json = validate(request)
       storeImpl(biFromJson(json)).map(x => Ok(x.toString))
     }
   }
@@ -132,14 +127,11 @@ class PutController @Inject()(elastic: ElasticClient, val config: Config)(
 
   }
 
-  // re-apply event history
-  // reapply the edit history stored in HBASE after new data ingestion run has been executed
 
-  // function apply -> that will perform change to elastic index based on what is stored in HBase
-  // so in essence do bulkUpdate but read the data from HBase not from file
-  // you will need to replace changes that are in elasticsearch in accordance to changes in
-  // hbase
-
+  /**
+    * Reapply event history - edit history stored in HBASE after new data ingestion
+    * run has been executed. Change to elastic index based on what is stored in HBase.
+    */
   // public api
   @ApiOperation(value = "Delete a single change record",
     notes = "Applies changes stored in file to Elasticsearch - similar to apply function.",

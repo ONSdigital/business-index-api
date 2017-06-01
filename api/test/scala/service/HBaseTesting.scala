@@ -15,6 +15,7 @@ object HBaseTesting extends HBaseImplicitUtils {
     u.getConfiguration.setBoolean("fs.hdfs.impl.disable.cache", true)
     u.startMiniCluster
     val clientPortProp = "hbase.zookeeper.property.clientPort"
+    // get random zookeper port
     System.setProperty(clientPortProp, u.getConfiguration.get(clientPortProp))
     // create all necessary tables in our HBase
     val config = BiConfigManager.envConf(ConfigFactory.load())

@@ -9,7 +9,7 @@ import uk.gov.ons.bi.writers.BiConfigManager
   * Created by Volodymyr.Glushak on 05/05/2017.
   */
 class HBaseCacheTest extends FlatSpec with Matchers with HBaseCache with BeforeAndAfterAll {
-
+  // set up hbase using internal memeory - mimic
   private[this] val utility = HBaseTesting.hBaseServer
 
   "It" should "cache values properly" in {

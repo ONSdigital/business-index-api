@@ -17,6 +17,7 @@ trait FeedbackStore extends HBaseCore {
   protected val columnFamily = "feedback"
 
   protected def store(feedback: FeedbackObj): String = {
+    // adds current time - always unique
     val id = feedback.username + feedback.date.getOrElse(System.currentTimeMillis()).toString
     logger.debug(s"A new record with id $id has been added to the HBase table feedback_tbl")
     val put = new Put(id)

@@ -7,9 +7,11 @@ import controllers.v1.feedback.FeedbackObj._
 import io.swagger.annotations._
 import org.slf4j.LoggerFactory
 import play.api.libs.json._
-import play.api.mvc.{Controller, _}
+import play.api.mvc._
 import services.store.FeedbackStore
-import controllers.v1.{SearchControllerUtils}
+import controllers.v1.SearchControllerUtils
+import com.outworkers.util.play._
+import scala.concurrent.Future
 import scala.util.{Failure, Success, Try}
 import scala.util.control.NonFatal
 
@@ -23,33 +25,21 @@ class FeedbackController @Inject()(implicit val config: Config) extends SearchCo
   private[this] val logger = LoggerFactory.getLogger(getClass)
 
 
-  def validate(request: Request[AnyContent]): JsValue = {
-      val json = request.body match {
-        case AnyContentAsRaw(raw) => Json.parse(raw.asBytes().getOrElse(sys.error("Invalid or empty input")).utf8String)
-        case AnyContentAsText(text) => Json.parse(text)
-        case AnyContentAsJson(jsonStr) => jsonStr
-        case _ => sys.error(s"Unsupported input type ${request.body}")
-      }
-      json
-  }
-
-
-  def formatter[T](f: FeedbackObj => T, json: JsValue, message: String) = {
+  def formatter[T](f: FeedbackObj => T, json: JsValue, message: String) : Future[Result] = {
     Json.fromJson[FeedbackObj](json) match {
       case JsSuccess(feedbackObj, _) =>
         logger.debug(s"Feedback Received: $feedbackObj")
         val res = Try(f(feedbackObj))
         res match {
-          case Success (res: String) => Created(s""" {"id": "$res"} """)
-          case Success (res: FeedbackObj) => Ok(s""" { "id" : "${res.id.getOrElse("")}", "progressStatus": "${res.progressStatus.getOrElse("")}" } """)
-          case _ => BadRequest(errAsJson(502, "exception failed or timeout connection", message))
+          case Success (res: String) => Created(s""" {"id": "$res"} """).future
+          case Success (res: FeedbackObj) => Ok(s""" { "id" : "${res.id.getOrElse("")}", "progressStatus": "${res.progressStatus.getOrElse("")}" } """).future
+          case _ => BadRequest(errAsJson(502, "exception failed or timeout connection", message)).future
         }
       case JsError(err) =>
         logger.error(s"Invalid Feedback! Please give properly parsable feedback $json -> $err")
-        BadRequest(s"Invalid Feedback! Please give properly parsable feedback $json -> $err")
+        BadRequest(errAsJson(400, "invalid_input", s"Invalid Feedback! Please give properly parsable feedback $json -> $err")).future
     }
   }
-
 
   // public api
   @ApiOperation(value = "Submit feedback",
@@ -67,15 +57,14 @@ class FeedbackController @Inject()(implicit val config: Config) extends SearchCo
   @ApiResponses(Array(
     new ApiResponse(code = 201, message = "Created - New feedback has been stored."),
     new ApiResponse(code = 400, message = "Client Side Error - Not input given/ found."),
-    new ApiResponse(code = 500, responseContainer = "Json", message = "Internal Server Error - Invalid id thereby cannot be found."),
+//    new ApiResponse(code = 500, responseContainer = "Json", message = "Internal Server Error - Invalid id thereby cannot be found."),
     new ApiResponse(code = 502, responseContainer = "Json", message = "Internal Server Error - Failed to connection or timeout with endpoint.")))
-  def storeFeedback = Action { request =>
-    withError {
-      val json = validate(request)
-      val message = "Could not perform operation delete record in source - may be caused by connection timeout or a failed to find endpoint."
-      formatter(store,  json, message)
-    }
+  def storeFeedback : Action[AnyContent] = Action.async { implicit request =>
+    val json = validate(request)
+    val message = "Could not perform operation delete record in source - may be caused by connection timeout or a failed to find endpoint."
+    formatter(store, json, message)
   }
+
 
 
   // public api
@@ -93,14 +82,12 @@ class FeedbackController @Inject()(implicit val config: Config) extends SearchCo
   @ApiResponses(Array(
     new ApiResponse(code = 200, message = "Success - 'progressStatus' has been successfully been modified."),
     new ApiResponse(code = 400, message = "Client Side Error - Not input given/ found."),
-    new ApiResponse(code = 500, responseContainer = "Json", message = "Internal Server Error - Invalid id thereby cannot be found."),
+//    new ApiResponse(code = 500, responseContainer = "Json", message = "Internal Server Error - Invalid id thereby cannot be found."),
     new ApiResponse(code = 502, responseContainer = "Json", message = "Internal Server Error - Failed to connection or timeout with endpoint.")))
-  def updateProgress = Action { request =>
-    withError {
-      val json = validate(request)
-      val message = "Could not perform operation delete record - may be caused by connection timeout or a failed to find endpoint."
-      formatter[FeedbackObj](progress, json, message)
-    }
+  def updateProgress : Action[AnyContent] = Action.async { request =>
+    val json = validate(request)
+    val message = "Could not perform operation delete record - may be caused by connection timeout or a failed to find endpoint."
+    formatter[FeedbackObj](progress, json, message)
   }
 
 
@@ -110,38 +97,34 @@ class FeedbackController @Inject()(implicit val config: Config) extends SearchCo
     notes = "Hard delete - This will get rid of the entire record in the source contrary to hide.",
     httpMethod = "DELETE")
   @ApiResponses(Array(
-    new ApiResponse(code = 201, message = "Success - Record successfully deleted."),
-    new ApiResponse(code = 500, responseContainer = "Json", message = "Internal Server Error - Invalid id thereby cannot be found."),
+    new ApiResponse(code = 200, message = "Success - Record successfully deleted."),
+//    new ApiResponse(code = 500, responseContainer = "Json", message = "Internal Server Error - Invalid id thereby cannot be found."),
     new ApiResponse(code = 502, responseContainer = "Json", message = "Internal Server Error - Failed to connection or timeout with endpoint.")))
-  def deleteFeedback(@ApiParam(value = "record id", required = true) id: String) = Action {
-    logger.debug(s"Processing deletion of record $id in source")
-    withError {
+  def deleteFeedback(@ApiParam(value = "record id", required = true) id: String) : Action[AnyContent] = Action.async {
+      logger.debug(s"Processing deletion of record $id in source")
       val res = Try(delete(id))
       res match {
-        case Success(res) => Ok(s""" { "id" : "$res" }   """)
-        case Failure(ex) => BadRequest(errAsJson(502, ex.toString, "Could not perform operation delete record - may be caused by connection timeout or a failed to connect to endpoint."))
+        case Success(res) => Ok(s""" { "id" : "$res" }   """).future
+        case Failure(ex) => BadRequest(errAsJson(502, ex.toString, "Could not perform operation delete record - may be caused by connection timeout or a failed to connect to endpoint.")).future
       }
-    }
   }
 
 
   // public api
-  @ApiOperation(value = "Toggle (single) feedback visibility status",
-    notes = "Soft delete - a substitute for delete that allows to restore the feedback using a boolean paramater in hide function.",
+  @ApiOperation(value = "Hide feedabck record",
+    notes = "Soft delete - toggles a single feedback post visibility to true from false. This acts as a substitute for delete that allows to restore the feedback using a boolean paramater in hide function.",
     httpMethod = "DELETE")
   @ApiResponses(Array(
     new ApiResponse(code = 200, message = "Success - Hide Status of respective record toggled."),
-    new ApiResponse(code = 500, responseContainer = "Json", message = "Internal Server Error - Invalid id thereby cannot be found."),
+//    new ApiResponse(code = 500, responseContainer = "Json", message = "Internal Server Error - Invalid id thereby cannot be found."),
     new ApiResponse(code = 502, responseContainer = "Json", message = "Internal Server Error - Failed to connection or timeout with endpoint.")))
-  def hideFeedback(@ApiParam(value = "HBase record identifier", required = true) id: String) = Action {
+  def hideFeedback(@ApiParam(value = "HBase record identifier", required = true) id: String) : Action[AnyContent] = Action.async {
     logger.debug(s"Processing deletion of HBase record: $id")
-    withError {
       val res = Try(hide(id))
       res match {
-        case Success(res) => Ok(s""" { "id" : "$res" }   """)
-        case Failure(ex) => BadRequest(errAsJson(502, ex.toString , "Could not perform operation hide record - may be caused by connection timeout or a failed to connect to endpoint."))
+        case Success(res) => Ok(s""" { "id" : "$res" }   """).future
+        case Failure(ex) => BadRequest(errAsJson(502, ex.toString, "Could not perform operation hide record - may be caused by connection timeout or a failed to connect to endpoint.")).future
       }
-    }
   }
 
 
@@ -152,16 +135,16 @@ class FeedbackController @Inject()(implicit val config: Config) extends SearchCo
   @ApiResponses(Array(
     new ApiResponse(code = 200, message = "Success - Displays all records in source."),
     new ApiResponse(code = 502, responseContainer = "Json", message = "Internal Server Error - Failed to connection or timeout with endpoint.")))
-  def display = Action {
+  def display : Action[AnyContent] = Action.async {
     logger.debug(s"Request received to display all feedback records [with status hide as FALSE]")
     val getFeedback = Try(Json.toJson[List[FeedbackObj]](getAll()))
     getFeedback match {
-      case Success(res) => Ok(res)
-      case Failure(ex) => BadRequest(errAsJson(502, ex.toString , "Failed to retrieve data - may be caused by connection timeout or a failed to connect to endpoint."))
+      case Success(res) => Ok(res).future
+      case Failure(ex) => BadRequest(errAsJson(502, ex.toString , "Failed to retrieve data - may be caused by connection timeout or a failed to connect to endpoint.")).future
     }
   }
 
-
+  @deprecated("this method will be removed - use in built try", "1 June")
   private[this] def withError(f: => Result): Result = {
     try {
       f
