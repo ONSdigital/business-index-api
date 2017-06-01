@@ -143,6 +143,7 @@ lazy val api = (project in file("api"))
       _.filterNot(_.getName endsWith ".scala")
     },
 
+    parallelExecution in Test := false,
     // characteristics for assembly plugin
     assemblyJarName in assembly := "ons-bi-api.jar",
     assemblyMergeStrategy in assembly := {

@@ -42,7 +42,8 @@ class FeedbackController @Inject()(implicit val config: Config) extends SearchCo
   }
 
   // public api
-  @ApiOperation(value = "Submit feedback",
+  @ApiOperation(
+    value = "Submit feedback",
     notes = "Parses input and formats to a feedback object to store",
     responseContainer = "String",
     httpMethod = "POST")
@@ -68,7 +69,8 @@ class FeedbackController @Inject()(implicit val config: Config) extends SearchCo
 
 
   // public api
-  @ApiOperation(value = "Update (single) progress status field of a given feedback record",
+  @ApiOperation(
+    value = "Update (single) progress status field of a given feedback record",
     notes = "Field progressStatus is the only single column changed (New/ In Progress/ Completed)",
     httpMethod = "PUT")
   @ApiImplicitParams(Array(
@@ -92,7 +94,8 @@ class FeedbackController @Inject()(implicit val config: Config) extends SearchCo
 
 
   // public api
-  @ApiOperation(value = "Delete a feedback record",
+  @ApiOperation(
+    value = "Delete a feedback record",
     hidden = true,
     notes = "Hard delete - This will get rid of the entire record in the source contrary to hide.",
     httpMethod = "DELETE")
@@ -111,7 +114,8 @@ class FeedbackController @Inject()(implicit val config: Config) extends SearchCo
 
 
   // public api
-  @ApiOperation(value = "Hide feedabck record",
+  @ApiOperation(
+    value = "Hide feedabck record",
     notes = "Soft delete - toggles a single feedback post visibility to true from false. This acts as a substitute for delete that allows to restore the feedback using a boolean paramater in hide function.",
     httpMethod = "DELETE")
   @ApiResponses(Array(
@@ -129,7 +133,8 @@ class FeedbackController @Inject()(implicit val config: Config) extends SearchCo
 
 
   // public api
-  @ApiOperation(value = "Display all feedback",
+  @ApiOperation(
+    value = "Display all feedback",
     notes = "Displays all records found while filtering out those with a 'hideStatus' set to true",
     httpMethod = "GET")
   @ApiResponses(Array(
@@ -144,7 +149,7 @@ class FeedbackController @Inject()(implicit val config: Config) extends SearchCo
     }
   }
 
-  @deprecated("this method will be removed - use in built try", "1 June")
+  @deprecated("this method will be removed - use in built try", "1 June - hbase kerberos")
   private[this] def withError(f: => Result): Result = {
     try {
       f
