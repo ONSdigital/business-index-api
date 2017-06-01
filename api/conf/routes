@@ -2,31 +2,40 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 
-GET     /v1/business/:id       controllers.v1.SearchController.searchBusinessById(id)
-GET     /v1/search             controllers.v1.SearchController.searchBusiness(term: Option[String] ?= None, suggest: Boolean ?= false)
-GET     /v1/search/:term       controllers.v1.SearchController.searchTerm(term, suggest: Boolean ?= false)
-GET     /v1/suggest            controllers.v1.SearchController.searchBusiness(term: Option[String] ?= None, suggest: Boolean ?= true)
+GET     /v1/business/:id            controllers.v1.SearchController.searchBusinessById(id)
+GET     /v1/search                  controllers.v1.SearchController.searchBusiness(term: Option[String] ?= None, suggest: Boolean ?= false)
+GET     /v1/search/:term            controllers.v1.SearchController.searchTerm(term, suggest: Boolean ?= false)
+GET     /v1/suggest                 controllers.v1.SearchController.searchBusiness(term: Option[String] ?= None, suggest: Boolean ?= true)
+
 
 # Route for deployed version information (in JSON).
-GET     /version               controllers.VersionController.version
+GET     /version                    controllers.VersionController.version
 
 # Route for health check information (in JSON).
-GET     /                       controllers.HomeController.health
-GET     /health                 controllers.HomeController.health
+GET     /                           controllers.HomeController.health
+GET     /health                     controllers.HomeController.health
+
+OPTIONS /*all                       controllers.HomeController.preflight(all: String)
 
 
 # Map static resources from the /public folder to the /assets URL path
-GET     /assets/*file           controllers.Assets.versioned(path="/public", file: Asset)
-GET     /webjars/*file          controllers.WebJarAssets.at(file)
+GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
+GET     /webjars/*file              controllers.WebJarAssets.at(file)
 
 # Swagger API
-GET   /swagger.json             controllers.ApiHelpController.getResources
-GET   /docs                     controllers.HomeController.swagger
+GET     /swagger.json               controllers.ApiHelpController.getResources
+GET     /docs                       controllers.HomeController.swagger
 
 # Modification API
-DELETE  /v1/delete/:id          controllers.v1.PutController.deleteById(id)
-PUT     /v1/store               controllers.v1.PutController.store
-POST    /v1/update/bulk         controllers.v1.PutController.bulkUpdate
-OPTIONS /*all                   controllers.HomeController.preflight(all: String)
+DELETE  /v1/event/:id               controllers.v1.event.PutController.deleteById(id)
+PUT     /v1/event                   controllers.v1.event.PutController.store
+POST    /v1/event/bulk              controllers.v1.event.PutController.bulkUpdate
 
-GET    /v1/event/log            controllers.v1.PutController.eventLog
+GET     /v1/event                   controllers.v1.event.PutController.eventLog
+POST    /v1/event                   controllers.v1.event.PutController.apply
+
+# Feedback
+POST    /v1/feedback                controllers.v1.feedback.FeedbackController.storeFeedback
+GET     /v1/feedback                controllers.v1.feedback.FeedbackController.display
+DELETE  /v1/feedback/:id            controllers.v1.feedback.FeedbackController.hideFeedback(id)
+PUT     /v1/feedback                controllers.v1.feedback.FeedbackController.updateProgress

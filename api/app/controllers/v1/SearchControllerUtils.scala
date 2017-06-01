@@ -5,8 +5,8 @@ import com.typesafe.scalalogging.StrictLogging
 import controllers.v1.BusinessIndexObj._
 import org.elasticsearch.ElasticsearchException
 import org.elasticsearch.client.transport.NoNodeAvailableException
-import play.api.libs.json.{JsObject, Json}
-import play.api.mvc.{Controller, Result}
+import play.api.libs.json.{JsObject, JsValue, Json}
+import play.api.mvc._
 import uk.gov.ons.bi.models.BusinessIndexRec
 
 import scala.annotation.tailrec
@@ -81,4 +81,16 @@ trait SearchControllerUtils extends Controller with StrictLogging {
         InternalServerError(s"{err = '${buildErrMsg(err)}'}")
       }
   }
+
+  // validate json string and reformat if applic
+  protected def validate(request: Request[AnyContent]): JsValue = {
+    val json = request.body match {
+      case AnyContentAsRaw(raw) => Json.parse(raw.asBytes().getOrElse(sys.error("Invalid or empty input")).utf8String)
+      case AnyContentAsText(text) => Json.parse(text)
+      case AnyContentAsJson(jsonStr) => jsonStr
+      case _ => sys.error(s"Unsupported input type ${request.body}")
+    }
+    json
+  }
+
 }
