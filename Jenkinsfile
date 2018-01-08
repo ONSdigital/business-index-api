@@ -58,15 +58,15 @@ pipeline {
                     stash name: 'compiled'
                     if (BRANCH_NAME == BRANCH_DEV) {
                         env.DEPLOY_NAME = DEPLOY_DEV
-                        sh "cp target/universal/${ORGANIZATION}-${MODULE_NAME}-*.zip ${DEPLOY_DEV}-${ORGANIZATION}-${MODULE_NAME}.zip"
+                        sh "cp api/target/universal/${ORGANIZATION}-${MODULE_NAME}-*.zip ${DEPLOY_DEV}-${ORGANIZATION}-${MODULE_NAME}.zip"
                     }
                     else if  (BRANCH_NAME == BRANCH_TEST) {
                         env.DEPLOY_NAME = DEPLOY_TEST
-                        sh "cp target/universal/${ORGANIZATION}-${MODULE_NAME}-*.zip ${DEPLOY_TEST}-${ORGANIZATION}-${MODULE_NAME}.zip"
+                        sh "cp api/target/universal/${ORGANIZATION}-${MODULE_NAME}-*.zip ${DEPLOY_TEST}-${ORGANIZATION}-${MODULE_NAME}.zip"
                     }
                     else if (BRANCH_NAME == BRANCH_PROD) {
                         env.DEPLOY_NAME = DEPLOY_PROD
-                        sh "cp target/universal/${ORGANIZATION}-${MODULE_NAME}-*.zip ${DEPLOY_PROD}-${ORGANIZATION}-${MODULE_NAME}.zip"
+                        sh "cp api/target/universal/${ORGANIZATION}-${MODULE_NAME}-*.zip ${DEPLOY_PROD}-${ORGANIZATION}-${MODULE_NAME}.zip"
                     }
                     else {
                         colourText("info", "Not a deployable Git banch!")
@@ -110,7 +110,7 @@ pipeline {
                     step([$class: 'CheckStylePublisher', pattern: 'target/scalastyle-result.xml, target/scala-2.11/scapegoat-report/scapegoat-scalastyle.xml'])
                 }
                 failure {
-                    colourText("warn","Failed to retrieve reports.")
+                    colourText("warn","Failed on Tests.")
                 }
             }
         }
@@ -132,7 +132,7 @@ pipeline {
                 }
                 colourText("info", "Bundling....")
                 dir('conf') {
-                    git(url: "$GITLAB_URL/BusinessIndex/${MODULE_NAME}.git", credentialsId: GITLAB_CREDS, branch: "${BRANCH_DEV}")
+                    git(url: "$GITLAB_URL/BusinessIndex/${MODULE_NAME}.git", credentialsId: GITLAB_CREDS, branch: "${BRANCH_NAME}")
                 }
                 // stash name: "zip"
             }
