@@ -11,19 +11,18 @@ import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.http.Writeable
 import play.api.libs.Files
 import play.api.mvc.MultipartFormData.FilePart
-import play.api.mvc.{MultipartFormData, Request, Result}
+import play.api.mvc.{ MultipartFormData, Request, Result }
 import play.api.test.FakeRequest
-import play.api.test.Helpers.{contentAsString, _}
+import play.api.test.Helpers.{ contentAsString, _ }
 import uk.gov.ons.bi.models.BusinessIndexRec
 
 import scala.FakeMultipartUpload._
 import scala.concurrent.Future
 
 /**
-  * Created by Volodymyr.Glushak on 07/04/2017.
-  */
+ * Created by Volodymyr.Glushak on 07/04/2017.
+ */
 class ModifyAppSpec extends PlaySpec with GuiceOneServerPerSuite with OneBrowserPerSuite with HtmlUnitFactory {
-
 
   private[this] def doGet(uri: String) = doRequest(FakeRequest("GET", uri))
 
@@ -63,7 +62,6 @@ class ModifyAppSpec extends PlaySpec with GuiceOneServerPerSuite with OneBrowser
       status(localResponse) mustBe OK
     }
 
-
     "bulk update" in {
       val fName = "the.temp.file"
       FileUtils.copyFile(new File("test/resources/modify.txt"), new File(fName))
@@ -74,7 +72,6 @@ class ModifyAppSpec extends PlaySpec with GuiceOneServerPerSuite with OneBrowser
       val res = OpStatus.opListFromJson(contentAsString(doRequest(request)))
       res.size mustBe 3
     }
-
 
   }
 

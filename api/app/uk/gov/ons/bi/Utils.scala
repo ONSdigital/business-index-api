@@ -7,11 +7,11 @@ import org.joda.time.DateTime
 import org.slf4j.LoggerFactory
 
 import scala.io.Source
-import scala.util.{Failure, Success, Try}
+import scala.util.{ Failure, Success, Try }
 
 /**
-  * Created by Volodymyr.Glushak on 14/02/2017.
-  */
+ * Created by Volodymyr.Glushak on 14/02/2017.
+ */
 object Utils {
 
   private[this] val logger = LoggerFactory.getLogger(getClass)
@@ -47,7 +47,6 @@ object Utils {
       case Success(s) => s
       case Failure(e) => throw new RuntimeException(s"Can't get resource $file", e)
     }
-
 
   def getPropOrElse(name: String, default: => String)(implicit config: Config): String =
     Try(config.getString(name)).getOrElse(default)

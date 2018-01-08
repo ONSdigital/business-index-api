@@ -17,8 +17,8 @@ import uk.gov.ons.bi.models.BusinessIndexRec
 import uk.gov.ons.bi.writers.ElasticImporter
 
 import scala.concurrent.duration._
-import scala.concurrent.{Await, ExecutionContext, Future}
-import scala.util.{Failure, Success, Try}
+import scala.concurrent.{ Await, ExecutionContext, Future }
+import scala.util.{ Failure, Success, Try }
 import scala.collection.JavaConverters._
 
 object InsertDemoUtils {
@@ -32,15 +32,16 @@ object InsertDemoUtils {
 }
 
 /**
-  * Class that imports sample.csv.
-  *
-  * CSV file header: "ID","BusinessName","UPRN","IndustryCode","LegalStatus","TradingStatus","Turnover","EmploymentBands"
-  */
+ * Class that imports sample.csv.
+ *
+ * CSV file header: "ID","BusinessName","UPRN","IndustryCode","LegalStatus","TradingStatus","Turnover","EmploymentBands"
+ */
 @Singleton
-class InsertDemoData @Inject()(applicationLifecycle: ApplicationLifecycle)(
-  implicit exec: ExecutionContext,
-  config: Config,
-  elastic: ElasticClient
+class InsertDemoData @Inject() (applicationLifecycle: ApplicationLifecycle)(
+    implicit
+    exec: ExecutionContext,
+    config: Config,
+    elastic: ElasticClient
 ) extends StrictLogging {
 
   val elasticImporter = new ElasticImporter
@@ -65,7 +66,7 @@ class InsertDemoData @Inject()(applicationLifecycle: ApplicationLifecycle)(
       search.in(businessIndex / "business")
     } flatMap {
       case resp if resp.hits.length == 0 => elasticImporter.loadBusinessIndex(businessIndex, source.toSeq)
-      case resp@_ =>
+      case resp @ _ =>
         logger.info(s"No import necessary, found ${resp.hits.length} entries in the index")
         Future.successful(Iterator.empty)
     }

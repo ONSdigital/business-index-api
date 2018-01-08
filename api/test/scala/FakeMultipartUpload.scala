@@ -5,13 +5,13 @@ import java.io.ByteArrayOutputStream
 import akka.util.ByteString
 import org.apache.http.entity.ContentType
 import org.apache.http.entity.mime.MultipartEntityBuilder
-import org.apache.http.entity.mime.content.{ContentBody, FileBody, StringBody}
+import org.apache.http.entity.mime.content.{ ContentBody, FileBody, StringBody }
 import play.api.http.Writeable
-import play.api.mvc.{AnyContentAsMultipartFormData, Codec}
+import play.api.mvc.{ AnyContentAsMultipartFormData, Codec }
 
 /**
-  * Created by Volodymyr.Glushak on 07/04/2017.
-  */
+ * Created by Volodymyr.Glushak on 07/04/2017.
+ */
 object FakeMultipartUpload {
   implicit def writeableOf_multiPartFormData(implicit codec: Codec): Writeable[AnyContentAsMultipartFormData] = {
     val builder = MultipartEntityBuilder.create().setBoundary("12345678")
@@ -23,7 +23,8 @@ object FakeMultipartUpload {
         }
       }
       multipart.mdf.files.foreach { file =>
-        val part: ContentBody = new FileBody(file.ref.file,
+        val part: ContentBody = new FileBody(
+          file.ref.file,
           ContentType.create(file.contentType.getOrElse("application/octet-stream")), file.filename
         )
         builder.addPart(file.key, part)

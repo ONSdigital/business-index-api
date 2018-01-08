@@ -3,8 +3,8 @@ package services
 import play.api.libs.json._
 
 /**
-  * Created by Volodymyr.Glushak on 27/04/2017.
-  */
+ * Created by Volodymyr.Glushak on 27/04/2017.
+ */
 object JsonHelpers {
 
   implicit class WritesOps[A](val self: Writes[A]) extends AnyVal {

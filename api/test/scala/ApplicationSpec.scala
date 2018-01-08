@@ -1,20 +1,19 @@
 package scala
 
 import org.scalatestplus.play._
-import play.api.test.Helpers.{contentAsString, _}
+import play.api.test.Helpers.{ contentAsString, _ }
 import play.api.test._
 
 class ApplicationSpec extends PlaySpec with OneAppPerTest {
 
   "Routes" should {
-    "send 404 on a bad request" in  {
+    "send 404 on a bad request" in {
       route(app, FakeRequest(GET, "/boum")).map(status) mustBe Some(NOT_FOUND)
     }
   }
 
   private[this] def fakeRequest(uri: String, method: String = GET) =
     route(app, FakeRequest(method, uri)).getOrElse(sys.error(s"Can not find route $uri."))
-
 
   "HealthController" should {
     "get the health status" in {
@@ -40,7 +39,7 @@ class ApplicationSpec extends PlaySpec with OneAppPerTest {
       val search = fakeRequest("/v1/search")
       status(search) mustBe BAD_REQUEST
       contentType(search) mustBe Some("application/json")
-      contentAsString(search).toLowerCase must include ("missing_query")
+      contentAsString(search).toLowerCase must include("missing_query")
     }
 
     "return NoContent when no data" in {

@@ -5,19 +5,19 @@ import com.typesafe.scalalogging.StrictLogging
 import controllers.v1.BusinessIndexObj._
 import org.elasticsearch.ElasticsearchException
 import org.elasticsearch.client.transport.NoNodeAvailableException
-import play.api.libs.json.{JsObject, Json}
-import play.api.mvc.{Controller, Result}
+import play.api.libs.json.{ JsObject, Json }
+import play.api.mvc.{ Controller, Result }
 import uk.gov.ons.bi.models.BusinessIndexRec
 
 import scala.annotation.tailrec
 import scala.collection.JavaConverters._
 import scala.concurrent.Future
 import scala.util.control.NonFatal
-import scala.util.{Failure, Success, Try}
+import scala.util.{ Failure, Success, Try }
 
 /**
-  * Created by Volodymyr.Glushak on 22/03/2017.
-  */
+ * Created by Volodymyr.Glushak on 22/03/2017.
+ */
 trait SearchControllerUtils extends Controller with StrictLogging {
 
   @tailrec
@@ -65,13 +65,15 @@ trait SearchControllerUtils extends Controller with StrictLogging {
   protected def responseWithHTTPHeaders(resp: SearchData, searchResult: Result): Result = {
     searchResult.withHeaders(
       "X-Total-Count" -> resp.totalHits.toString,
-      "X-Max-Score" -> resp.maxScore.toString)
+      "X-Max-Score" -> resp.maxScore.toString
+    )
   }
 
   protected[this] def resultAsBusiness(businessId: Long, resp: RichGetResponse): Option[BusinessIndexRec] = Try(
     BusinessIndexRec.fromMap(businessId, Option(resp.source).map(
       _.asScala.toMap[String, AnyRef]
-    ).getOrElse(sys.error("no data")))).toOption
+    ).getOrElse(sys.error("no data")))
+  ).toOption
 
   protected[this] def errAsResponse(f: => Future[Result]): Future[Result] = Try(f) match {
     case Success(g) => g

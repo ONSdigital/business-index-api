@@ -1,11 +1,11 @@
 package controllers.v1
 
 import java.io.File
-import javax.inject.{Inject, Singleton}
+import javax.inject.{ Inject, Singleton }
 
 import ch.qos.logback.classic.LoggerContext
 import ch.qos.logback.core.FileAppender
-import com.sksamuel.elastic4s.{ElasticClient, ElasticDsl}
+import com.sksamuel.elastic4s.{ ElasticClient, ElasticDsl }
 import com.typesafe.config.Config
 import controllers.v1.BusinessIndexObj._
 import io.swagger.annotations.Api
@@ -14,20 +14,20 @@ import org.slf4j.LoggerFactory
 import play.api.libs.Files.TemporaryFile
 import play.api.libs.json._
 import play.api.mvc._
-import uk.gov.ons.bi.{CsvProcessor, Utils}
+import uk.gov.ons.bi.{ CsvProcessor, Utils }
 import uk.gov.ons.bi.models.BusinessIndexRec
 
 import scala.collection.JavaConverters._
-import scala.concurrent.{ExecutionContext, Future}
-
+import scala.concurrent.{ ExecutionContext, Future }
 
 /**
-  * Created by Volodymyr.Glushak on 06/04/2017.
-  */
+ * Created by Volodymyr.Glushak on 06/04/2017.
+ */
 @Api("Modify")
 @Singleton
-class PutController @Inject()(elastic: ElasticClient, val config: Config)(
-  implicit context: ExecutionContext
+class PutController @Inject() (elastic: ElasticClient, val config: Config)(
+    implicit
+    context: ExecutionContext
 ) extends SearchControllerUtils with ElasticDsl with DefaultInstrumented with ElasticUtils {
 
   private[this] val EVENT_APPENDER = "OVERLOAD_LOG"
@@ -80,7 +80,7 @@ class PutController @Inject()(elastic: ElasticClient, val config: Config)(
       Utils.readFile(f).mkString("\n")
     }.headOption match {
       case None => Ok("no_data")
-      case Some(str) =>  Ok(str)
+      case Some(str) => Ok(str)
     }
   }
 
@@ -95,19 +95,20 @@ class PutController @Inject()(elastic: ElasticClient, val config: Config)(
   }
 
   def bulkUpdate: Action[MultipartFormData[TemporaryFile]] = Action.async(parse.multipartFormData) { request =>
-    val fs = request.body.files.flatMap { file => {
-      logger.debug(s"Read file with instructions: ${file.filename}")
-      val outFile = s"${System.getProperty("java.io.tmpdir")}/${System.currentTimeMillis()}_${file.filename}"
-      val workFile = file.ref.moveTo(new File(outFile))
-      CsvProcessor.csvToMap(Utils.readFile(workFile.getAbsolutePath)).map { rec =>
-        val id = rec.map(e => e._1.toUpperCase -> e._2).getOrElse("ID", sys.error("ID column not found."))
-        rec("COMMAND") match {
-          case "DELETE" => deleteByIdImpl(id)
-          case "STORE" | "PUT" => storeImpl(BusinessIndexRec.fromMap(id.toLong, rec))
-          case x => sys.error(s"Unknown command $x in file ${file.filename}")
+    val fs = request.body.files.flatMap { file =>
+      {
+        logger.debug(s"Read file with instructions: ${file.filename}")
+        val outFile = s"${System.getProperty("java.io.tmpdir")}/${System.currentTimeMillis()}_${file.filename}"
+        val workFile = file.ref.moveTo(new File(outFile))
+        CsvProcessor.csvToMap(Utils.readFile(workFile.getAbsolutePath)).map { rec =>
+          val id = rec.map(e => e._1.toUpperCase -> e._2).getOrElse("ID", sys.error("ID column not found."))
+          rec("COMMAND") match {
+            case "DELETE" => deleteByIdImpl(id)
+            case "STORE" | "PUT" => storeImpl(BusinessIndexRec.fromMap(id.toLong, rec))
+            case x => sys.error(s"Unknown command $x in file ${file.filename}")
+          }
         }
       }
-    }
     }
     Future.sequence(fs).map { seqRes =>
       Ok(s"[${seqRes.mkString(",")}]")
