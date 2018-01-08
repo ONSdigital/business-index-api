@@ -246,9 +246,9 @@ def push (String newTag, String currentTag) {
 
 
 def deploy () {
-    cf_env = "${env.DEPLOY_NAME}".capitalize()
+    CF_ENV = "${env.DEPLOY_NAME}".capitalize()
     echo "Deploying Api app to ${env.DEPLOY_NAME}"
 //    withCredentials([string(credentialsId: CF_CREDS, variable: 'APPLICATION_SECRET')]) {
-        deployToCloudFoundry("${TEAM}-${env.DEPLOY_NAME}-cf", "${CF_PROJECT}", "${cf_env}", "${env.DEPLOY_NAME}-${MODULE_NAME}", "${env.DEPLOY_NAME}-${ORGANIZATION}-${MODULE_NAME}.zip", "conf/${env.DEPLOY_NAME}/manifest.yml")
+        deployToCloudFoundry("${TEAM}-${env.DEPLOY_NAME}-cf", "${CF_PROJECT}", "${CF_ENV}", "${env.DEPLOY_NAME}-${MODULE_NAME}", "${env.DEPLOY_NAME}-${ORGANIZATION}-${MODULE_NAME}.zip", "conf/${env.DEPLOY_NAME}/manifest.yml")
 //    }
 }
