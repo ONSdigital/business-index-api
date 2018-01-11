@@ -1,17 +1,16 @@
 package uk.gov.ons.bi
 
 /**
-  * Created by Volodymyr.Glushak on 09/02/2017.
-  */
-
+ * Created by Volodymyr.Glushak on 09/02/2017.
+ */
 
 /**
-  * Abstract representation of data source.
-  * Assume for tests there will be collections based implementation
-  * and for Spark supposed to be RDD based DataSource
-  *
-  * @tparam T type of data it should process
-  */
+ * Abstract representation of data source.
+ * Assume for tests there will be collections based implementation
+ * and for Spark supposed to be RDD based DataSource
+ *
+ * @tparam T type of data it should process
+ */
 trait DataSource[I, T] {
 
   def map[Z](x: T => Z): DataSource[I, Z]

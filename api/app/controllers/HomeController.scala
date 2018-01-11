@@ -1,13 +1,12 @@
 package controllers
 
 import org.joda.time.DateTime
-import play.api.mvc.{Controller, _}
+import play.api.mvc.{ Controller, _ }
 import io.swagger.annotations.Api
 
 @Api("Utils")
 class HomeController extends Controller {
   private[this] val startTime = System.currentTimeMillis()
-
 
   def swagger = Action { request =>
     val host = request.host

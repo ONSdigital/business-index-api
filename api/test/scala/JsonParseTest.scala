@@ -1,12 +1,12 @@
 package scala
 
 import controllers.v1.BusinessIndexObj._
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.{ FlatSpec, Matchers }
 import uk.gov.ons.bi.models.BusinessIndexRec
 
 /**
-  * Created by Volodymyr.Glushak on 01/03/2017.
-  */
+ * Created by Volodymyr.Glushak on 01/03/2017.
+ */
 class JsonParseTest extends FlatSpec with Matchers {
 
   private[this] val fullJson =

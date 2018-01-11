@@ -7,23 +7,22 @@ import uk.gov.ons.bi.models.BIndexConsts._
 import scala.collection.JavaConverters._
 
 case class BusinessIndexRec(
-                             id: Long, // the same as uprn ?
-                             businessName: String,
-                             uprn: Option[Long],
-                             postCode: Option[String],
-                             industryCode: Option[String],
-                             legalStatus: Option[String],
-                             tradingStatus: Option[String],
-                             turnover: Option[String],
-                             employmentBands: Option[String],
-                             vatRefs: Option[Seq[Long]],
-                             payeRefs: Option[Seq[String]],
-                             companyNo: Option[String]
-                           ) {
+    id: Long, // the same as uprn ?
+    businessName: String,
+    uprn: Option[Long],
+    postCode: Option[String],
+    industryCode: Option[String],
+    legalStatus: Option[String],
+    tradingStatus: Option[String],
+    turnover: Option[String],
+    employmentBands: Option[String],
+    vatRefs: Option[Seq[Long]],
+    payeRefs: Option[Seq[String]],
+    companyNo: Option[String]
+) {
 
   // method that used as output on UI (some fields are hidden)
   def secured: BusinessIndexRec = this.copy(vatRefs = None, payeRefs = None, uprn = None)
-
 
   def toCsvSecured: String = BusinessIndexRec.toString(List(id, businessName, uprn, industryCode, legalStatus,
     tradingStatus, turnover, employmentBands))

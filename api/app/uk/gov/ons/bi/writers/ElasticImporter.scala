@@ -1,13 +1,13 @@
 package uk.gov.ons.bi.writers
 
 import com.sksamuel.elastic4s.ElasticDsl._
-import com.sksamuel.elastic4s.{BulkResult, ElasticClient, ElasticsearchClientUri}
+import com.sksamuel.elastic4s.{ BulkResult, ElasticClient, ElasticsearchClientUri }
 import com.typesafe.config.Config
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse
 import org.elasticsearch.common.settings.Settings
 import org.slf4j.LoggerFactory
 import uk.gov.ons.bi.Utils._
-import uk.gov.ons.bi.{DataSource, MapDataSource}
+import uk.gov.ons.bi.{ DataSource, MapDataSource }
 import uk.gov.ons.bi.models.BIndexConsts._
 import uk.gov.ons.bi.models.BusinessIndexRec
 import uk.gov.ons.bi.writers.indexes.BusinessIndex
@@ -17,8 +17,8 @@ import scala.concurrent.Future
 import scala.util.Try
 
 /**
-  * Created by Volodymyr.Glushak on 10/02/2017.
-  */
+ * Created by Volodymyr.Glushak on 10/02/2017.
+ */
 class ElasticImporter()(implicit val config: Config, elastic: ElasticClient) {
 
   private[this] val logger = LoggerFactory.getLogger(getClass)
@@ -43,10 +43,11 @@ class ElasticImporter()(implicit val config: Config, elastic: ElasticClient) {
       logger.debug(s"Bulk of size ${biMap.size} is about to be processed...")
       elastic.execute {
         bulk(
-          biMap.map { bi  =>
+          biMap.map { bi =>
             logger.trace(s"Indexing entry in ElasticSearch $bi")
             index into indexName / cBiType id bi.id fields BusinessIndexRec.toMap(bi)
-          })
+          }
+        )
       }
     }
     Future.sequence(r)

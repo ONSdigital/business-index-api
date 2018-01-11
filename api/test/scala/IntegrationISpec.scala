@@ -16,7 +16,6 @@ class IntegrationISpec extends PlaySpec with GuiceOneServerPerSuite with OneBrow
 
   def baseApiUri: String = realUri.getOrElse(mockUri)
 
-
   "Data Application" should {
     // wait while all data loaded into elastic
     "init service" in {
@@ -37,7 +36,6 @@ class IntegrationISpec extends PlaySpec with GuiceOneServerPerSuite with OneBrow
       val rec = biFromJson(pageSource)
       rec.id mustBe id
     }
-
 
     "search with limit" in {
       val limit = 5
@@ -107,7 +105,6 @@ class IntegrationISpec extends PlaySpec with GuiceOneServerPerSuite with OneBrow
       val res = extractData(pageSource)
       res.length mustBe 4
     }
-
 
     "empty results returns properly" in {
       go to s"$baseApiUri/v1/search/PostCode:UNEXISTED"

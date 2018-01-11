@@ -99,7 +99,7 @@ lazy val api = (project in file("api"))
   .configs(BoxTest)
   .settings(commonSettings,
     inConfig(BoxTest)(Defaults.testTasks),
-    name := "ons-bi-api",
+    name := "ons-business-index-api",
     scalaVersion := "2.11.8",
     buildInfoPackage := "controllers",
     resolvers ++= Seq(

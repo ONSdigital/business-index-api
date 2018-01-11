@@ -3,7 +3,7 @@ package controllers.v1
 import javax.inject._
 
 import cats.data.ValidatedNel
-import com.outworkers.util.catsparsers.{parse => cparse, _}
+import com.outworkers.util.catsparsers.{ parse => cparse, _ }
 import com.outworkers.util.play._
 import com.sksamuel.elastic4s._
 import com.typesafe.config.Config
@@ -14,9 +14,9 @@ import play.api.libs.json._
 import play.api.mvc._
 import services.HBaseCache
 import services.JsonHelpers._
-import uk.gov.ons.bi.models.{BIndexConsts, BusinessIndexRec}
+import uk.gov.ons.bi.models.{ BIndexConsts, BusinessIndexRec }
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 import scala.util.Try
 
 object BusinessIndexObj {
@@ -50,16 +50,17 @@ object BusinessIndexObj {
 }
 
 /**
-  * Contains action for the /v1/search route.
-  *
-  * @param elastic
-  * @param context
-  * @param config
-  */
+ * Contains action for the /v1/search route.
+ *
+ * @param elastic
+ * @param context
+ * @param config
+ */
 @Api("Search")
 @Singleton
-class SearchController @Inject()(elastic: ElasticClient, val config: Config)(
-  implicit context: ExecutionContext
+class SearchController @Inject() (elastic: ElasticClient, val config: Config)(
+    implicit
+    context: ExecutionContext
 ) extends SearchControllerUtils with ElasticDsl with DefaultInstrumented with HBaseCache with ElasticUtils {
 
   implicit object LongParser extends CatsParser[Long] {
@@ -80,8 +81,8 @@ class SearchController @Inject()(elastic: ElasticClient, val config: Config)(
   }
 
   protected[this] def businessSearchInternal(term: String, offset: Int, limit: Int,
-                                             suggest: Boolean = false,
-                                             defaultOperator: String): Future[RichSearchResponse] = {
+    suggest: Boolean = false,
+    defaultOperator: String): Future[RichSearchResponse] = {
     val definition = if (suggest) {
       matchQuery(BIndexConsts.cBiName, query)
     } else {
@@ -101,11 +102,11 @@ class SearchController @Inject()(elastic: ElasticClient, val config: Config)(
 
   // search with limit=0 still returns count of elements
   private[this] def businessSearch(term: String, offset: Int, limit: Int, suggest: Boolean = false,
-                                   defaultOperator: String): Future[(RichSearchResponse, List[BusinessIndexRec])] = {
+    defaultOperator: String): Future[(RichSearchResponse, List[BusinessIndexRec])] = {
     businessSearchInternal(term, offset, limit, suggest, defaultOperator).map { resp =>
       logger.trace(s"Business search term $term, offset: $offset, limit: $limit, operator: $defaultOperator - response: $resp")
       resp.as[BusinessIndexRec].toList match {
-        case list@_ :: _ =>
+        case list @ _ :: _ =>
           totalHitsHistogram += resp.totalHits
           resp -> list
         case Nil => resp -> List.empty[BusinessIndexRec]
@@ -116,16 +117,16 @@ class SearchController @Inject()(elastic: ElasticClient, val config: Config)(
   private[this] val isCaching = config.getBoolean("hbase.caching.enabled")
 
   // hbase caching
-  private[this] def getOrElseWrap(request: String)(f: => Future[(RichSearchResponse, List[BusinessIndexRec])]):
-  Future[(SearchData, List[BusinessIndexRec])] = {
+  private[this] def getOrElseWrap(request: String)(f: => Future[(RichSearchResponse, List[BusinessIndexRec])]): Future[(SearchData, List[BusinessIndexRec])] = {
     if (isCaching) {
       getFromCache(request) match {
         case Some(s) =>
           val cachedBus = biListFromJson(s)
           Future.successful((SearchData(cachedBus.size.toLong, 100f), cachedBus))
-        case None => f.map { case (r, businesses) =>
-          updateCache(request, biListToJson(businesses).toString())
-          (SearchData(r.totalHits, r.maxScore), businesses)
+        case None => f.map {
+          case (r, businesses) =>
+            updateCache(request, biListToJson(businesses).toString())
+            (SearchData(r.totalHits, r.maxScore), businesses)
         }
       }
     } else {
@@ -134,12 +135,15 @@ class SearchController @Inject()(elastic: ElasticClient, val config: Config)(
   }
 
   // public API
-  @ApiOperation(value = "Search businesses by query",
+  @ApiOperation(
+    value = "Search businesses by query",
     notes = "Returns list of available businesses",
-    httpMethod = "GET")
+    httpMethod = "GET"
+  )
   @ApiResponses(Array(
     new ApiResponse(code = 500, message = "Internal server error"),
-    new ApiResponse(code = 503, message = "Elastic search is not available")))
+    new ApiResponse(code = 503, message = "Elastic search is not available")
+  ))
   def searchTerm(@ApiParam(value = "Query to elastic search") term: String, suggest: Boolean = false): Action[AnyContent] = searchBusiness(Some(term), suggest)
 
   private[this] def findById(businessId: Long): Future[Option[BusinessIndexRec]] = {
@@ -153,23 +157,25 @@ class SearchController @Inject()(elastic: ElasticClient, val config: Config)(
   @ApiOperation(
     value = "Search businesses by UBRN",
     notes = "Returns exact business index record for particular UBRN Request",
-    httpMethod = "GET")
+    httpMethod = "GET"
+  )
   def searchBusinessById(@ApiParam(value = "UBRN to search") id: String): Action[AnyContent] = Action.async {
-    cparse[Long](id) fold(_.response.future, value =>
+    cparse[Long](id) fold (_.response.future, value =>
       findById(value) map {
         case Some(res) =>
           Ok(biToJson(res))
         case None =>
           logger.debug(s"Could not find a record with the ID $id")
           NoContent
-      }
-    )
+      })
   }
 
   // public api
-  @ApiOperation(value = "Search businesses by query",
+  @ApiOperation(
+    value = "Search businesses by query",
     notes = "Returns list of available businesses. Additional parameters: offset, limit, default_operator",
-    httpMethod = "GET")
+    httpMethod = "GET"
+  )
   def searchBusiness(@ApiParam(value = "Query to elastic search") term: Option[String], suggest: Boolean = false): Action[AnyContent] = {
     Action.async { implicit request =>
       // getOrElseWrap(term)
