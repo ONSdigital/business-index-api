@@ -13,8 +13,6 @@ pipeline {
         DEPLOY_TEST = "test"
         DEPLOY_PROD = "beta"
 
-        CF_PROJECT = "BI"
-
         GIT_TYPE = "Github"
         GIT_CREDS = "github-bi-user"
         GITLAB_CREDS = "bi-gitlab-id"
@@ -79,21 +77,21 @@ pipeline {
             agent any
             steps {
                 parallel (
-                    "Unit" :  {
-                        colourText("info","Running unit tests")
-                        // sh "$SBT test"
-                    },
-                    "Style" : {
-                        colourText("info","Running style tests")
-                        sh """
-                            $SBT scalastyleGenerateConfig
-                            $SBT scalastyle
-                        """
-                    },
-                    "Additional" : {
-                        colourText("info","Running additional tests")
-                        sh "$SBT scapegoat"
-                    }
+                        "Unit" :  {
+                            colourText("info","Running unit tests")
+                            // sh "$SBT test"
+                        },
+                        "Style" : {
+                            colourText("info","Running style tests")
+//                            sh """
+//                                $SBT scalastyleGenerateConfig
+//                                $SBT scalastyle
+//                            """
+                        },
+                        "Additional" : {
+                            colourText("info","Running additional tests")
+                            sh "$SBT scapegoat"
+                        }
                 )
             }
             post {
@@ -246,9 +244,10 @@ def push (String newTag, String currentTag) {
 
 
 def deploy () {
-    CF_ENV = "${env.DEPLOY_NAME}".capitalize()
+    CF_SPACE = "${env.DEPLOY_NAME}".capitalize()
+    CF_ORG = "${TEAM}".toUpperCase()
     echo "Deploying Api app to ${env.DEPLOY_NAME}"
 //    withCredentials([string(credentialsId: CF_CREDS, variable: 'APPLICATION_SECRET')]) {
-        deployToCloudFoundry("${TEAM}-${env.DEPLOY_NAME}-cf", "${CF_PROJECT}", "${CF_ENV}", "${env.DEPLOY_NAME}-${MODULE_NAME}", "${env.DEPLOY_NAME}-${ORGANIZATION}-${MODULE_NAME}.zip", "conf/${env.DEPLOY_NAME}/manifest.yml")
+    deployToCloudFoundry("${TEAM}-${env.DEPLOY_NAME}-cf", "${CF_ORG}", "${CF_SPACE}", "${env.DEPLOY_NAME}-${MODULE_NAME}", "${env.DEPLOY_NAME}-${ORGANIZATION}-${MODULE_NAME}.zip", "conf/${env.DEPLOY_NAME}/manifest.yml")
 //    }
 }
