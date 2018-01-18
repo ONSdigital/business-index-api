@@ -1,0 +1,72 @@
+<!-- https://www.playframework.com/documentation/latest/SettingsLogger -->
+<configuration>
+    <jmxConfigurator/>
+
+    <conversionRule conversionWord="coloredLevel" converterClass="play.api.libs.logback.ColoredLevel"/>
+
+    <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+        <file>${application.home:-.}/logs/application.log</file>
+        <encoder>
+            <pattern>%date [%level] from %logger in %thread - %message%n%xException</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="OVERLOAD_LOG" class="ch.qos.logback.core.FileAppender">
+        <file>${application.home:-.}/logs/events.log</file>
+        <encoder>
+            <pattern>%msg %n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%coloredLevel %logger{15} - %message%n%xException{10}</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="ASYNCFILE" class="ch.qos.logback.classic.AsyncAppender">
+        <queueSize>500</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <appender-ref ref="FILE"/>
+    </appender>
+
+    <appender name="ASYNCSTDOUT" class="ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref="STDOUT"/>
+    </appender>
+
+    <appender name="SPLUNKSOCKET" class="com.splunk.logging.TcpAppender">
+        <RemoteHost>127.0.0.1</RemoteHost>
+        <Port>15000</Port>
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <pattern>%date{ISO8601} [%thread] %level: %msg%n</pattern>
+        </layout>
+    </appender>
+
+    <logger name="play" level="INFO"/>
+    <logger name="application" level="DEBUG"/>
+
+    <logger name="OVERLOAD_LOG" level="INFO" additivity="false">
+        <appender-ref ref="OVERLOAD_LOG" />
+    </logger>
+
+    <!-- Off these ones as they are annoying, and anyway we manage configuration ourselves -->
+    <logger name="com.avaje.ebean.config.PropertyMapLoader" level="WARN"/>
+    <logger name="com.avaje.ebeaninternal.server.core.XmlConfigLoader" level="WARN"/>
+    <logger name="com.avaje.ebeaninternal.server.lib.BackgroundThread" level="WARN"/>
+    <logger name="com.gargoylesoftware.htmlunit.javascript" level="WARN"/>
+
+    <logger name="org.apache" level="WARN"/>
+    <logger name="httpclient" level="WARN"/>
+    <logger name="org.elasticsearch.common" level="WARN"/>
+    <logger name="com.google.inject" level="WARN"/>
+    <logger name="org.elasticsearch.env" level="WARN"/>
+    <logger name="io.netty" level="WARN"/>
+    <logger name="io.swagger" level="INFO"/>
+
+    <root level="DEBUG">
+        <!--<appender-ref ref="ASYNCFILE" />-->
+        <!--<appender-ref ref="SPLUNKSOCKET" />-->
+        <appender-ref ref="ASYNCSTDOUT"/>
+    </root>
+
+</configuration>
