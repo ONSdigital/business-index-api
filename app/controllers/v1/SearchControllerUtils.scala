@@ -7,6 +7,7 @@ import org.elasticsearch.ElasticsearchException
 import org.elasticsearch.client.transport.NoNodeAvailableException
 import play.api.libs.json.{ JsObject, Json }
 import play.api.mvc.{ Controller, Result }
+import services.SearchResponse
 import uk.gov.ons.bi.models.BusinessIndexRec
 
 import scala.annotation.tailrec
@@ -52,17 +53,11 @@ trait SearchControllerUtils extends Controller with StrictLogging {
   }
 
   // response wrapping with extra headers
-  case class SearchData(totalHits: Long, maxScore: Float)
+  //case class SearchData(totalHits: Long, maxScore: Float, businesses:Seq[BusinessIndexRec])
 
-  protected def response(tp: (SearchData, List[BusinessIndexRec])): Result = {
-    val (resp, businesses) = tp
-    businesses match {
-      case _ :: _ => responseWithHTTPHeaders(resp, Ok(biListToJson(businesses.map(_.secured))))
-      case _ => responseWithHTTPHeaders(resp, Ok("{}").as(JSON))
-    }
-  }
+  protected def response(data: SearchResponse): Result = responseWithHTTPHeaders(data, Ok(Json.toJson(data.businesses.map(_.secured))))
 
-  protected def responseWithHTTPHeaders(resp: SearchData, searchResult: Result): Result = {
+  protected def responseWithHTTPHeaders(resp: SearchResponse, searchResult: Result): Result = {
     searchResult.withHeaders(
       "X-Total-Count" -> resp.totalHits.toString,
       "X-Max-Score" -> resp.maxScore.toString

@@ -2,6 +2,7 @@ package uk.gov.ons.bi.models
 
 import java.util
 
+import play.api.libs.json._
 import uk.gov.ons.bi.models.BIndexConsts._
 
 import scala.collection.JavaConverters._
@@ -33,6 +34,26 @@ case class BusinessIndexRec(
 }
 
 object BusinessIndexRec {
+
+  implicit val businessReads = Json.reads[BusinessIndexRec]
+
+  implicit val biWrites = new Writes[BusinessIndexRec] {
+    override def writes(b: BusinessIndexRec): JsValue = {
+      import b._
+      JsObject(Seq(
+        "id" -> Json.toJson(id),
+        "businessName" -> Json.toJson(businessName),
+        "uprn" -> Json.toJson(uprn),
+        "postCode" -> Json.toJson(postCode),
+        "industryCode" -> Json.toJson(industryCode),
+        "legalStatus" -> Json.toJson(legalStatus),
+        "tradingStatus" -> Json.toJson(tradingStatus),
+        "turnover" -> Json.toJson(turnover),
+        "employmentBands" -> Json.toJson(employmentBands),
+        "companyNo" -> Json.toJson(companyNo)
+      ))
+    }
+  }
 
   val Delim = ","
 
