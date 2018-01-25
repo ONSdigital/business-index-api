@@ -44,13 +44,13 @@ object BusinessIndexRec {
         "id" -> Json.toJson(id),
         "businessName" -> Json.toJson(businessName),
         "uprn" -> Json.toJson(uprn),
-        "postCode" -> Json.toJson(postCode),
-        "industryCode" -> Json.toJson(industryCode),
-        "legalStatus" -> Json.toJson(legalStatus),
-        "tradingStatus" -> Json.toJson(tradingStatus),
-        "turnover" -> Json.toJson(turnover),
-        "employmentBands" -> Json.toJson(employmentBands),
-        "companyNo" -> Json.toJson(companyNo)
+        "postCode" -> Json.toJson(postCode.getOrElse("")),
+        "industryCode" -> Json.toJson(industryCode.getOrElse("")),
+        "legalStatus" -> Json.toJson(legalStatus.getOrElse("")),
+        "tradingStatus" -> Json.toJson(tradingStatus.getOrElse("")),
+        "turnover" -> Json.toJson(turnover.getOrElse("")),
+        "employmentBands" -> Json.toJson(employmentBands.getOrElse("")),
+        "companyNo" -> Json.toJson(companyNo.getOrElse(""))
       ))
     }
   }

@@ -35,10 +35,10 @@ object BusinessSearchRequest {
 
   def apply(term: String, request: Request[AnyContent], suggest: Boolean = false) = {
 
-    val offset = Try(request.getQueryString("offset").getOrElse("0").toInt).getOrElse(0)
-    val limit = Try(request.getQueryString("limit").getOrElse("100").toInt).getOrElse(100)
+    val offset = Try(request.getQueryString("offset").get.toInt).getOrElse(0)
+    val limit = Try(request.getQueryString("limit").get.toInt).getOrElse(100)
     val defaultOperator = request.getQueryString("default_operator").getOrElse("AND")
-    val failOnQueryError = Try(request.getQueryString("fail_on_bad_query").getOrElse("true").toBoolean).getOrElse(true)
+    val failOnQueryError = Try(request.getQueryString("fail_on_bad_query").get.toBoolean).getOrElse(true)
 
     new BusinessSearchRequest(term, offset, limit, suggest, defaultOperator)
   }

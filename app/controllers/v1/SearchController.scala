@@ -7,19 +7,14 @@ import com.outworkers.util.catsparsers.{ parse => cparse, _ }
 import com.outworkers.util.play._
 import com.sksamuel.elastic4s._
 import com.typesafe.config.Config
-import controllers.v1.BusinessIndexObj._
 import io.swagger.annotations._
 import nl.grons.metrics.scala.DefaultInstrumented
-import org.apache.commons.lang3.StringUtils
 import play.api.libs.json._
 import play.api.mvc._
-import services.{ BusinessSearchRequest, BusinessService, HBaseCache, SearchResponse }
-import services.JsonHelpers._
-import uk.gov.ons.bi.models.{ BIndexConsts, BusinessIndexRec }
+import services.{ BusinessSearchRequest, BusinessService, HBaseCache }
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.ExecutionContext
 import scala.util.Try
-
 
 /**
  * Contains action for the /v1/search route.
@@ -101,7 +96,7 @@ class SearchController @Inject() (elastic: ElasticClient, val config: Config, se
           }).recover(responseRecover(query, failOnQueryError))
         }
 
-        case _ => BadRequest(errAsJson(400, "missing_query", "No query specified.")).future
+        case _ => BadRequest.future
       }
     }
   }

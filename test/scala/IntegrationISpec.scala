@@ -2,7 +2,6 @@ package scala
 
 import org.scalatestplus.play._
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
-import play.api.libs.json.JsValue
 import play.api.libs.json._
 import uk.gov.ons.bi.models.BusinessIndexRec
 
@@ -117,15 +116,13 @@ class IntegrationISpec extends PlaySpec with GuiceOneServerPerSuite with OneBrow
     "invalid search must generate exception" in {
       go to s"$baseApiUri/v1/search/PostCode:^&%"
       val res = pageSource
-      res must include(""""status":500""")
-      res must include("query_error")
+      res must include(""""ES could not execute query"""")
     }
 
     "invalid search should not generate exception" in {
       go to s"$baseApiUri/v1/search/PostCode:^&%?fail_on_bad_query=false"
       val res = pageSource
-      res must include(""""status":500""")
-      res must include("query_warn")
+      res must include(""""ES could not execute query"""")
     }
 
   }
