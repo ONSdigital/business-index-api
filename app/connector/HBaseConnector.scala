@@ -13,6 +13,8 @@ import scala.annotation.tailrec
 import scala.concurrent.{ ExecutionContext, Future }
 import play.api.Play
 
+import scala.util.{ Failure, Success, Try }
+
 @Singleton
 class HBaseConnector @Inject() (lifecycle: ApplicationLifecycle, config: PlayConfig, envt: play.api.Environment)(implicit context: ExecutionContext) {
 
@@ -43,7 +45,7 @@ class HBaseConnector @Inject() (lifecycle: ApplicationLifecycle, config: PlayCon
 
   def getTable(tableName: String): Table = connection.getTable(TableName.valueOf(tableName))
 
-  private def closeConnection: Future[Unit] = {
+  def closedConnection: Boolean = {
 
     def isClosed(waitingMillis: Long): Boolean = if (!connection.isClosed) {
       wait(waitingMillis)
@@ -51,20 +53,37 @@ class HBaseConnector @Inject() (lifecycle: ApplicationLifecycle, config: PlayCon
     } else true
 
     @tailrec
-    def tryClosing(checkIntervalSec: Long, noOfAttempts: Int): Boolean = {
-      if (noOfAttempts == 0) {
-        logger.warn(s"Could not close HBase connection. Attempted $noOfAttempts times with intervals of $checkIntervalSec millis")
+    def tryClosing(checkIntervalSec: Long, totalNoOfAttempts: Int, noOfAttemprtLeft: Int): Boolean = {
+      if (connection.isClosed) true
+      else if (noOfAttemprtLeft == 0) {
+        logger.warn(s"Could not close HBase connection. Attempted $totalNoOfAttempts times with intervals of $checkIntervalSec millis")
         false
-      } else if (isClosed(checkIntervalSec)) true
-      else tryClosing(checkIntervalSec, noOfAttempts - 1)
+      } else {
+        connection.close
+        if (isClosed(checkIntervalSec)) true
+        else {
+          logger.info(s"trying closing hbase connection. Attempt ${totalNoOfAttempts - noOfAttemprtLeft} of $totalNoOfAttempts")
+          tryClosing(checkIntervalSec, totalNoOfAttempts, noOfAttemprtLeft - 1)
+        }
+      }
     }
 
     val checkIntervalSec: Long = config.getLong("hbase.connection.closeattempt.interval").getOrElse(1000L)
     val noOfAttempts: Int = config.getInt("hbase.connection.closeattempt.number").getOrElse(5)
 
-    Future { tryClosing(checkIntervalSec, noOfAttempts) }
+    tryClosing(checkIntervalSec, noOfAttempts, noOfAttempts)
   }
 
-  lifecycle.addStopHook { () => closeConnection }
+  lifecycle.addStopHook { () =>
+    Future {
+      Try(closedConnection) match {
+        case Success(isConnectionClosed) => if (isConnectionClosed) logger.info("HBase connection successfully closed.")
+        else logger.warn("Could not close HBase connection.")
+        case Failure(e) => logger.warn("Error occurred while closing HBase connection.", e)
+      }
+
+    }
+
+  }
 }
 
