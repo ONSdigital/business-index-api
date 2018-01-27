@@ -7,10 +7,12 @@ import com.typesafe.config.Config
 import com.typesafe.scalalogging.StrictLogging
 import controllers.v1.SearchControllerUtils
 import org.apache.commons.lang3.StringUtils
+import play.api.libs.json._
 import services.{ BusinessSearchRequest, SearchResponse }
 import uk.gov.ons.bi.models.{ BIndexConsts, BusinessIndexRec }
 
 import scala.concurrent.{ ExecutionContext, Future }
+import scala.util.{ Failure, Success, Try }
 
 /**
  *
@@ -18,7 +20,22 @@ import scala.concurrent.{ ExecutionContext, Future }
 class ElasticSearchDao @Inject() (elastic: ElasticClient, config: Config)(implicit context: ExecutionContext) extends ElasticDsl with StrictLogging with SearchControllerUtils {
 
   implicit object BusinessHitAs extends HitAs[BusinessIndexRec] {
-    override def as(hit: RichSearchHit): BusinessIndexRec = BusinessIndexRec.fromMap(hit.id.toLong, hit.sourceAsMap)
+    override def as(hit: RichSearchHit): BusinessIndexRec = {
+      // val bi: Try[BusinessIndexRec] = {
+      val str = hit.sourceAsString
+      val js = Json.parse(str).as[JsObject] + ("id", JsNumber(hit.getId.toLong))
+      Json.fromJson[BusinessIndexRec](js) match {
+        case JsSuccess(buss, _) => buss
+        case JsError(e) => {
+          logger.error(s"failed to create businessIndex from json: ${js.toString}")
+          throw new Exception(s" jason parsing error: ${e.mkString}")
+        }
+
+      }
+
+      //}
+      //bi.getOrElse(BusinessIndexRec.fromMap(hit.id.toLong, hit.sourceAsMap))
+    }
   }
 
   val indexName: String = config.getString("elasticsearch.bi.name").concat("/business")

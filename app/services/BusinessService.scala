@@ -49,10 +49,6 @@ class BusinessService @Inject() (cacheDao: HBaseCacheDao, elasticSearchDao: Elas
 
   private[this] val totalHitsHistogram = metrics.histogram("totalHits", "es-searches")
 
-  implicit object BusinessHitAs extends HitAs[BusinessIndexRec] {
-    override def as(hit: RichSearchHit): BusinessIndexRec = BusinessIndexRec.fromMap(hit.id.toLong, hit.sourceAsMap)
-  }
-
   def find(searchRequest: BusinessSearchRequest): Future[SearchResponse] = if (conf.getBoolean("hbase.caching.enabled")) cacheDao.getFromCache(searchRequest.term).flatMap(_ match {
     case Some(s) => Future(SearchResponse(parse(s)))
     case None => elasticSearchDao.listBusinessesByQuery(searchRequest).flatMap(res => cacheDao.updateCache(searchRequest.term, Json.toJson(res.businesses).toString()).map(_ => res))

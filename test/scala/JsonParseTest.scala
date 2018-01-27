@@ -11,17 +11,29 @@ class JsonParseTest extends FlatSpec with Matchers {
 
   private[this] val fullJson =
     """
-      |{"id":85282744,"businessName":"BI (2018) LIMITED","uprn":977146940701,"postCode":"SE","industryCode":null,"legalStatus":"1","tradingStatus":"A","turnover":"B","employmentBands":"E"}
+      |{"id":85282744,"BusinessName":"BI (2018) LIMITED","UPRN":977146940701,"PostCode":"SE","IndustryCode":null,"LegalStatus":"1","TradingStatus":"A","Turnover":"B","EmploymentBands":"E"}
     """.stripMargin
 
   private[this] val smallerJson =
-    """{"id":85282745,"businessName":"BI (2018) LIMITED","uprn":977146940701,"postCode":"SE","industryCode":"42751","legalStatus":"1"}"""
+    """{"id":85282745,"BusinessName":"BI (2018) LIMITED","UPRN":977146940701,"PostCode":"SE","IndustryCode":"42751","LegalStatus":"1"}"""
 
   private[this] val smallerBiRec = BusinessIndexRec(85282745, "BI (2018) LIMITED", Some(977146940701L), Some("SE"), Some("42751"), Some("1"),
     None, None, None, None, None, None)
 
   private[this] val smallerExtendedJson =
-    """{"id":85282745,"businessName":"BI (2018) LIMITED","uprn":977146940701,"postCode":"SE","industryCode":"42751","legalStatus":"1","tradingStatus":"","turnover":"","employmentBands":"","companyNo":""}"""
+    """{"id":85282745,"BusinessName":"BI (2018) LIMITED","UPRN":977146940701,"PostCode":"SE","IndustryCode":"42751","LegalStatus":"1","TradingStatus":"","Turnover":"","EmploymentBands":"","CompanyNo":""}"""
+
+  private[this] val jsonWithEmptyListRefs =
+    """{"id":85282745,"BusinessName":"BI (2018) LIMITED","UPRN":977146940701,"PostCode":"SE","IndustryCode":"42751","LegalStatus":"1","TradingStatus":"","Turnover":"","EmploymentBands":"","VatRefs":[],"PayeRefs":[],"CompanyNo":""}"""
+
+  private val biWithEmptyRefs = BusinessIndexRec(85282745, "BI (2018) LIMITED", Some(977146940701L), Some("SE"), Some("42751"), Some("1"),
+    None, None, None, Some(Seq.empty), Some(Seq.empty), None)
+
+  private[this] val jsonWithNoneRefs =
+    """{"id":85282745,"BusinessName":"BI (2018) LIMITED","UPRN":977146940701,"PostCode":"SE","IndustryCode":"42751","LegalStatus":"1","TradingStatus":"","Turnover":"","EmploymentBands":"","CompanyNo":""}"""
+
+  private val biWithNoneRefs = BusinessIndexRec(85282745, "BI (2018) LIMITED", Some(977146940701L), Some("SE"), Some("42751"), Some("1"),
+    None, None, None, None, None, None)
 
   "It" should "create proper json" in {
     Json.fromJson[BusinessIndexRec](Json.parse(fullJson)).get.id shouldBe 85282744
@@ -39,6 +51,26 @@ class JsonParseTest extends FlatSpec with Matchers {
 
   "It" should "produce some empty values in smaller json" in {
     Json.toJson(smallerBiRec).toString() shouldBe smallerExtendedJson
+  }
+
+  "It" should "produce some option of empty seq for json entries \"VatRefs\":[],\"PayeRefs\":[]" in {
+    val js = Json.parse(jsonWithEmptyListRefs)
+    Json.fromJson[BusinessIndexRec](js).get shouldBe biWithEmptyRefs
+  }
+
+  "It" should "produce none option for absent json entries VatRefs and PayeRefs" in {
+    val js = Json.parse(jsonWithNoneRefs)
+    Json.fromJson[BusinessIndexRec](js).get shouldBe biWithNoneRefs
+  }
+
+  "It" should "produce json without entries VatRefs and PayeRefs when mapped from BI none" in {
+    val biJson = Json.toJson(biWithNoneRefs)
+    biJson.toString shouldBe jsonWithNoneRefs
+  }
+
+  "It" should "produce json without entries VatRefs and PayeRefs when mapped from BI empty lists" in {
+    val biJson = Json.toJson(biWithEmptyRefs)
+    biJson.toString shouldBe jsonWithEmptyListRefs
   }
 
 }

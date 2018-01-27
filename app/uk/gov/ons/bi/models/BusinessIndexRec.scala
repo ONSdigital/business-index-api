@@ -6,7 +6,15 @@ import play.api.libs.json._
 import uk.gov.ons.bi.models.BIndexConsts._
 
 import scala.collection.JavaConverters._
-
+import play.api.libs.functional.syntax._
+/*mapping rules:
+* for all non-collection optional fields:
+*    obj -> json: None -> "" ("key":"" - empty string value)
+*    json -> obj: all entries with empty string values mapped to None
+* for optional collection-valued fields
+*    obj -> json: None -> None (no entries added to json)
+*    json -> obj: empty collection -> Option of empty collection ([] -> Some(Seq.empty))
+*    */
 case class BusinessIndexRec(
     id: Long, // the same as uprn ?
     businessName: String,
@@ -35,23 +43,49 @@ case class BusinessIndexRec(
 
 object BusinessIndexRec {
 
-  implicit val businessReads = Json.reads[BusinessIndexRec]
+  def mapStrOption(opt: Option[String]): Option[String] = opt match {
+    case Some(str) if (!str.trim.isEmpty) => opt
+    case _ => None
+  }
 
-  implicit val biWrites = new Writes[BusinessIndexRec] {
+  implicit val businessReads = (
+    (JsPath \ "id").read[Long] and
+    (JsPath \ "BusinessName").read[String] and
+    (JsPath \ "UPRN").readNullable[Long] and
+    (JsPath \ "PostCode").readNullable[String] and
+    (JsPath \ "IndustryCode").readNullable[String] and
+    (JsPath \ "LegalStatus").readNullable[String] and
+    (JsPath \ "TradingStatus").readNullable[String] and
+    (JsPath \ "Turnover").readNullable[String] and
+    (JsPath \ "EmploymentBands").readNullable[String] and
+    (JsPath \ "VatRefs").readNullable[Seq[Long]] and
+    (JsPath \ "PayeRefs").readNullable[Seq[String]] and
+    (JsPath \ "CompanyNo").readNullable[String]
+  )((id, businessName, uprn, postcode, industryCode, legalstatus, radingstatus, turnover, employmentbands, vatrefs, payerefs, companyno) =>
+      BusinessIndexRec.apply(id, businessName, uprn, mapStrOption(postcode), mapStrOption(industryCode),
+        mapStrOption(legalstatus), mapStrOption(radingstatus), mapStrOption(turnover), mapStrOption(employmentbands),
+        vatrefs,
+        payerefs,
+        mapStrOption(companyno)))
+
+  implicit val biWrites = new Writes[BusinessIndexRec] { //writes use only for hbase caching
     override def writes(b: BusinessIndexRec): JsValue = {
       import b._
+      //JsObject()
       JsObject(Seq(
         "id" -> Json.toJson(id),
-        "businessName" -> Json.toJson(businessName),
-        "uprn" -> Json.toJson(uprn),
-        "postCode" -> Json.toJson(postCode.getOrElse("")),
-        "industryCode" -> Json.toJson(industryCode.getOrElse("")),
-        "legalStatus" -> Json.toJson(legalStatus.getOrElse("")),
-        "tradingStatus" -> Json.toJson(tradingStatus.getOrElse("")),
-        "turnover" -> Json.toJson(turnover.getOrElse("")),
-        "employmentBands" -> Json.toJson(employmentBands.getOrElse("")),
-        "companyNo" -> Json.toJson(companyNo.getOrElse(""))
-      ))
+        "BusinessName" -> Json.toJson(businessName),
+        "UPRN" -> Json.toJson(uprn),
+        "PostCode" -> Json.toJson(postCode.getOrElse("")),
+        "IndustryCode" -> Json.toJson(industryCode.getOrElse("")),
+        "LegalStatus" -> Json.toJson(legalStatus.getOrElse("")),
+        "TradingStatus" -> Json.toJson(tradingStatus.getOrElse("")),
+        "Turnover" -> Json.toJson(turnover.getOrElse("")),
+        "EmploymentBands" -> Json.toJson(employmentBands.getOrElse("")),
+        vatRefs.map(vr => ("VatRefs" -> Json.toJson(vr))).getOrElse(null),
+        payeRefs.map(pr => ("PayeRefs" -> Json.toJson(pr))).getOrElse(null),
+        "CompanyNo" -> Json.toJson(companyNo.getOrElse(""))
+      ).filter(_ != null))
     }
   }
 
