@@ -116,9 +116,7 @@ class IntegrationISpec extends PlaySpec with GuiceOneServerPerSuite with OneBrow
 
     "invalid search should not generate exception" in {
       go to s"$baseApiUri/v1/search/PostCode:^&%?fail_on_bad_query=false"
-      val res = pageSource
-      println(res.toString)
-      res must include(""""ES could not execute query"""")
+      pageSource must include(""""ES could not execute query"""")
     }
 
   }
