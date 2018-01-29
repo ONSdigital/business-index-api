@@ -39,6 +39,8 @@ case class BusinessIndexRec(
   def toCsv: String = BusinessIndexRec.toString(List(id, businessName, uprn, industryCode, legalStatus,
     tradingStatus, turnover, employmentBands, vatRefs.map(seq => seq.mkString(",")), payeRefs.map(seq => seq.mkString(",")), companyNo))
 
+  def blankFieldsForNameSearch = this.copy(uprn = None, vatRefs = None, payeRefs = None)
+
 }
 
 object BusinessIndexRec {
