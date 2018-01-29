@@ -85,7 +85,7 @@ object BusinessIndexRec {
         "Turnover" -> Json.toJson(turnover.getOrElse("")),
         "EmploymentBands" -> Json.toJson(employmentBands.getOrElse("")),
         vatRefs.map(vr => ("VatRefs" -> Json.toJson(vr))).getOrElse(null),
-        payeRefs.map(pr => ("PayeRefs" -> Json.toJson(pr))).getOrElse(null),
+        payeRefs.map(pr => ("PayeRefs" -> Json.toJson(pr.filterNot(_.trim.isEmpty)))).getOrElse(null),
         "CompanyNo" -> Json.toJson(companyNo.getOrElse(""))
       ).filter(_ != null))
     }
