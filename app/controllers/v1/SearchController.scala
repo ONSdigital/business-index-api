@@ -92,7 +92,7 @@ class SearchController @Inject() (elastic: ElasticClient, val config: Config, se
           // if suggest, match on the BusinessName only, else assume it's an ElasticSearch query
           service.find(searchRequest).map(resp => {
             if (!resp.isEmpty) totalHitsHistogram += resp.totalHits
-            response(resp)
+            response(resp.copy(businesses = resp.businesses.map(_.blankFieldsForNameSearch)))
           }).recover(responseRecover(query, failOnQueryError))
         }
 
