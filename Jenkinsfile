@@ -1,5 +1,5 @@
 #!groovy
-@Library('jenkins-pipeline-shared@feature/new-cf') _
+@Library('jenkins-pipeline-shared@master') _
 
 pipeline {
     environment {
