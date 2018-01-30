@@ -35,15 +35,16 @@ class ApplicationSpec extends PlaySpec with OneAppPerTest {
   }
 
   "SearchController" should {
-    "return 404 when no query" in {
+    "return 400 when no query" in {
       val search = fakeRequest("/v1/search")
       status(search) mustBe BAD_REQUEST
     }
 
-    "return NoContent when no data" in {
-      val search = fakeRequest("/v1/business/9011")
-      status(search) mustBe NO_CONTENT
-    }
+    "return NoContent when no data" in
+      {
+        val search = fakeRequest("/v1/business/9011")
+        status(search) mustBe NO_CONTENT
+      }
 
     "return 500 when on bad es query" in {
       val search = fakeRequest("/v1/search/PostCode:^&%")
