@@ -24,3 +24,14 @@ object JsonHelpers {
   }
 
 }
+
+/*
+object WriteWithOptions extends DefaultWrites {
+
+  override def OptionWrites[T](implicit fmt: Writes[T]): Writes[Option[T]] = (o: Option[T]) => {
+    o match {
+      case Some(a) => Json.toJson(a)(fmt)
+      case None => JsNull
+    }
+  }
+}*/

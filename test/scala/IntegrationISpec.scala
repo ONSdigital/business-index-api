@@ -1,8 +1,10 @@
 package scala
 
-import controllers.v1.BusinessIndexObj._
 import org.scalatestplus.play._
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
+import play.api.libs.json._
+import play.api.test.Helpers.status
+import uk.gov.ons.bi.models.BusinessIndexRec
 
 class IntegrationISpec extends PlaySpec with GuiceOneServerPerSuite with OneBrowserPerSuite with HtmlUnitFactory {
 
@@ -33,7 +35,7 @@ class IntegrationISpec extends PlaySpec with GuiceOneServerPerSuite with OneBrow
     "get by id" in {
       val id = 21840175L
       go to s"$baseApiUri/v1/business/$id"
-      val rec = biFromJson(pageSource)
+      val rec = Json.fromJson[BusinessIndexRec](Json.parse(pageSource)).get
       rec.id mustBe id
     }
 
@@ -109,26 +111,17 @@ class IntegrationISpec extends PlaySpec with GuiceOneServerPerSuite with OneBrow
     "empty results returns properly" in {
       go to s"$baseApiUri/v1/search/PostCode:UNEXISTED"
       val res = pageSource
-      res must be("{}")
-    }
-
-    "invalid search must generate exception" in {
-      go to s"$baseApiUri/v1/search/PostCode:^&%"
-      val res = pageSource
-      res must include(""""status":500""")
-      res must include("query_error")
+      res must be("[]")
     }
 
     "invalid search should not generate exception" in {
       go to s"$baseApiUri/v1/search/PostCode:^&%?fail_on_bad_query=false"
-      val res = pageSource
-      res must include(""""status":500""")
-      res must include("query_warn")
+      pageSource must include(""""ES could not execute query"""")
     }
 
   }
 
-  private def extractData(s: String) = biListFromJson(s)
+  private def extractData(s: String) = Json.fromJson[List[BusinessIndexRec]](Json.parse(s)).get
 
   private def extractFirstData(s: String) = extractData(s).headOption.getOrElse(sys.error(s"no business data returned by elastic: $s"))
 }

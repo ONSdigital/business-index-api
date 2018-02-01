@@ -7,7 +7,6 @@ import ch.qos.logback.classic.LoggerContext
 import ch.qos.logback.core.FileAppender
 import com.sksamuel.elastic4s.{ ElasticClient, ElasticDsl }
 import com.typesafe.config.Config
-import controllers.v1.BusinessIndexObj._
 import io.swagger.annotations.Api
 import nl.grons.metrics.scala.DefaultInstrumented
 import org.slf4j.LoggerFactory
@@ -19,6 +18,7 @@ import uk.gov.ons.bi.models.BusinessIndexRec
 
 import scala.collection.JavaConverters._
 import scala.concurrent.{ ExecutionContext, Future }
+import scala.util.{ Failure, Success }
 
 /**
  * Created by Volodymyr.Glushak on 06/04/2017.
@@ -59,8 +59,11 @@ class PutController @Inject() (elastic: ElasticClient, val config: Config)(
         case AnyContentAsJson(jsonStr) => jsonStr
         case _ => sys.error(s"Unsupported input type ${request.body}")
       }
+      json.validate[BusinessIndexRec] match {
+        case JsSuccess(bussn, _) => storeImpl(bussn).map(x => Ok(x.toString))
+        case JsError(err) => sys.error(s"Unable to parse business index JSON ${json.toString} -> $err")
+      }
 
-      storeImpl(biFromJson(json)).map(x => Ok(x.toString))
     }
   }
 

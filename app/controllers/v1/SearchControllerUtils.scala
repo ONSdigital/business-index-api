@@ -2,38 +2,24 @@ package controllers.v1
 
 import com.sksamuel.elastic4s.RichGetResponse
 import com.typesafe.scalalogging.StrictLogging
-import controllers.v1.BusinessIndexObj._
 import org.elasticsearch.ElasticsearchException
 import org.elasticsearch.client.transport.NoNodeAvailableException
-import play.api.libs.json.{ JsObject, Json }
+import play.api.libs.json.Json
 import play.api.mvc.{ Controller, Result }
+import services.SearchResponse
 import uk.gov.ons.bi.models.BusinessIndexRec
-
 import scala.annotation.tailrec
 import scala.collection.JavaConverters._
 import scala.concurrent.Future
 import scala.util.control.NonFatal
 import scala.util.{ Failure, Success, Try }
 
-/**
- * Created by Volodymyr.Glushak on 22/03/2017.
- */
 trait SearchControllerUtils extends Controller with StrictLogging {
 
   @tailrec
-  final protected def buildErrMsg(x: Throwable, msgs: List[String] = Nil): String = {
-    Option(x.getCause) match {
-      case None => (x.getMessage :: msgs).reverse.mkString(" ")
-      case Some(ex) => buildErrMsg(ex, x.getMessage :: msgs)
-    }
-  }
-
-  protected def errAsJson(status: Int, code: String, msg: String): JsObject = {
-    Json.obj(
-      "status" -> status,
-      "code" -> code,
-      "message_en" -> msg
-    )
+  final protected def buildErrMsg(x: Throwable, msgs: List[String] = Nil): String = Option(x.getCause) match {
+    case None => (x.getMessage :: msgs).reverse.mkString(" ")
+    case Some(ex) => buildErrMsg(ex, x.getMessage :: msgs)
   }
 
   private[this] def isElasticFailed(ex: Throwable): Boolean = Option(ex.getCause).exists {
@@ -42,27 +28,20 @@ trait SearchControllerUtils extends Controller with StrictLogging {
   }
 
   protected[this] def responseRecover(query: String, failOnQueryError: Boolean): PartialFunction[Throwable, Result] = {
-    case e: NoNodeAvailableException => ServiceUnavailable(errAsJson(503, "es_down", buildErrMsg(e)))
+    case e: NoNodeAvailableException => ServiceUnavailable
     case e: RuntimeException if isElasticFailed(e) =>
-      def err(txt: String) = errAsJson(500, txt, s"Can not perform search for request: $query")
-      if (failOnQueryError) InternalServerError(err("query_error")) else Ok(err("query_warn"))
+      if (failOnQueryError) InternalServerError else Ok(s"""{"queryerror":"ES could not execute query","query":"$query"}""")
     case NonFatal(e) =>
       logger.error(s"Internal error ${e.getMessage}", e)
-      InternalServerError(errAsJson(500, "internal_error", buildErrMsg(e)))
+      InternalServerError
   }
 
   // response wrapping with extra headers
-  case class SearchData(totalHits: Long, maxScore: Float)
+  //case class SearchData(totalHits: Long, maxScore: Float, businesses:Seq[BusinessIndexRec])
 
-  protected def response(tp: (SearchData, List[BusinessIndexRec])): Result = {
-    val (resp, businesses) = tp
-    businesses match {
-      case _ :: _ => responseWithHTTPHeaders(resp, Ok(biListToJson(businesses.map(_.secured))))
-      case _ => responseWithHTTPHeaders(resp, Ok("{}").as(JSON))
-    }
-  }
+  protected def response(data: SearchResponse): Result = responseWithHTTPHeaders(data, Ok(Json.toJson(data.businesses.map(_.secured))))
 
-  protected def responseWithHTTPHeaders(resp: SearchData, searchResult: Result): Result = {
+  protected def responseWithHTTPHeaders(resp: SearchResponse, searchResult: Result): Result = {
     searchResult.withHeaders(
       "X-Total-Count" -> resp.totalHits.toString,
       "X-Max-Score" -> resp.maxScore.toString

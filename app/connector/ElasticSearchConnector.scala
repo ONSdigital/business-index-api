@@ -1,0 +1,8 @@
+package connector
+
+/**
+ *
+ */
+class ElasticSearchConnector {
+
+}

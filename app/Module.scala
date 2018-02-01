@@ -30,7 +30,7 @@ class Module(environment: Environment, configuration: Configuration) extends Abs
 
   override def configure(): Unit = {
 
-    val config = BiConfigManager.envConf(ConfigFactory.load())
+    val config: Config = BiConfigManager.envConf(ConfigFactory.load())
 
     val elasticSearchClient = ElasticClientBuilder.build(config)
 

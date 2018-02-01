@@ -2,7 +2,7 @@ package scala
 
 import java.io.File
 
-import controllers.v1.BusinessIndexObj._
+import play.api.libs.json._
 import controllers.v1.OpStatus
 import controllers.v1.OpStatus._
 import org.apache.commons.io.FileUtils
@@ -34,15 +34,15 @@ class ModifyAppSpec extends PlaySpec with GuiceOneServerPerSuite with OneBrowser
 
     "store new, update and then remove it" in {
       val bir = BusinessIndexRec(90001, "name", None, None, None, None, None, None, None, None, None, None)
-      val response = doRequest(FakeRequest("PUT", "/v1/store").withBody(biToJson(bir).toString()))
+      val response = doRequest(FakeRequest("PUT", "/v1/store").withBody(Json.toJson(bir).toString()))
       status(response) mustBe OK
       opFromJson(contentAsString(response)) mustBe opCreate("90001", true)
 
-      val response0 = doRequest(FakeRequest("PUT", "/v1/store").withJsonBody(biToJson(bir)))
+      val response0 = doRequest(FakeRequest("PUT", "/v1/store").withJsonBody(Json.toJson(bir)))
       status(response0) mustBe OK
       opFromJson(contentAsString(response0)) mustBe opUpdate("90001", true)
 
-      val response01 = doRequest(FakeRequest("PUT", "/v1/store").withTextBody(biToJson(bir).toString))
+      val response01 = doRequest(FakeRequest("PUT", "/v1/store").withTextBody(Json.toJson(bir).toString))
       status(response01) mustBe OK
       opFromJson(contentAsString(response01)) mustBe opUpdate("90001", true)
 
@@ -58,7 +58,7 @@ class ModifyAppSpec extends PlaySpec with GuiceOneServerPerSuite with OneBrowser
       // This test tests the OPTIONS route.
       // Before a PUT/DELETE request on the API when it is running locally, requests are preceded by
       // an OPTIONS request which is dealt with by returning Ok("").
-      val localResponse = doRequest(FakeRequest("OPTIONS", "/v1/store").withJsonBody(biToJson(bir)))
+      val localResponse = doRequest(FakeRequest("OPTIONS", "/v1/store").withJsonBody(Json.toJson(bir)))
       status(localResponse) mustBe OK
     }
 
