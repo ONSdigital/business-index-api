@@ -33,7 +33,7 @@ class HBaseConnector @Inject() (lifecycle: ApplicationLifecycle, config: PlayCon
    */
   val env = sys.props.get("environment").getOrElse("default")
 
-  private val envvv = config.getConfig(s"env.$env.hbase.zookeeper") //.get.getString("quorum")
+  private val envvv = config.getConfig(s"env.$env.hbase.zookeeper")
 
   val zk = envvv.flatMap(e => e.getString("quorum")).getOrElse {
     throw new Exception("no config entry for 'hbase.zookeeper.quorum'")
