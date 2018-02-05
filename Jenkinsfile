@@ -51,7 +51,7 @@ pipeline {
                 script {
                     env.NODE_STAGE = "Build"
                     sh '''
-                        $SBT clean compile universal:packageBin box:test
+                        $SBT clean compile universal:packageBin coverage test coverageReport
                     '''
                     stash name: 'compiled'
                     if (BRANCH_NAME == BRANCH_DEV) {
