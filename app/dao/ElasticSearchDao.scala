@@ -7,10 +7,10 @@ import com.typesafe.config.Config
 import com.typesafe.scalalogging.StrictLogging
 import controllers.v1.SearchControllerUtils
 import play.api.libs.json._
-import services.{BusinessSearchRequest, SearchResponse}
-import uk.gov.ons.bi.models.{BIndexConsts, BusinessIndexRec}
+import services.{ BusinessSearchRequest, SearchResponse }
+import uk.gov.ons.bi.models.{ BIndexConsts, BusinessIndexRec }
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 
 /**
  *
