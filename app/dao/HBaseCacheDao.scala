@@ -8,8 +8,8 @@ import org.apache.hadoop.hbase.client._
 import org.apache.hadoop.hbase.util.Bytes
 import org.slf4j.LoggerFactory
 
-import scala.concurrent.{ ExecutionContext, Future }
-import scala.util.{ Success, Try }
+import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Try
 
 //@Singleton
 class HBaseCacheDao @Inject() (connector: HBaseConnector)(implicit context: ExecutionContext) {
