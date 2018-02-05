@@ -87,7 +87,7 @@ lazy val commonSettings =
   * This is why we separate parsers in their own entity, to make sure they are not compiled together
   * with any module that attempts to use them.
   */
-lazy val root = (project in file("."))
+lazy val api = (project in file("."))
   .enablePlugins(BuildInfoPlugin, PlayScala)
   .configs(BoxTest)
   .settings(commonSettings,
