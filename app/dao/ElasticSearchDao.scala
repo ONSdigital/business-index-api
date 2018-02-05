@@ -6,13 +6,11 @@ import com.sksamuel.elastic4s._
 import com.typesafe.config.Config
 import com.typesafe.scalalogging.StrictLogging
 import controllers.v1.SearchControllerUtils
-import org.apache.commons.lang3.StringUtils
 import play.api.libs.json._
-import services.{ BusinessSearchRequest, SearchResponse }
-import uk.gov.ons.bi.models.{ BIndexConsts, BusinessIndexRec }
+import services.{BusinessSearchRequest, SearchResponse}
+import uk.gov.ons.bi.models.{BIndexConsts, BusinessIndexRec}
 
-import scala.concurrent.{ ExecutionContext, Future }
-import scala.util.{ Failure, Success, Try }
+import scala.concurrent.{ExecutionContext, Future}
 
 /**
  *
@@ -49,7 +47,6 @@ class ElasticSearchDao @Inject() (elastic: ElasticClient, config: Config)(implic
 
   def listBusinessesByQuery(searchRequest: BusinessSearchRequest): Future[SearchResponse] = {
     import searchRequest._
-    import searchRequest.term
 
     val definition = if (suggest) {
       matchQuery(BIndexConsts.cBiName, query)

@@ -3,7 +3,6 @@ package scala
 import org.scalatestplus.play._
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.libs.json._
-import play.api.test.Helpers.status
 import uk.gov.ons.bi.models.BusinessIndexRec
 
 class IntegrationISpec extends PlaySpec with GuiceOneServerPerSuite with OneBrowserPerSuite with HtmlUnitFactory {

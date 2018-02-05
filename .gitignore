@@ -19,4 +19,4 @@ src_managed/
 project/boot/
 project/plugins/project/
 
-api/src/main/scala/data/
+src/main/scala/data/

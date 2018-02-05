@@ -1,8 +1,0 @@
-package connector
-
-/**
- *
- */
-class ElasticSearchConnector {
-
-}
