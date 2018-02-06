@@ -11,9 +11,9 @@ lazy val Versions = new {
 
 // special configuration for black box tests: integration tests of real server
 // all Test classes with name ends ITest or ISpec can be run on real server
-/*lazy val BoxTest = config("box") extend Test
+lazy val BoxTest = config("box") extend Test
 
-def boxFilter(name: String): Boolean = (name endsWith "ITest") || (name endsWith "ISpec")*/
+def boxFilter(name: String): Boolean = (name endsWith "ITest") || (name endsWith "ISpec")
 
 def unitFilter(name: String): Boolean = (name endsWith "Test") || (name endsWith "Spec")  // && !boxFilter(name)
 
@@ -51,7 +51,7 @@ lazy val commonSettings =
     Resolver.bintrayRepo("outworkers", "oss-releases"),
     "splunk" at "http://splunk.artifactoryonline.com/splunk/ext-releases-local"
   ),
-  //testOptions in BoxTest := Seq(Tests.Filter(boxFilter)),
+  testOptions in BoxTest := Seq(Tests.Filter(boxFilter)),
   testOptions in Test := Seq(Tests.Filter(unitFilter)),
   coverageExcludedPackages := ".*Routes.*;.*ReverseRoutes.*;.*javascript.*",
     scalacOptions in ThisBuild ++= Seq(
@@ -89,10 +89,9 @@ lazy val commonSettings =
   */
 lazy val api = (project in file("."))
   .enablePlugins(BuildInfoPlugin, PlayScala)
-  .configs(IntegrationTest)
-   .settings(Defaults.itSettings,
-  /*.settings(commonSettings,
-    inConfig(BoxTest)(Defaults.testTasks),*/
+  .configs(BoxTest)
+  .settings(commonSettings,
+    inConfig(BoxTest)(Defaults.testTasks),
     name := "ons-business-index-api",
     scalaVersion := "2.11.8",
     buildInfoPackage := "controllers",
@@ -100,9 +99,9 @@ lazy val api = (project in file("."))
       "Hadoop Releases" at "https://repository.cloudera.com/content/repositories/releases/"
     ),
     javaOptions in Test ++= Seq("-Denvironment=test","-Dsample.folder=test") ++ sys.props.map { case (k,v) => s"-D$k=$v" },
-    //javaOptions in BoxTest ++= Seq("-Dintegration.test=true"),
+    javaOptions in BoxTest ++= Seq("-Dintegration.test=true"),
     fork in run := true,
-    //fork in BoxTest := true,
+    fork in BoxTest := true,
     buildInfoKeys ++= Seq[BuildInfoKey](
       resolvers,
       libraryDependencies,
