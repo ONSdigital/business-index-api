@@ -209,7 +209,6 @@ pipeline {
                     env.NODE_STAGE = "Integration Tests"
                 }
                 unstash 'compiled'
-                //sh "$SBT box:test -Dtest.server=http://localhost:9000"
                 sh "$SBT it:test"
                 colourText("success", 'Integration Tests - For Release or Dev environment.')
             }
