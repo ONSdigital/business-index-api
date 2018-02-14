@@ -209,7 +209,7 @@ pipeline {
                     env.NODE_STAGE = "Integration Tests"
                 }
                 unstash 'compiled'
-                sh "$SBT it:test"
+                sh "$SBT box:test"
                 colourText("success", 'Integration Tests - For Release or Dev environment.')
             }
         }

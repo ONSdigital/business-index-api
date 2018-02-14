@@ -13,7 +13,7 @@ lazy val Versions = new {
 // all Test classes with name ends ITest or ISpec can be run on real server
 lazy val BoxTest = config("box") extend Test
 
-def boxFilter(name: String): Boolean = (name endsWith "ITest") || (name endsWith "ISpec")
+//def boxFilter(name: String): Boolean = (name endsWith "ITest") || (name endsWith "ISpec")
 
 def unitFilter(name: String): Boolean = (name endsWith "Test") || (name endsWith "Spec")  // && !boxFilter(name)
 
@@ -51,7 +51,7 @@ lazy val commonSettings =
     Resolver.bintrayRepo("outworkers", "oss-releases"),
     "splunk" at "http://splunk.artifactoryonline.com/splunk/ext-releases-local"
   ),
-  testOptions in BoxTest := Seq(Tests.Filter(boxFilter)),
+  testOptions in BoxTest := Seq(Tests.Filter(_.endsWith("ISpec"))),
   testOptions in Test := Seq(Tests.Filter(unitFilter)),
   coverageExcludedPackages := ".*Routes.*;.*ReverseRoutes.*;.*javascript.*",
     scalacOptions in ThisBuild ++= Seq(
