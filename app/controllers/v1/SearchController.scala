@@ -12,14 +12,17 @@ import io.swagger.annotations._
 import nl.grons.metrics.scala.DefaultInstrumented
 import java.util
 
+//import com.sksamuel.elastic4s.{ QueryStringQueryDefinition, SearchDefinition }
+import com.sksamuel.elastic4s.searches.SearchDefinition
+import com.sksamuel.elastic4s.searches.queries.QueryStringQueryDefinition
 import play.api.libs.json
 import play.api.libs.json._
 
 import scala.collection.JavaConverters._
 import play.api.mvc._
 import play.api.libs.json._
-import services.HBaseCache
-import uk.gov.ons.bi.models.BusinessIndexRec
+import services.{ BusinessSearchRequest, HBaseCache }
+import uk.gov.ons.bi.models.{ BIndexConsts, BusinessIndexRec }
 
 import scala.concurrent.ExecutionContext
 import scala.util.Try
@@ -112,38 +115,46 @@ class SearchController @Inject() (elastic: HttpClient, val config: Config)(impli
   def searchBusiness(@ApiParam(value = "Query to elastic search") term: Option[String]): Action[AnyContent] = {
     Action.async { implicit request =>
       val searchTerm = term.orElse(request.getQueryString("q")).orElse(request.getQueryString("query"))
-      //      searchTerm match {
-      //        case Some(query) if query.length > 0 => {
-      //          val searchRequest = BusinessSearchRequest(query, request)
-      //          // if suggest, match on the BusinessName only, else assume it's an ElasticSearch query
-      //          service.find(searchRequest).map(resp => {
-      //            if (!resp.isEmpty) totalHitsHistogram += resp.totalHits
-      //            response(resp.copy(businesses = resp.businesses.map(_.blankFieldsForNameSearch)))
-      //          }).recover(responseRecover(query, failOnQueryError))
-      //        }
 
-      // requestMeter.mark()
-      //
-      //      val searchTerm = term.orElse(request.getQueryString("q")).orElse(request.getQueryString("query"))
-      //
-      //      val offset = Try(request.getQueryString("offset").getOrElse("0").toInt).getOrElse(0)
-      //      val limit = Try(request.getQueryString("limit").getOrElse("100").toInt).getOrElse(100)
-      //      val defaultOperator = request.getQueryString("default_operator").getOrElse("AND")
-      //      val failOnQueryError = Try(request.getQueryString("fail_on_bad_query").getOrElse("true").toBoolean).getOrElse(true)
-      //
-      //      searchTerm match {
-      //        case Some(query) if query.length > 0 => {
-      //          val searchRequest = BusinessSearchRequest(query, request, suggest)
-      //          // if suggest, match on the BusinessName only, else assume it's an ElasticSearch query
-      //          service.find(searchRequest).map(resp => {
-      //            if (!resp.isEmpty) totalHitsHistogram += resp.totalHits
-      //            response(resp.copy(businesses = resp.businesses.map(_.blankFieldsForNameSearch)))
-      //          }).recover(responseRecover(query, failOnQueryError))
-      //        }
-      //
-      //        case _ => BadRequest.future
-      //      }
-      Ok.future
+      val offset = Try(request.getQueryString("offset").getOrElse("0").toInt).getOrElse(0)
+      val limit = Try(request.getQueryString("limit").getOrElse("100").toInt).getOrElse(100)
+      val defaultOperator = request.getQueryString("default_operator").getOrElse("AND")
+      val failOnQueryError = Try(request.getQueryString("fail_on_bad_query").getOrElse("true").toBoolean).getOrElse(true)
+
+      searchTerm match {
+        case Some(query) if query.length > 0 => {
+          val searchRequest = BusinessSearchRequest(query, request, false)
+
+          val definition = if (searchRequest.suggest) {
+            matchQuery(BIndexConsts.cBiName, query)
+          } else {
+            QueryStringQueryDefinition(searchRequest.term).defaultOperator(searchRequest.defaultOperator)
+          }
+          val s: SearchDefinition = search(indexName)
+          val withQuery = s.query(definition)
+          val started = withQuery.start(searchRequest.offset)
+          val limited: SearchDefinition = started.limit(searchRequest.limit)
+
+          elastic.execute(limited).map { resp =>
+            resp match {
+              case Right(r: RequestSuccess[SearchResponse]) => {
+                val b = r.result.hits.hits.toList.map(x => {
+                  x.id
+                  logger.error(s"x is: ${x.id}")
+                })
+                //                b
+                //                val hhh = b.hits.toList
+                //                hhh
+                //                logger.error(s"hhh is:: ${hhh.head}")
+                logger.error(s"search hits:: ${b.head}")
+                Ok
+              }
+              case Left(f: RequestFailure) => InternalServerError
+            }
+          }
+        }
+        case _ => BadRequest.future
+      }
     }
   }
 }
