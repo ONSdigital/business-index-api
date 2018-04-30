@@ -70,41 +70,13 @@ class SearchController @Inject() (elastic: HttpClient, val config: Config)(impli
     httpMethod = "GET"
   )
   def searchBusinessById(@ApiParam(value = "UBRN to search") id: String): Action[AnyContent] = Action.async {
-    //    cparse[Long](id) fold (_.response.future, value =>
-    //      service.findById(value) map {
-    //        case Some(res) =>
-    //          Ok(Json.toJson(res))
-    //        case None =>
-    //          logger.debug(s"Could not find a record with the ID $id")
-    //          NoContent
-    //      })
-    val result = elastic.execute {
+    elastic.execute {
       search("bi-dev").matchQuery("_id", id)
-    }.await
-
-    result match {
-      case Right(r: RequestSuccess[SearchResponse]) => {
-        r.body match {
-          case Some(s) => {
-            val json = Json.parse(s)
-            val source = (json \\ "_source").head
-            val id = (json \\ "_id").head
-            val newId = unquote(id.toString).toLong
-            val withId = (source.as[JsObject] + ("id" -> Json.toJson(newId)))
-
-            withId.validate[BusinessIndexRec](BusinessIndexRec.businessReads) match {
-              case s: JsSuccess[BusinessIndexRec] => Ok(Json.toJson(s.get)).future
-              case e: JsError => BadRequest.future
-            }
-          }
-          case None => InternalServerError.future
-        }
-      }
-      case Left(f: RequestFailure) => InternalServerError.future
+    } map {
+      case Right(r: RequestSuccess[SearchResponse]) => Ok(Json.toJson(BusinessIndexRec.fromRequestSuccessId(r)))
+      case Left(f: RequestFailure) => InternalServerError
     }
   }
-
-  def unquote(s: String) = s.replace("\"", "")
 
   // public api
   @ApiOperation(
@@ -137,7 +109,7 @@ class SearchController @Inject() (elastic: HttpClient, val config: Config)(impli
 
           elastic.execute(limited).map { resp =>
             resp match {
-              case Right(r: RequestSuccess[SearchResponse]) => Ok(Json.toJson(BusinessIndexRec.fromRequestSuccess(r)))
+              case Right(r: RequestSuccess[SearchResponse]) => Ok(Json.toJson(BusinessIndexRec.fromRequestSuccessSearch(r)))
               case Left(f: RequestFailure) => InternalServerError
             }
           }

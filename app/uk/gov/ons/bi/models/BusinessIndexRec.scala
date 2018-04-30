@@ -139,8 +139,13 @@ object BusinessIndexRec {
     companyNo = map.get(cBiCompanyNo).map(_.toString)
   )
 
-  def fromRequestSuccess(resp: RequestSuccess[SearchResponse]): List[BusinessIndexRec] =
+  def fromRequestSuccessSearch(resp: RequestSuccess[SearchResponse]): List[BusinessIndexRec] =
     resp.result.hits.hits.toList.map(x => BusinessIndexRec.fromMap(x.id.toLong, x.sourceAsMap).secured)
+
+  def fromRequestSuccessId(resp: RequestSuccess[SearchResponse]): BusinessIndexRec = {
+    val business = resp.result.hits.hits.toList.head
+    BusinessIndexRec.fromMap(business.id.toLong, business.sourceAsMap).secured
+  }
 
   def toMap(bi: BusinessIndexRec): Map[String, Any] = Map(
     cBiName -> bi.businessName.toUpperCase,
