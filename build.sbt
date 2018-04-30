@@ -139,8 +139,8 @@ lazy val api = (project in file("."))
         ExclusionRule("org.apache.logging.log4j", "log4j-api")
       ),
       "nl.grons" %% "metrics-scala" % "3.5.5",
-      "com.sksamuel.elastic4s" %% "elastic4s-core" % Versions.elastic4s,
-      "com.sksamuel.elastic4s" %% "elastic4s-http" % Versions.elastic4s,
+      "com.sksamuel.elastic4s" %% "elastic4s-core" % Versions.elastic4s excludeAll ExclusionRule(organization = "org.apache.logging.log4j"),
+      "com.sksamuel.elastic4s" %% "elastic4s-http" % Versions.elastic4s excludeAll ExclusionRule(organization = "org.apache.logging.log4j"),
       // "com.sksamuel.elastic4s" %% "elastic4s-http" % Versions.elastic4s,
       // "com.sksamuel.elastic4s" %% "elastic4s-streams" % Versions.elastic4s,
       "com.sksamuel.elastic4s" %% "elastic4s-jackson" % Versions.elastic4s,

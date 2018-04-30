@@ -5,16 +5,17 @@ import ch.qos.logback.classic.LoggerContext
 import com.codahale.metrics.JmxReporter
 import com.codahale.metrics.health.HealthCheck
 import com.google.inject.AbstractModule
-import com.sksamuel.elastic4s.{ ElasticClient, _ }
+import com.sksamuel.elastic4s.ElasticsearchClientUri
+import com.sksamuel.elastic4s.http.ElasticDsl
+import com.sksamuel.elastic4s.http.HttpClient
 import com.typesafe.config.{ Config, ConfigFactory }
 import com.typesafe.scalalogging.StrictLogging
 import nl.grons.metrics.scala.DefaultInstrumented
-import org.elasticsearch.cluster.health.ClusterHealthStatus._
 import org.slf4j.LoggerFactory
 import play.api.inject.ApplicationLifecycle
 import play.api.{ Configuration, Environment }
-import services.InsertDemoData
-import uk.gov.ons.bi.writers.{ BiConfigManager, ElasticClientBuilder }
+//import services.InsertDemoData
+import uk.gov.ons.bi.writers.{ BiConfigManager }
 
 import scala.concurrent.Future
 
@@ -32,31 +33,33 @@ class Module(environment: Environment, configuration: Configuration) extends Abs
 
     val config: Config = BiConfigManager.envConf(ConfigFactory.load())
 
-    val elasticSearchClient = ElasticClientBuilder.build(config)
+    // val elasticSearchClient = ElasticClientBuilder.build(config)
+
+    val elasticSearchClient = HttpClient(ElasticsearchClientUri("localhost", 9200))
 
     bind(classOf[Config]).toInstance(config)
 
-    bind(classOf[ElasticClient]).toInstance(elasticSearchClient)
+    bind(classOf[HttpClient]).toInstance(elasticSearchClient)
 
-    // register Elasticsearch cluster health check
-    healthCheck("es-cluster-alive") {
-      elasticSearchClient.execute {
-        get cluster health
-      }.await match {
-        case response if response.getStatus == GREEN =>
-          HealthCheck.Result.healthy(response.toString)
-        case response =>
-          HealthCheck.Result.unhealthy(response.toString)
-      }
-    }
+    //    // register Elasticsearch cluster health check
+    //    healthCheck("es-cluster-alive") {
+    //      elasticSearchClient.execute {
+    //        get cluster health
+    //      }.await match {
+    //        case response if response.getStatus == GREEN =>
+    //          HealthCheck.Result.healthy(response.toString)
+    //        case response =>
+    //          HealthCheck.Result.unhealthy(response.toString)
+    //      }
+    //    }
 
-    bind(classOf[InsertDemoData]).asEagerSingleton()
+    //    bind(classOf[InsertDemoData]).asEagerSingleton()
     bind(classOf[AvoidLogbackMemoryLeak]).asEagerSingleton()
 
-    if (!SingleJmxReporterPerJvm.initialized.getAndSet(true)) {
-      val reporter = JmxReporter.forRegistry(metricRegistry).build()
-      reporter.start()
-    }
+    //    if (!SingleJmxReporterPerJvm.initialized.getAndSet(true)) {
+    //      val reporter = JmxReporter.forRegistry(metricRegistry).build()
+    //      reporter.start()
+    //    }
   }
 }
 
