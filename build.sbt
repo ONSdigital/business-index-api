@@ -4,7 +4,7 @@ import sbtbuildinfo.BuildInfoPlugin.autoImport._
 
 lazy val Versions = new {
   val util = "0.27.8"
-  val elastic4s = "2.3.1"
+  val elastic4s = "6.1.2"
   val spark = "1.6.0"
   val elasticSearchSpark = "2.4.0"
 }
@@ -139,7 +139,10 @@ lazy val api = (project in file("."))
         ExclusionRule("org.apache.logging.log4j", "log4j-api")
       ),
       "nl.grons" %% "metrics-scala" % "3.5.5",
-      "com.sksamuel.elastic4s" %% "elastic4s-streams" % Versions.elastic4s,
+      "com.sksamuel.elastic4s" %% "elastic4s-core" % Versions.elastic4s,
+      "com.sksamuel.elastic4s" %% "elastic4s-http" % Versions.elastic4s,
+      // "com.sksamuel.elastic4s" %% "elastic4s-http" % Versions.elastic4s,
+      // "com.sksamuel.elastic4s" %% "elastic4s-streams" % Versions.elastic4s,
       "com.sksamuel.elastic4s" %% "elastic4s-jackson" % Versions.elastic4s,
       "com.outworkers" %% "util-parsers-cats" % Versions.util,
       "com.outworkers" %% "util-play" % Versions.util,
