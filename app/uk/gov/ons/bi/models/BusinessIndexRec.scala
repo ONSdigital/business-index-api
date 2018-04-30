@@ -2,6 +2,8 @@ package uk.gov.ons.bi.models
 
 import java.util
 
+import com.sksamuel.elastic4s.http.RequestSuccess
+import com.sksamuel.elastic4s.http.search.SearchResponse
 import play.api.libs.json._
 import uk.gov.ons.bi.models.BIndexConsts._
 
@@ -136,6 +138,9 @@ object BusinessIndexRec {
     },
     companyNo = map.get(cBiCompanyNo).map(_.toString)
   )
+
+  def fromRequestSuccess(resp: RequestSuccess[SearchResponse]): List[BusinessIndexRec] =
+    resp.result.hits.hits.toList.map(x => BusinessIndexRec.fromMap(x.id.toLong, x.sourceAsMap).secured)
 
   def toMap(bi: BusinessIndexRec): Map[String, Any] = Map(
     cBiName -> bi.businessName.toUpperCase,

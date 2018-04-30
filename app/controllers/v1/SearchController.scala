@@ -137,18 +137,7 @@ class SearchController @Inject() (elastic: HttpClient, val config: Config)(impli
 
           elastic.execute(limited).map { resp =>
             resp match {
-              case Right(r: RequestSuccess[SearchResponse]) => {
-                val b = r.result.hits.hits.toList.map(x => {
-                  x.id
-                  logger.error(s"x is: ${x.id}")
-                })
-                //                b
-                //                val hhh = b.hits.toList
-                //                hhh
-                //                logger.error(s"hhh is:: ${hhh.head}")
-                logger.error(s"search hits:: ${b.head}")
-                Ok
-              }
+              case Right(r: RequestSuccess[SearchResponse]) => Ok(Json.toJson(BusinessIndexRec.fromRequestSuccess(r)))
               case Left(f: RequestFailure) => InternalServerError
             }
           }
