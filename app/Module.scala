@@ -35,7 +35,10 @@ class Module(environment: Environment, configuration: Configuration) extends Abs
 
     // val elasticSearchClient = ElasticClientBuilder.build(config)
 
-    val elasticSearchClient = HttpClient(ElasticsearchClientUri("localhost", 9200))
+    val host = config.getString("elasticsearch.host")
+    val port = config.getInt("elasticsearch.port")
+
+    val elasticSearchClient = HttpClient(ElasticsearchClientUri(host, port))
 
     bind(classOf[Config]).toInstance(config)
 
