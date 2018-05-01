@@ -37,8 +37,9 @@ class Module(environment: Environment, configuration: Configuration) extends Abs
 
     val host = config.getString("elasticsearch.host")
     val port = config.getInt("elasticsearch.port")
+    val suffix = config.getString("elasticsearch.suffix")
 
-    val elasticSearchClient = HttpClient(ElasticsearchClientUri(host, port))
+    val elasticSearchClient = HttpClient(ElasticsearchClientUri(s"elasticsearch://$host:$port$suffix"))
 
     bind(classOf[Config]).toInstance(config)
 
