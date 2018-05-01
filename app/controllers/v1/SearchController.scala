@@ -107,11 +107,9 @@ class SearchController @Inject() (elastic: HttpClient, val config: Config)(impli
           val started = withQuery.start(searchRequest.offset)
           val limited: SearchDefinition = started.limit(searchRequest.limit)
 
-          elastic.execute(limited).map { resp =>
-            resp match {
-              case Right(r: RequestSuccess[SearchResponse]) => Ok(Json.toJson(BusinessIndexRec.fromRequestSuccessSearch(r)))
-              case Left(f: RequestFailure) => InternalServerError
-            }
+          elastic.execute(limited).map {
+            case Right(r: RequestSuccess[SearchResponse]) => Ok(Json.toJson(BusinessIndexRec.fromRequestSuccessSearch(r)))
+            case Left(f: RequestFailure) => InternalServerError
           }
         }
         case _ => BadRequest.future
