@@ -2,23 +2,14 @@ package controllers.v1
 
 import javax.inject._
 
-import cats.data.ValidatedNel
-import com.outworkers.util.catsparsers.{ parse => cparse, _ }
 import com.outworkers.util.play._
 import com.sksamuel.elastic4s.http._
 import com.sksamuel.elastic4s.http.search.SearchResponse
 import com.typesafe.config.Config
 import io.swagger.annotations._
 import nl.grons.metrics.scala.DefaultInstrumented
-import java.util
-
-//import com.sksamuel.elastic4s.{ QueryStringQueryDefinition, SearchDefinition }
 import com.sksamuel.elastic4s.searches.SearchDefinition
 import com.sksamuel.elastic4s.searches.queries.QueryStringQueryDefinition
-import play.api.libs.json
-import play.api.libs.json._
-
-import scala.collection.JavaConverters._
 import play.api.mvc._
 import play.api.libs.json._
 import services.{ BusinessSearchRequest, HBaseCache }
@@ -39,17 +30,7 @@ import scala.util.Try
 class SearchController @Inject() (elastic: HttpClient, val config: Config)(implicit context: ExecutionContext)
     extends SearchControllerUtils with ElasticDsl with DefaultInstrumented with HBaseCache with ElasticUtils {
 
-  implicit object LongParser extends CatsParser[Long] {
-    override def parse(str: String): ValidatedNel[String, Long] = {
-      Try(java.lang.Long.parseLong(str)).asValidation
-    }
-  }
-
   override protected def tableName = "es_requests"
-
-  // metrics
-  private[this] val requestMeter = metrics.meter("search-requests", "requests")
-  private[this] val totalHitsHistogram = metrics.histogram("totalHits", "es-searches")
 
   // public API
   @ApiOperation(
