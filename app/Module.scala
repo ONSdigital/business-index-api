@@ -69,7 +69,7 @@ class Module(environment: Environment, configuration: Configuration) extends Abs
       }
     ), null)
 
-    val elasticSearchClient = HttpClient(ElasticsearchClientUri(s"elasticsearch://$host:$port?ssl=$ssl"), new RequestConfigCallback {
+    val elasticSearchClient = HttpClient(ElasticsearchClientUri(s"elasticsearch://$host:$port$suffix?ssl=$ssl"), new RequestConfigCallback {
       override def customizeRequestConfig(requestConfigBuilder: Builder) = {
         requestConfigBuilder
       }
