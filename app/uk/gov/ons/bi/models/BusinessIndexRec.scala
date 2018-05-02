@@ -78,17 +78,17 @@ object BusinessIndexRec {
       //JsObject()
       JsObject(Seq(
         "id" -> Json.toJson(id),
-        "BusinessName" -> Json.toJson(businessName),
-        "UPRN" -> Json.toJson(uprn),
-        "PostCode" -> Json.toJson(postCode.getOrElse("")),
-        "IndustryCode" -> Json.toJson(industryCode.getOrElse("")),
-        "LegalStatus" -> Json.toJson(legalStatus.getOrElse("")),
-        "TradingStatus" -> Json.toJson(tradingStatus.getOrElse("")),
-        "Turnover" -> Json.toJson(turnover.getOrElse("")),
-        "EmploymentBands" -> Json.toJson(employmentBands.getOrElse("")),
-        vatRefs.map(vr => ("VatRefs" -> Json.toJson(vr))).getOrElse(null),
-        payeRefs.map(pr => ("PayeRefs" -> Json.toJson(pr.filterNot(_.trim.isEmpty)))).getOrElse(null),
-        "CompanyNo" -> Json.toJson(companyNo.getOrElse(""))
+        "businessName" -> Json.toJson(businessName),
+        "uprn" -> Json.toJson(uprn),
+        "postCode" -> Json.toJson(postCode.getOrElse("")),
+        "industryCode" -> Json.toJson(industryCode.getOrElse("")),
+        "legalStatus" -> Json.toJson(legalStatus.getOrElse("")),
+        "tradingStatus" -> Json.toJson(tradingStatus.getOrElse("")),
+        "turnover" -> Json.toJson(turnover.getOrElse("")),
+        "employmentBands" -> Json.toJson(employmentBands.getOrElse("")),
+        vatRefs.map(vr => ("vatRefs" -> Json.toJson(vr))).getOrElse(null),
+        payeRefs.map(pr => ("payeRefs" -> Json.toJson(pr.filterNot(_.trim.isEmpty)))).getOrElse(null),
+        "companyNo" -> Json.toJson(companyNo.getOrElse(""))
       ).filter(_ != null))
     }
   }
