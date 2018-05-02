@@ -47,7 +47,6 @@ class Module(environment: Environment, configuration: Configuration) extends Abs
 
     val host = config.getString("elasticsearch.host")
     val port = config.getInt("elasticsearch.port")
-    val suffix = config.getString("elasticsearch.suffix")
     val ssl = config.getBoolean("elasticsearch.ssl")
 
     //    val elasticSearchClient = HttpClient(ElasticsearchClientUri(s"elasticsearch://$host:$port$suffix"))
@@ -69,7 +68,7 @@ class Module(environment: Environment, configuration: Configuration) extends Abs
       }
     ), null)
 
-    val elasticSearchClient = HttpClient(ElasticsearchClientUri(s"elasticsearch://$host:$port$suffix?ssl=$ssl"), new RequestConfigCallback {
+    val elasticSearchClient = HttpClient(ElasticsearchClientUri(s"elasticsearch://$host:$port?ssl=$ssl"), new RequestConfigCallback {
       override def customizeRequestConfig(requestConfigBuilder: Builder) = {
         requestConfigBuilder
       }
