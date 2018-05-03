@@ -5,52 +5,31 @@ import javax.inject._
 import com.outworkers.util.play._
 import com.sksamuel.elastic4s.http._
 import com.typesafe.config.Config
-import io.swagger.annotations._
-import nl.grons.metrics.scala.DefaultInstrumented
 import com.sksamuel.elastic4s.searches.queries.QueryStringQueryDefinition
+import io.swagger.annotations._
 import play.api.mvc._
 import models._
 import services.BusinessService
 import ControllerResultProcessor._
+import config.ElasticUtils
+import controllers.v1.api.BusinessApi
 
 import scala.concurrent.ExecutionContext
 
 @Api("Search")
 @Singleton
-class SearchController @Inject() (service: BusinessService, val config: Config)(implicit context: ExecutionContext)
-    extends Controller with ElasticDsl with DefaultInstrumented with ElasticUtils {
+class BusinessController @Inject() (service: BusinessService, val config: Config)(implicit context: ExecutionContext)
+    extends Controller with ElasticDsl with ElasticUtils with BusinessApi {
 
-  // public API
-  @ApiOperation(
-    value = "Search businesses by query",
-    notes = "Returns list of available businesses",
-    httpMethod = "GET"
-  )
-  @ApiResponses(Array(
-    new ApiResponse(code = 500, message = "Internal server error"),
-    new ApiResponse(code = 503, message = "Elastic search is not available")
-  ))
-  def searchTerm(@ApiParam(value = "Query to elastic search") term: String, suggest: Boolean = false): Action[AnyContent] = searchBusiness(Some(term))
+  override def searchTerm(term: String): Action[AnyContent] = searchBusiness(Some(term))
 
-  // public API
-  @ApiOperation(
-    value = "Search businesses by UBRN",
-    notes = "Returns exact business index record for particular UBRN Request",
-    httpMethod = "GET"
-  )
-  def searchBusinessById(@ApiParam(value = "UBRN to search") id: Long): Action[AnyContent] = Action.async {
+  override def searchBusinessById(id: Long): Action[AnyContent] = Action.async {
     service.findBusinessById(id).map { errorOrBusiness =>
       errorOrBusiness.fold(resultOnFailure, resultOnSuccessWithAtMostOneUnit[BusinessIndexRec])
     }
   }
 
-  // public api
-  @ApiOperation(
-    value = "Search businesses by query",
-    notes = "Returns list of available businesses. Additional parameters: offset, limit, default_operator",
-    httpMethod = "GET"
-  )
-  def searchBusiness(@ApiParam(value = "Query to elastic search") term: Option[String]): Action[AnyContent] = {
+  override def searchBusiness(term: Option[String]): Action[AnyContent] = {
     Action.async { implicit request =>
       val searchTerm = term.orElse(request.getQueryString("q")).orElse(request.getQueryString("query"))
 

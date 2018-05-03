@@ -3,11 +3,11 @@
 # ~~~~
 
 # Get Business by id
-GET     /v1/business/$id<\d{8,16}>       controllers.v1.SearchController.searchBusinessById(id: Long)
-GET     /v1/business/:id                 controllers.v1.SearchController.badRequest(id)
+GET     /v1/business/$id<\d{8,16}>       controllers.v1.BusinessController.searchBusinessById(id: Long)
+GET     /v1/business/:id                 controllers.v1.BusinessController.badRequest(id)
 
-GET     /v1/search             controllers.v1.SearchController.searchBusiness(term: Option[String] ?= None)
-GET     /v1/search/:term       controllers.v1.SearchController.searchTerm(term)
+GET     /v1/search             controllers.v1.BusinessController.searchBusiness(term: Option[String] ?= None)
+GET     /v1/search/:term       controllers.v1.BusinessController.searchTerm(term)
 
 # Route for deployed version information (in JSON).
 GET     /version               controllers.VersionController.version

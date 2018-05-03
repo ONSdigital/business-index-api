@@ -1,4 +1,4 @@
-package controllers.v1
+package config
 
 import com.typesafe.config.Config
 
