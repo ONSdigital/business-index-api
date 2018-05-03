@@ -76,6 +76,12 @@ object BusinessIndexRec {
     override def writes(b: BusinessIndexRec): JsValue = {
       import b._
       //JsObject()
+      //      println(s"float ${1L}")
+      //      println(s"b is: ${b.vatRefs}")
+      //      val vat = vatRefs match {
+      //        case Some(s) => s.map(x => x.toString)
+      //        case None => Seq()
+      //      }
       JsObject(Seq(
         "id" -> Json.toJson(id),
         "businessName" -> Json.toJson(businessName),
@@ -86,8 +92,11 @@ object BusinessIndexRec {
         "tradingStatus" -> Json.toJson(tradingStatus.getOrElse("")),
         "turnover" -> Json.toJson(turnover.getOrElse("")),
         "employmentBands" -> Json.toJson(employmentBands.getOrElse("")),
-        vatRefs.map(vr => ("vatRefs" -> Json.toJson(vr))).getOrElse(null),
-        payeRefs.map(pr => ("payeRefs" -> Json.toJson(pr.filterNot(_.trim.isEmpty)))).getOrElse(null),
+        vatRefs.map(vr => "vatRefs" -> Json.toJson(vr)).orNull,
+        //        payeRefs.map(pr => "payeRefs" -> Json.toJson(pr.filterNot(_.trim.isEmpty))).orNull,
+        // "vat" -> Json.toJson(vatRefs.orNull),
+        //"vat" -> Json.toJson(vat),
+        payeRefs.map(pr => ("PayeRefs" -> Json.toJson(pr.filterNot(_.trim.isEmpty)))).orNull,
         "companyNo" -> Json.toJson(companyNo.getOrElse(""))
       ).filter(_ != null))
     }
@@ -127,7 +136,7 @@ object BusinessIndexRec {
           case x: Int => x.toLong
           case z: Long => z
         }
-      case e: Seq[Long] => e
+      case e: Seq[Int] => e.map(x => x.toLong)
       case "" => Seq.empty[Long]
       case e: String => e.split(",").map(_.toLong)
     },
@@ -144,7 +153,7 @@ object BusinessIndexRec {
 
   def fromRequestSuccessId(resp: RequestSuccess[SearchResponse]): BusinessIndexRec = {
     val business = resp.result.hits.hits.toList.head
-    BusinessIndexRec.fromMap(business.id.toLong, business.sourceAsMap).secured
+    BusinessIndexRec.fromMap(business.id.toLong, business.sourceAsMap)
   }
 
   def toMap(bi: BusinessIndexRec): Map[String, Any] = Map(
