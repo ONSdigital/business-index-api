@@ -9,6 +9,7 @@ import com.sksamuel.elastic4s.http.{ HttpClient, RequestSuccess }
 import com.sksamuel.elastic4s.searches.SearchDefinition
 import models._
 import services.BusinessService
+import utils.ElasticRequestMapper
 
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -16,11 +17,11 @@ import scala.concurrent.ExecutionContext.Implicits.global
 /**
  * Created by coolit on 03/05/2018.
  */
-class ElasticSearchBusinessRepository @Inject() (elastic: HttpClient) extends BusinessService with ElasticDsl {
+class ElasticSearchBusinessRepository @Inject() (elastic: HttpClient, requestMapper: ElasticRequestMapper) extends BusinessService with ElasticDsl {
 
   def findBusiness(query: SearchDefinition): Future[Either[ErrorMessage, Option[List[BusinessIndexRec]]]] = {
     elastic.execute(query).map {
-      case Right(r: RequestSuccess[SearchResponse]) => Right(BusinessIndexRec.fromRequestSuccessSearch(r))
+      case Right(r: RequestSuccess[SearchResponse]) => Right(requestMapper.fromBusinessListResponse(r))
       case Left(f: RequestFailure) => handleRequestFailure[List[BusinessIndexRec]](f)
     } recover elasticSearchRecover[List[BusinessIndexRec]]
   }
@@ -29,7 +30,7 @@ class ElasticSearchBusinessRepository @Inject() (elastic: HttpClient) extends Bu
     elastic.execute {
       search("bi-dev").matchQuery("_id", id)
     } map {
-      case Right(r: RequestSuccess[SearchResponse]) => Right(BusinessIndexRec.fromRequestSuccessId(r))
+      case Right(r: RequestSuccess[SearchResponse]) => Right(requestMapper.fromBusinessResponse(r))
       case Left(f: RequestFailure) => handleRequestFailure[BusinessIndexRec](f)
     } recover elasticSearchRecover[BusinessIndexRec]
   }

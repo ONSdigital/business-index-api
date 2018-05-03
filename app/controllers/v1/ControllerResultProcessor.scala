@@ -13,7 +13,7 @@ object ControllerResultProcessor extends Results {
       case _ => InternalServerError
     }
 
-  def resultOnSuccessWithAtMostOneUnit[T](optUnit: Option[T])(implicit writes: Writes[T]): Result =
-    optUnit.fold[Result](NotFound)(unit => Ok(toJson(unit)))
+  def resultOnSuccess[T](optBusiness: Option[T])(implicit writes: Writes[T]): Result =
+    optBusiness.fold[Result](NotFound)(business => Ok(toJson(business)))
 }
 

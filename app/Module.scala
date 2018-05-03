@@ -22,6 +22,7 @@ import play.api.{ Configuration, Environment }
 import config.BiConfigManager
 import services.BusinessService
 import repository.ElasticSearchBusinessRepository
+import utils.ElasticRequestMapper
 
 import scala.concurrent.Future
 
@@ -71,7 +72,7 @@ class Module(environment: Environment, configuration: Configuration) extends Abs
       }
     })
 
-    val elasticSearchBusinessRepository = new ElasticSearchBusinessRepository(elasticSearchClient)
+    val elasticSearchBusinessRepository = new ElasticSearchBusinessRepository(elasticSearchClient, new ElasticRequestMapper)
 
     bind(classOf[Config]).toInstance(config)
     bind(classOf[BusinessService]).toInstance(elasticSearchBusinessRepository)

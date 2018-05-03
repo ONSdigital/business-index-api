@@ -150,7 +150,6 @@ object BusinessIndexRec {
   )
 
   def fromRequestSuccessSearch(resp: RequestSuccess[SearchResponse]): Option[List[BusinessIndexRec]] = {
-    println(s"test: ${resp.result.hits.hits.toList}")
     resp.result.hits.hits.toList match {
       case Nil => None
       case xs => Some(xs.map(x => BusinessIndexRec.fromMap(x.id.toLong, x.sourceAsMap).secured))

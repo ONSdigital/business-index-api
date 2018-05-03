@@ -31,7 +31,7 @@ class BusinessController @Inject() (service: BusinessService, val config: Config
    */
   override def searchBusinessById(id: Long): Action[AnyContent] = Action.async {
     service.findBusinessById(id).map { errorOrBusiness =>
-      errorOrBusiness.fold(resultOnFailure, resultOnSuccessWithAtMostOneUnit[BusinessIndexRec])
+      errorOrBusiness.fold(resultOnFailure, resultOnSuccess[BusinessIndexRec])
     }
   }
 
@@ -50,7 +50,7 @@ class BusinessController @Inject() (service: BusinessService, val config: Config
           val searchQuery = search(indexName).query(definition).start(searchRequest.offset).limit(searchRequest.limit)
 
           service.findBusiness(searchQuery).map { errorOrBusinessList =>
-            errorOrBusinessList.fold(resultOnFailure, resultOnSuccessWithAtMostOneUnit[List[BusinessIndexRec]])
+            errorOrBusinessList.fold(resultOnFailure, resultOnSuccess[List[BusinessIndexRec]])
           }
         }
         case _ => BadRequest.future
