@@ -15,7 +15,6 @@ import com.sksamuel.elastic4s.http.ElasticDsl
 import com.sksamuel.elastic4s.http.HttpClient
 import com.typesafe.config.{ Config, ConfigFactory }
 import com.typesafe.scalalogging.StrictLogging
-import nl.grons.metrics.scala.DefaultInstrumented
 import org.elasticsearch.client.RestClientBuilder.{ HttpClientConfigCallback, RequestConfigCallback }
 import org.slf4j.LoggerFactory
 import play.api.inject.ApplicationLifecycle
@@ -34,7 +33,7 @@ class AvoidLogbackMemoryLeak @Inject() (lifecycle: ApplicationLifecycle) extends
   }
 }
 
-class Module(environment: Environment, configuration: Configuration) extends AbstractModule with DefaultInstrumented with ElasticDsl {
+class Module(environment: Environment, configuration: Configuration) extends AbstractModule with ElasticDsl {
 
   override def configure(): Unit = {
 
@@ -76,7 +75,6 @@ class Module(environment: Environment, configuration: Configuration) extends Abs
 
     bind(classOf[Config]).toInstance(config)
     bind(classOf[BusinessService]).toInstance(elasticSearchBusinessRepository)
-    //    bind(classOf[HttpClient]).toInstance(elasticSearchClient)
     bind(classOf[AvoidLogbackMemoryLeak]).asEagerSingleton()
   }
 }

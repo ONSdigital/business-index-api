@@ -138,11 +138,8 @@ lazy val api = (project in file("."))
         ExclusionRule("org.apache.logging.log4j", "log4j-core"),
         ExclusionRule("org.apache.logging.log4j", "log4j-api")
       ),
-      "nl.grons" %% "metrics-scala" % "3.5.5",
       "com.sksamuel.elastic4s" %% "elastic4s-core" % Versions.elastic4s excludeAll ExclusionRule(organization = "org.apache.logging.log4j"),
       "com.sksamuel.elastic4s" %% "elastic4s-http" % Versions.elastic4s excludeAll ExclusionRule(organization = "org.apache.logging.log4j"),
-      // "com.sksamuel.elastic4s" %% "elastic4s-http" % Versions.elastic4s,
-      // "com.sksamuel.elastic4s" %% "elastic4s-streams" % Versions.elastic4s,
       "com.sksamuel.elastic4s" %% "elastic4s-jackson" % Versions.elastic4s,
       "com.outworkers" %% "util-parsers-cats" % Versions.util,
       "com.outworkers" %% "util-play" % Versions.util,
@@ -150,10 +147,6 @@ lazy val api = (project in file("."))
       "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.0-M1" % Test,
       "org.scalatest" %% "scalatest" % "3.0.0" % Test,
       "com.google.guava" % "guava" % "18.0",
-      "org.apache.hadoop" % "hadoop-common" % "2.6.0",
-      "org.apache.hadoop" % "hadoop-mapred" % "0.22.0",
-      "org.apache.hbase" % "hbase-common" % "1.3.0",
-      "org.apache.hbase" % "hbase-client" % "1.3.0",
       "io.swagger" %% "swagger-play2" % "1.5.3",
       "org.webjars" % "swagger-ui" % "2.2.10-1"
     ),
