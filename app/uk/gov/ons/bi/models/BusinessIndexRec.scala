@@ -132,9 +132,8 @@ object BusinessIndexRec {
     tradingStatus = map.get(cBiTradingStatus).map(_.toString),
     turnover = map.get(cBiTurnover).map(_.toString),
     employmentBands = map.get(cBiEmploymentBand).map(_.toString),
-    vatRefs = map.get(cBiVatRefs).map {
+    vatRefs = map.get(cBiPayeRefs).map {
       case e: util.ArrayList[String] => e.asScala
-      case ps: Seq[Int] => ps.map(x => x.toString)
       case ps: Seq[String] => ps
       case e: String => e.split(",").toSeq
     },
@@ -156,7 +155,7 @@ object BusinessIndexRec {
   def fromRequestSuccessId(resp: RequestSuccess[SearchResponse]): Option[BusinessIndexRec] = {
     resp.result.hits.hits.toList match {
       case Nil => None
-      case x :: xs => Some(BusinessIndexRec.fromMap(x.id.toLong, x.sourceAsMap).secured)
+      case x :: _ => Some(BusinessIndexRec.fromMap(x.id.toLong, x.sourceAsMap).secured)
     }
   }
 
