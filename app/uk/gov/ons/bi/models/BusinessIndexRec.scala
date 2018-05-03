@@ -70,10 +70,11 @@ object BusinessIndexRec {
         payerefs,
         mapStrOption(companyno)))
 
-  implicit val biWrites = new Writes[BusinessIndexRec] { //writes use only for hbase caching
+  implicit val biWrites = new Writes[BusinessIndexRec] {
     override def writes(b: BusinessIndexRec): JsValue = {
+
       import b._
-      //JsObject()
+
       JsObject(Seq(
         "id" -> Json.toJson(id),
         "BusinessName" -> Json.toJson(businessName),
@@ -83,11 +84,11 @@ object BusinessIndexRec {
         "LegalStatus" -> Json.toJson(legalStatus.getOrElse("")),
         "TradingStatus" -> Json.toJson(tradingStatus.getOrElse("")),
         "Turnover" -> Json.toJson(turnover.getOrElse("")),
-        "EmploymentBands" -> Json.toJson(employmentBands.getOrElse("")),
-        vatRefs.map(vr => ("VatRefs" -> Json.toJson(vr))).getOrElse(null),
-        payeRefs.map(pr => ("PayeRefs" -> Json.toJson(pr.filterNot(_.trim.isEmpty)))).getOrElse(null),
-        "CompanyNo" -> Json.toJson(companyNo.getOrElse(""))
-      ).filter(_ != null))
+        "EmploymentBands" -> Json.toJson(employmentBands.getOrElse(""))
+      ) ++ Seq(
+          vatRefs.map(v => ("VatRefs" -> Json.toJson(v))),
+          payeRefs.map(p => ("PayeRefs" -> Json.toJson(p.filterNot(_.trim.isEmpty))))
+        ).collect { case Some(v) => v } :+ "CompanyNo" -> Json.toJson(companyNo.getOrElse("")))
     }
   }
 

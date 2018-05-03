@@ -65,7 +65,7 @@ class SearchController @Inject() (elastic: ElasticClient, val config: Config, se
           Ok(Json.toJson(res))
         case None =>
           logger.debug(s"Could not find a record with the ID $id")
-          NoContent
+          NotFound
       })
   }
 

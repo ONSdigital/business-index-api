@@ -43,7 +43,7 @@ class ApplicationSpec extends PlaySpec with OneAppPerTest {
     "return NoContent when no data" in
       {
         val search = fakeRequest("/v1/business/9011")
-        status(search) mustBe NO_CONTENT
+        status(search) mustBe NOT_FOUND
       }
 
     "return 500 when on bad es query" in {
