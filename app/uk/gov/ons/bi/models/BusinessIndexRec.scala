@@ -155,7 +155,7 @@ object BusinessIndexRec {
   def fromRequestSuccessId(resp: RequestSuccess[SearchResponse]): Option[BusinessIndexRec] = {
     resp.result.hits.hits.toList match {
       case Nil => None
-      case x :: _ => Some(BusinessIndexRec.fromMap(x.id.toLong, x.sourceAsMap).secured)
+      case x :: _ => Some(BusinessIndexRec.fromMap(x.id.toLong, x.sourceAsMap))
     }
   }
 
