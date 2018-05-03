@@ -27,7 +27,7 @@ case class BusinessIndexRec(
     tradingStatus: Option[String],
     turnover: Option[String],
     employmentBands: Option[String],
-    vatRefs: Option[Seq[Long]],
+    vatRefs: Option[Seq[String]],
     payeRefs: Option[Seq[String]],
     companyNo: Option[String]
 ) {
@@ -62,7 +62,7 @@ object BusinessIndexRec {
     (JsPath \ "TradingStatus").readNullable[String] and
     (JsPath \ "Turnover").readNullable[String] and
     (JsPath \ "EmploymentBands").readNullable[String] and
-    (JsPath \ "VatRefs").readNullable[Seq[Long]] and
+    (JsPath \ "VatRefs").readNullable[Seq[String]] and
     (JsPath \ "PayeRefs").readNullable[Seq[String]] and
     (JsPath \ "CompanyNo").readNullable[String]
   )((id, businessName, uprn, postcode, industryCode, legalstatus, radingstatus, turnover, employmentbands, vatrefs, payerefs, companyno) =>
@@ -92,11 +92,13 @@ object BusinessIndexRec {
         "tradingStatus" -> Json.toJson(tradingStatus.getOrElse("")),
         "turnover" -> Json.toJson(turnover.getOrElse("")),
         "employmentBands" -> Json.toJson(employmentBands.getOrElse("")),
-        vatRefs.map(vr => "vatRefs" -> Json.toJson(vr)).orNull,
+        // vatRefs.map(vr => "vatRefs" -> Json.toJson(vr)).orNull,
+        "vatRefs" -> Json.toJson(vatRefs.orNull.map(x => x)),
+        //vatRefs.map(pr => ("vatRefs" -> Json.toJson(pr.filterNot(_.trim.isEmpty)))).orNull,
         //        payeRefs.map(pr => "payeRefs" -> Json.toJson(pr.filterNot(_.trim.isEmpty))).orNull,
         // "vat" -> Json.toJson(vatRefs.orNull),
         //"vat" -> Json.toJson(vat),
-        payeRefs.map(pr => ("PayeRefs" -> Json.toJson(pr.filterNot(_.trim.isEmpty)))).orNull,
+        payeRefs.map(pr => ("payeRefs" -> Json.toJson(pr.filterNot(_.trim.isEmpty)))).orNull,
         "companyNo" -> Json.toJson(companyNo.getOrElse(""))
       ).filter(_ != null))
     }
@@ -130,15 +132,10 @@ object BusinessIndexRec {
     turnover = map.get(cBiTurnover).map(_.toString),
     employmentBands = map.get(cBiEmploymentBand).map(_.toString),
     vatRefs = map.get(cBiVatRefs).map {
-      case e: util.ArrayList[Any] =>
-        // Any: elastic does not guarantee Long return for Long type. It returns type based on actual value
-        e.asScala map {
-          case x: Int => x.toLong
-          case z: Long => z
-        }
-      case e: Seq[Int] => e.map(x => x.toLong)
-      case "" => Seq.empty[Long]
-      case e: String => e.split(",").map(_.toLong)
+      case e: util.ArrayList[String] => e.asScala
+      case ps: Seq[Int] => ps.map(x => x.toString)
+      case ps: Seq[String] => ps
+      case e: String => e.split(",").toSeq
     },
     payeRefs = map.get(cBiPayeRefs).map {
       case e: util.ArrayList[String] => e.asScala
