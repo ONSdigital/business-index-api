@@ -4,33 +4,21 @@ import javax.inject._
 
 import com.outworkers.util.play._
 import com.sksamuel.elastic4s.http._
-import com.sksamuel.elastic4s.http.search.SearchResponse
 import com.typesafe.config.Config
 import io.swagger.annotations._
 import nl.grons.metrics.scala.DefaultInstrumented
-import com.sksamuel.elastic4s.searches.SearchDefinition
 import com.sksamuel.elastic4s.searches.queries.QueryStringQueryDefinition
 import play.api.mvc._
-import play.api.libs.json._
-import services.{ BusinessSearchRequest, HBaseCache }
-import uk.gov.ons.bi.models.{ BIndexConsts, BusinessIndexRec }
+import models._
+import services.BusinessService
+import ControllerResultProcessor._
 
 import scala.concurrent.ExecutionContext
-import scala.util.Try
 
-/**
- * Contains action for the /v1/search route.
- *
- * @param elastic
- * @param context
- * @param config
- */
 @Api("Search")
 @Singleton
-class SearchController @Inject() (elastic: HttpClient, val config: Config)(implicit context: ExecutionContext)
-    extends SearchControllerUtils with ElasticDsl with DefaultInstrumented with HBaseCache with ElasticUtils {
-
-  override protected def tableName = "es_requests"
+class SearchController @Inject() (service: BusinessService, val config: Config)(implicit context: ExecutionContext)
+    extends Controller with ElasticDsl with DefaultInstrumented with ElasticUtils {
 
   // public API
   @ApiOperation(
@@ -50,15 +38,9 @@ class SearchController @Inject() (elastic: HttpClient, val config: Config)(impli
     notes = "Returns exact business index record for particular UBRN Request",
     httpMethod = "GET"
   )
-  def searchBusinessById(@ApiParam(value = "UBRN to search") id: String): Action[AnyContent] = Action.async {
-    elastic.execute {
-      search("bi-dev").matchQuery("_id", id)
-    } map {
-      case Right(r: RequestSuccess[SearchResponse]) => BusinessIndexRec.fromRequestSuccessId(r) match {
-        case Some(s) => Ok(Json.toJson(s))
-        case None => NotFound
-      }
-      case Left(f: RequestFailure) => InternalServerError
+  def searchBusinessById(@ApiParam(value = "UBRN to search") id: Long): Action[AnyContent] = Action.async {
+    service.findBusinessById(id).map { errorOrBusiness =>
+      errorOrBusiness.fold(resultOnFailure, resultOnSuccessWithAtMostOneUnit[BusinessIndexRec])
     }
   }
 
@@ -72,35 +54,22 @@ class SearchController @Inject() (elastic: HttpClient, val config: Config)(impli
     Action.async { implicit request =>
       val searchTerm = term.orElse(request.getQueryString("q")).orElse(request.getQueryString("query"))
 
-      val offset = Try(request.getQueryString("offset").getOrElse("0").toInt).getOrElse(0)
-      val limit = Try(request.getQueryString("limit").getOrElse("100").toInt).getOrElse(100)
-      val defaultOperator = request.getQueryString("default_operator").getOrElse("AND")
-      val failOnQueryError = Try(request.getQueryString("fail_on_bad_query").getOrElse("true").toBoolean).getOrElse(true)
-
       searchTerm match {
         case Some(query) if query.length > 0 => {
-          val searchRequest = BusinessSearchRequest(query, request, false)
+          val searchRequest = BusinessSearchRequest(query, request)
+          val definition = QueryStringQueryDefinition(searchRequest.term).defaultOperator(searchRequest.defaultOperator)
+          val searchQuery = search(indexName).query(definition).start(searchRequest.offset).limit(searchRequest.limit)
 
-          val definition = if (searchRequest.suggest) {
-            matchQuery(BIndexConsts.cBiName, query)
-          } else {
-            QueryStringQueryDefinition(searchRequest.term).defaultOperator(searchRequest.defaultOperator)
-          }
-          val s: SearchDefinition = search(indexName)
-          val withQuery = s.query(definition)
-          val started = withQuery.start(searchRequest.offset)
-          val limited: SearchDefinition = started.limit(searchRequest.limit)
-
-          elastic.execute(limited).map {
-            case Right(r: RequestSuccess[SearchResponse]) => BusinessIndexRec.fromRequestSuccessSearch(r) match {
-              case Some(s) => Ok(Json.toJson(s))
-              case None => NotFound
-            }
-            case Left(f: RequestFailure) => InternalServerError
+          service.findBusiness(searchQuery).map { errorOrBusinessList =>
+            errorOrBusinessList.fold(resultOnFailure, resultOnSuccessWithAtMostOneUnit[List[BusinessIndexRec]])
           }
         }
         case _ => BadRequest.future
       }
     }
+  }
+
+  def badRequest(a: String) = Action {
+    BadRequest
   }
 }

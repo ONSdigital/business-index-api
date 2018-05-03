@@ -1,14 +1,18 @@
-package uk.gov.ons.bi.models
+package models
 
 import java.util
 
 import com.sksamuel.elastic4s.http.RequestSuccess
 import com.sksamuel.elastic4s.http.search.SearchResponse
 import play.api.libs.json._
-import uk.gov.ons.bi.models.BIndexConsts._
+import BIndexConsts._
 
 import scala.collection.JavaConverters._
 import play.api.libs.functional.syntax._
+
+/**
+ * Created by coolit on 03/05/2018.
+ */
 /*mapping rules:
 * for all non-collection optional fields:
 *    obj -> json: None -> "" ("key":"" - empty string value)
@@ -146,6 +150,7 @@ object BusinessIndexRec {
   )
 
   def fromRequestSuccessSearch(resp: RequestSuccess[SearchResponse]): Option[List[BusinessIndexRec]] = {
+    println(s"test: ${resp.result.hits.hits.toList}")
     resp.result.hits.hits.toList match {
       case Nil => None
       case xs => Some(xs.map(x => BusinessIndexRec.fromMap(x.id.toLong, x.sourceAsMap).secured))

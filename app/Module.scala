@@ -1,18 +1,14 @@
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
-import javax.inject.{ Inject, Singleton }
 import java.security.cert.X509Certificate
 import javax.net.ssl.{ SSLContext, X509TrustManager }
-import org.elasticsearch.client.RestClientBuilder._
-import org.apache.http.client.config.RequestConfig.Builder
 
+import org.apache.http.client.config.RequestConfig.Builder
 import org.apache.http.impl.nio.client._
 import org.apache.http.impl.client.BasicCredentialsProvider
 import org.apache.http.auth.UsernamePasswordCredentials
 import org.apache.http.auth.AuthScope
 import ch.qos.logback.classic.LoggerContext
-import com.codahale.metrics.JmxReporter
-import com.codahale.metrics.health.HealthCheck
 import com.google.inject.AbstractModule
 import com.sksamuel.elastic4s.ElasticsearchClientUri
 import com.sksamuel.elastic4s.http.ElasticDsl
@@ -24,8 +20,9 @@ import org.elasticsearch.client.RestClientBuilder.{ HttpClientConfigCallback, Re
 import org.slf4j.LoggerFactory
 import play.api.inject.ApplicationLifecycle
 import play.api.{ Configuration, Environment }
-//import services.InsertDemoData
-import uk.gov.ons.bi.writers.{ BiConfigManager }
+import config.BiConfigManager
+import services.BusinessService
+import repository.ElasticSearchBusinessRepository
 
 import scala.concurrent.Future
 
@@ -43,13 +40,9 @@ class Module(environment: Environment, configuration: Configuration) extends Abs
 
     val config: Config = BiConfigManager.envConf(ConfigFactory.load())
 
-    // val elasticSearchClient = ElasticClientBuilder.build(config)
-
     val host = config.getString("elasticsearch.host")
     val port = config.getInt("elasticsearch.port")
     val ssl = config.getBoolean("elasticsearch.ssl")
-
-    //    val elasticSearchClient = HttpClient(ElasticsearchClientUri(s"elasticsearch://$host:$port$suffix"))
 
     lazy val provider = {
       logger info "Connecting to Elasticsearch"
@@ -79,29 +72,12 @@ class Module(environment: Environment, configuration: Configuration) extends Abs
       }
     })
 
+    val elasticSearchBusinessRepository = new ElasticSearchBusinessRepository(elasticSearchClient)
+
     bind(classOf[Config]).toInstance(config)
-
-    bind(classOf[HttpClient]).toInstance(elasticSearchClient)
-
-    //    // register Elasticsearch cluster health check
-    //    healthCheck("es-cluster-alive") {
-    //      elasticSearchClient.execute {
-    //        get cluster health
-    //      }.await match {
-    //        case response if response.getStatus == GREEN =>
-    //          HealthCheck.Result.healthy(response.toString)
-    //        case response =>
-    //          HealthCheck.Result.unhealthy(response.toString)
-    //      }
-    //    }
-
-    //    bind(classOf[InsertDemoData]).asEagerSingleton()
+    bind(classOf[BusinessService]).toInstance(elasticSearchBusinessRepository)
+    //    bind(classOf[HttpClient]).toInstance(elasticSearchClient)
     bind(classOf[AvoidLogbackMemoryLeak]).asEagerSingleton()
-
-    //    if (!SingleJmxReporterPerJvm.initialized.getAndSet(true)) {
-    //      val reporter = JmxReporter.forRegistry(metricRegistry).build()
-    //      reporter.start()
-    //    }
   }
 }
 

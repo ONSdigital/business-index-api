@@ -2,7 +2,10 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 
-GET     /v1/business/:id       controllers.v1.SearchController.searchBusinessById(id)
+# Get Business by id
+GET     /v1/business/$id<\d{8,16}>       controllers.v1.SearchController.searchBusinessById(id: Long)
+GET     /v1/business/:id                 controllers.v1.SearchController.badRequest(id)
+
 GET     /v1/search             controllers.v1.SearchController.searchBusiness(term: Option[String] ?= None)
 GET     /v1/search/:term       controllers.v1.SearchController.searchTerm(term)
 
@@ -13,7 +16,6 @@ GET     /version               controllers.VersionController.version
 GET     /                       controllers.HomeController.health
 GET     /health                 controllers.HomeController.health
 
-
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file           controllers.Assets.versioned(path="/public", file: Asset)
 GET     /webjars/*file          controllers.WebJarAssets.at(file)
@@ -22,10 +24,5 @@ GET     /webjars/*file          controllers.WebJarAssets.at(file)
 GET   /swagger.json             controllers.ApiHelpController.getResources
 GET   /docs                     controllers.HomeController.swagger
 
-# Modification API
-# DELETE  /v1/delete/:id          controllers.v1.PutController.deleteById(id)
-# PUT     /v1/store               controllers.v1.PutController.store
-# POST    /v1/update/bulk         controllers.v1.PutController.bulkUpdate
+# CORS
 OPTIONS /*all                   controllers.HomeController.preflight(all: String)
-
-# GET    /v1/event/log            controllers.v1.PutController.eventLog
