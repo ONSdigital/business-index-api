@@ -54,7 +54,10 @@ class SearchController @Inject() (elastic: HttpClient, val config: Config)(impli
     elastic.execute {
       search("bi-dev").matchQuery("_id", id)
     } map {
-      case Right(r: RequestSuccess[SearchResponse]) => Ok(Json.toJson(BusinessIndexRec.fromRequestSuccessId(r)))
+      case Right(r: RequestSuccess[SearchResponse]) => BusinessIndexRec.fromRequestSuccessId(r) match {
+        case Some(s) => Ok(Json.toJson(s))
+        case None => NotFound
+      }
       case Left(f: RequestFailure) => InternalServerError
     }
   }
@@ -89,7 +92,10 @@ class SearchController @Inject() (elastic: HttpClient, val config: Config)(impli
           val limited: SearchDefinition = started.limit(searchRequest.limit)
 
           elastic.execute(limited).map {
-            case Right(r: RequestSuccess[SearchResponse]) => Ok(Json.toJson(BusinessIndexRec.fromRequestSuccessSearch(r)))
+            case Right(r: RequestSuccess[SearchResponse]) => BusinessIndexRec.fromRequestSuccessSearch(r) match {
+              case Some(s) => Ok(Json.toJson(s))
+              case None => NotFound
+            }
             case Left(f: RequestFailure) => InternalServerError
           }
         }
