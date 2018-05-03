@@ -15,6 +15,5 @@ object ControllerResultProcessor extends Results {
 
   def resultOnSuccessWithAtMostOneUnit[T](optUnit: Option[T])(implicit writes: Writes[T]): Result =
     optUnit.fold[Result](NotFound)(unit => Ok(toJson(unit)))
-
 }
 
