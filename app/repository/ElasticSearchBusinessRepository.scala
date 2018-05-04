@@ -6,8 +6,11 @@ import javax.inject.Inject
 import com.sksamuel.elastic4s.http._
 import com.sksamuel.elastic4s.http.search.SearchResponse
 import com.sksamuel.elastic4s.http.{ HttpClient, RequestSuccess }
-import com.sksamuel.elastic4s.searches.SearchDefinition
+import com.sksamuel.elastic4s.searches.queries.QueryStringQueryDefinition
+import com.typesafe.config.Config
+import config.ElasticUtils
 import models._
+import play.api.mvc.{ AnyContent, Request }
 import services.BusinessService
 import utils.ElasticRequestMapper
 
@@ -17,10 +20,14 @@ import scala.concurrent.ExecutionContext.Implicits.global
 /**
  * Created by coolit on 03/05/2018.
  */
-class ElasticSearchBusinessRepository @Inject() (elastic: HttpClient, requestMapper: ElasticRequestMapper) extends BusinessService with ElasticDsl {
+class ElasticSearchBusinessRepository @Inject() (elastic: HttpClient, requestMapper: ElasticRequestMapper, val config: Config)
+    extends BusinessService with ElasticDsl with ElasticUtils {
 
-  def findBusiness(query: SearchDefinition): Future[Either[ErrorMessage, Option[List[BusinessIndexRec]]]] = {
-    elastic.execute(query).map {
+  def findBusiness(query: String, request: Request[AnyContent]): Future[Either[ErrorMessage, Option[List[BusinessIndexRec]]]] = {
+    val searchRequest = BusinessSearchRequest(query, request)
+    val definition = QueryStringQueryDefinition(searchRequest.term).defaultOperator(searchRequest.defaultOperator)
+    val searchQuery = search(indexName).query(definition).start(searchRequest.offset).limit(searchRequest.limit)
+    elastic.execute(searchQuery).map {
       case Right(r: RequestSuccess[SearchResponse]) => Right(requestMapper.fromBusinessListResponse(r))
       case Left(f: RequestFailure) => handleRequestFailure[List[BusinessIndexRec]](f)
     } recover elasticSearchRecover[List[BusinessIndexRec]]

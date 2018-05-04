@@ -5,13 +5,11 @@ import javax.inject._
 import com.outworkers.util.play._
 import com.sksamuel.elastic4s.http._
 import com.typesafe.config.Config
-import com.sksamuel.elastic4s.searches.queries.QueryStringQueryDefinition
 import io.swagger.annotations._
 import play.api.mvc._
 import models._
 import services.BusinessService
 import ControllerResultProcessor._
-import config.ElasticUtils
 import controllers.v1.api.BusinessApi
 
 import scala.concurrent.ExecutionContext
@@ -19,7 +17,7 @@ import scala.concurrent.ExecutionContext
 @Api("Search")
 @Singleton
 class BusinessController @Inject() (service: BusinessService, val config: Config)(implicit context: ExecutionContext)
-    extends Controller with ElasticDsl with ElasticUtils with BusinessApi {
+    extends Controller with ElasticDsl with BusinessApi {
 
   /**
    * /v1/search/:term - This endpoint can be used like this: /v1/search/BusinessName:test
@@ -45,11 +43,7 @@ class BusinessController @Inject() (service: BusinessService, val config: Config
 
       searchTerm match {
         case Some(query) if query.length > 0 => {
-          val searchRequest = BusinessSearchRequest(query, request)
-          val definition = QueryStringQueryDefinition(searchRequest.term).defaultOperator(searchRequest.defaultOperator)
-          val searchQuery = search(indexName).query(definition).start(searchRequest.offset).limit(searchRequest.limit)
-
-          service.findBusiness(searchQuery).map { errorOrBusinessList =>
+          service.findBusiness(query, request).map { errorOrBusinessList =>
             errorOrBusinessList.fold(resultOnFailure, resultOnSuccess[List[BusinessIndexRec]])
           }
         }

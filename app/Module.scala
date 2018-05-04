@@ -72,7 +72,7 @@ class Module(environment: Environment, configuration: Configuration) extends Abs
       }
     })
 
-    val elasticSearchBusinessRepository = new ElasticSearchBusinessRepository(elasticSearchClient, new ElasticRequestMapper)
+    val elasticSearchBusinessRepository = new ElasticSearchBusinessRepository(elasticSearchClient, new ElasticRequestMapper, config)
 
     bind(classOf[Config]).toInstance(config)
     bind(classOf[BusinessService]).toInstance(elasticSearchBusinessRepository)
