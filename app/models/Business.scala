@@ -27,18 +27,8 @@ case class Business(
     payeRefs: Option[Seq[String]],
     companyNo: Option[String]
 ) {
-
   // method that used as output on UI (some fields are hidden)
   def secured: Business = this.copy(vatRefs = None, payeRefs = None, uprn = None)
-
-  def toCsvSecured: String = Business.toString(List(id, businessName, uprn, industryCode, legalStatus,
-    tradingStatus, turnover, employmentBands))
-
-  def toCsv: String = Business.toString(List(id, businessName, uprn, industryCode, legalStatus,
-    tradingStatus, turnover, employmentBands, vatRefs.map(seq => seq.mkString(",")), payeRefs.map(seq => seq.mkString(",")), companyNo))
-
-  def blankFieldsForNameSearch = this.copy(uprn = None, vatRefs = None, payeRefs = None)
-
 }
 
 object Business {
