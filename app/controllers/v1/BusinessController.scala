@@ -16,7 +16,7 @@ import scala.concurrent.ExecutionContext
 
 @Api("Search")
 @Singleton
-class BusinessController @Inject() (service: BusinessService, val config: Config)(implicit context: ExecutionContext)
+class BusinessController @Inject() (service: BusinessService)(implicit context: ExecutionContext)
     extends Controller with ElasticDsl with BusinessApi {
 
   /**

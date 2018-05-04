@@ -19,12 +19,13 @@ import org.elasticsearch.client.RestClientBuilder.{ HttpClientConfigCallback, Re
 import org.slf4j.LoggerFactory
 import play.api.inject.ApplicationLifecycle
 import play.api.{ Configuration, Environment }
-import config.BiConfigManager
 import services.BusinessService
 import repository.ElasticSearchBusinessRepository
 import utils.ElasticRequestMapper
 
 import scala.concurrent.Future
+
+import config.ElasticSearchConfigLoader
 
 // see http://logback.qos.ch/manual/jmxConfig.html#leak
 class AvoidLogbackMemoryLeak @Inject() (lifecycle: ApplicationLifecycle) extends StrictLogging {
@@ -37,12 +38,8 @@ class AvoidLogbackMemoryLeak @Inject() (lifecycle: ApplicationLifecycle) extends
 class Module(environment: Environment, configuration: Configuration) extends AbstractModule with ElasticDsl {
 
   override def configure(): Unit = {
-
-    val config: Config = BiConfigManager.envConf(ConfigFactory.load())
-
-    val host = config.getString("elasticsearch.host")
-    val port = config.getInt("elasticsearch.port")
-    val ssl = config.getBoolean("elasticsearch.ssl")
+    val underlyingConfig = configuration.underlying
+    val elasticConfig = ElasticSearchConfigLoader.load(underlyingConfig)
 
     lazy val provider = {
       logger info "Connecting to Elasticsearch"
@@ -61,7 +58,9 @@ class Module(environment: Environment, configuration: Configuration) extends Abs
       }
     ), null)
 
-    val elasticSearchClient = HttpClient(ElasticsearchClientUri(s"elasticsearch://$host:$port?ssl=$ssl"), new RequestConfigCallback {
+    val elasticSearchClient = HttpClient(ElasticsearchClientUri(
+      s"elasticsearch://${elasticConfig.host}:${elasticConfig.port}?ssl=${elasticConfig.ssl}"
+    ), new RequestConfigCallback {
       override def customizeRequestConfig(requestConfigBuilder: Builder) = {
         requestConfigBuilder
       }
@@ -72,9 +71,8 @@ class Module(environment: Environment, configuration: Configuration) extends Abs
       }
     })
 
-    val elasticSearchBusinessRepository = new ElasticSearchBusinessRepository(elasticSearchClient, new ElasticRequestMapper, config)
+    val elasticSearchBusinessRepository = new ElasticSearchBusinessRepository(elasticSearchClient, new ElasticRequestMapper, elasticConfig)
 
-    bind(classOf[Config]).toInstance(config)
     bind(classOf[BusinessService]).toInstance(elasticSearchBusinessRepository)
     bind(classOf[AvoidLogbackMemoryLeak]).asEagerSingleton()
   }

@@ -1,6 +1,5 @@
 package scala
 
-import play.api.libs.json.JsDefined
 import play.api.test.Helpers._
 import play.api.test._
 
