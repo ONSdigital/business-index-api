@@ -35,7 +35,7 @@ class ElasticSearchBusinessRepository @Inject() (elastic: HttpClient, requestMap
 
   def findBusinessById(id: Long): Future[Either[ErrorMessage, Option[BusinessIndexRec]]] = {
     elastic.execute {
-      search("bi-dev").matchQuery("_id", id)
+      search(indexName).matchQuery("_id", id)
     } map {
       case Right(r: RequestSuccess[SearchResponse]) => Right(requestMapper.fromBusinessResponse(r))
       case Left(f: RequestFailure) => handleRequestFailure[BusinessIndexRec](f)
