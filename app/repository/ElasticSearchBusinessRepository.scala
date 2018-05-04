@@ -22,23 +22,23 @@ import scala.concurrent.ExecutionContext.Implicits.global
 class ElasticSearchBusinessRepository @Inject() (elastic: HttpClient, requestMapper: ElasticRequestMapper, config: ElasticSearchConfig)
     extends BusinessService with ElasticDsl {
 
-  def findBusiness(query: String, request: Request[AnyContent]): Future[Either[ErrorMessage, Option[List[BusinessIndexRec]]]] = {
+  def findBusiness(query: String, request: Request[AnyContent]): Future[Either[ErrorMessage, Option[List[Business]]]] = {
     val searchRequest = BusinessSearchRequest(query, request)
     val definition = QueryStringQueryDefinition(searchRequest.term).defaultOperator(searchRequest.defaultOperator)
     val searchQuery = search(config.index).query(definition).start(searchRequest.offset).limit(searchRequest.limit)
     elastic.execute(searchQuery).map {
       case Right(r: RequestSuccess[SearchResponse]) => Right(requestMapper.fromBusinessListResponse(r))
-      case Left(f: RequestFailure) => handleRequestFailure[List[BusinessIndexRec]](f)
-    } recover elasticSearchRecover[List[BusinessIndexRec]]
+      case Left(f: RequestFailure) => handleRequestFailure[List[Business]](f)
+    } recover elasticSearchRecover[List[Business]]
   }
 
-  def findBusinessById(id: Long): Future[Either[ErrorMessage, Option[BusinessIndexRec]]] = {
+  def findBusinessById(id: Long): Future[Either[ErrorMessage, Option[Business]]] = {
     elastic.execute {
       search(config.index).matchQuery("_id", id)
     } map {
       case Right(r: RequestSuccess[SearchResponse]) => Right(requestMapper.fromBusinessResponse(r))
-      case Left(f: RequestFailure) => handleRequestFailure[BusinessIndexRec](f)
-    } recover elasticSearchRecover[BusinessIndexRec]
+      case Left(f: RequestFailure) => handleRequestFailure[Business](f)
+    } recover elasticSearchRecover[Business]
   }
 
   def elasticSearchRecover[T]: PartialFunction[Throwable, Either[ErrorMessage, Option[T]]] = {

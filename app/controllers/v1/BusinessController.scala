@@ -4,7 +4,6 @@ import javax.inject._
 
 import com.outworkers.util.play._
 import com.sksamuel.elastic4s.http._
-import com.typesafe.config.Config
 import io.swagger.annotations._
 import play.api.mvc._
 import models._
@@ -29,7 +28,7 @@ class BusinessController @Inject() (service: BusinessService)(implicit context: 
    */
   override def searchBusinessById(id: Long): Action[AnyContent] = Action.async {
     service.findBusinessById(id).map { errorOrBusiness =>
-      errorOrBusiness.fold(resultOnFailure, resultOnSuccess[BusinessIndexRec])
+      errorOrBusiness.fold(resultOnFailure, resultOnSuccess[Business])
     }
   }
 
@@ -44,7 +43,7 @@ class BusinessController @Inject() (service: BusinessService)(implicit context: 
       searchTerm match {
         case Some(query) if query.length > 0 => {
           service.findBusiness(query, request).map { errorOrBusinessList =>
-            errorOrBusinessList.fold(resultOnFailure, resultOnSuccess[List[BusinessIndexRec]])
+            errorOrBusinessList.fold(resultOnFailure, resultOnSuccess[List[Business]])
           }
         }
         case _ => BadRequest.future

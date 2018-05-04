@@ -13,15 +13,7 @@ import play.api.libs.functional.syntax._
 /**
  * Created by coolit on 03/05/2018.
  */
-/*mapping rules:
-* for all non-collection optional fields:
-*    obj -> json: None -> "" ("key":"" - empty string value)
-*    json -> obj: all entries with empty string values mapped to None
-* for optional collection-valued fields
-*    obj -> json: None -> None (no entries added to json)
-*    json -> obj: empty collection -> Option of empty collection ([] -> Some(Seq.empty))
-*    */
-case class BusinessIndexRec(
+case class Business(
     id: Long, // the same as uprn ?
     businessName: String,
     uprn: Option[Long],
@@ -37,19 +29,19 @@ case class BusinessIndexRec(
 ) {
 
   // method that used as output on UI (some fields are hidden)
-  def secured: BusinessIndexRec = this.copy(vatRefs = None, payeRefs = None, uprn = None)
+  def secured: Business = this.copy(vatRefs = None, payeRefs = None, uprn = None)
 
-  def toCsvSecured: String = BusinessIndexRec.toString(List(id, businessName, uprn, industryCode, legalStatus,
+  def toCsvSecured: String = Business.toString(List(id, businessName, uprn, industryCode, legalStatus,
     tradingStatus, turnover, employmentBands))
 
-  def toCsv: String = BusinessIndexRec.toString(List(id, businessName, uprn, industryCode, legalStatus,
+  def toCsv: String = Business.toString(List(id, businessName, uprn, industryCode, legalStatus,
     tradingStatus, turnover, employmentBands, vatRefs.map(seq => seq.mkString(",")), payeRefs.map(seq => seq.mkString(",")), companyNo))
 
   def blankFieldsForNameSearch = this.copy(uprn = None, vatRefs = None, payeRefs = None)
 
 }
 
-object BusinessIndexRec {
+object Business {
 
   def mapStrOption(opt: Option[String]): Option[String] = opt match {
     case Some(str) if (!str.trim.isEmpty) => opt
@@ -70,14 +62,14 @@ object BusinessIndexRec {
     (JsPath \ "PayeRefs").readNullable[Seq[String]] and
     (JsPath \ "CompanyNo").readNullable[String]
   )((id, businessName, uprn, postcode, industryCode, legalstatus, radingstatus, turnover, employmentbands, vatrefs, payerefs, companyno) =>
-      BusinessIndexRec.apply(id, businessName, uprn, mapStrOption(postcode), mapStrOption(industryCode),
+      Business.apply(id, businessName, uprn, mapStrOption(postcode), mapStrOption(industryCode),
         mapStrOption(legalstatus), mapStrOption(radingstatus), mapStrOption(turnover), mapStrOption(employmentbands),
         vatrefs,
         payerefs,
         mapStrOption(companyno)))
 
-  implicit val biWrites = new Writes[BusinessIndexRec] { //writes use only for hbase caching
-    override def writes(b: BusinessIndexRec): JsValue = {
+  implicit val biWrites = new Writes[Business] { //writes use only for hbase caching
+    override def writes(b: Business): JsValue = {
       import b._
       JsObject(Seq(
         "id" -> Json.toJson(id),
@@ -110,10 +102,10 @@ object BusinessIndexRec {
     case Some(v) => Some(v)
   }
 
-  def normalize(b: BusinessIndexRec): BusinessIndexRec = b.copy(industryCode = industryCodeNormalize(b.industryCode))
+  def normalize(b: Business): Business = b.copy(industryCode = industryCodeNormalize(b.industryCode))
 
   // build business index from elastic search map of fields
-  def fromMap(id: Long, map: Map[String, Any]) = BusinessIndexRec(
+  def fromMap(id: Long, map: Map[String, Any]) = Business(
     id = id,
     businessName = map.getOrElse(cBiName, cEmptyStr).toString,
     uprn = map.get(cBiUprn).map(x => java.lang.Long.parseLong(x.toString)),
@@ -137,21 +129,21 @@ object BusinessIndexRec {
     companyNo = map.get(cBiCompanyNo).map(_.toString)
   )
 
-  def fromRequestSuccessSearch(resp: RequestSuccess[SearchResponse]): Option[List[BusinessIndexRec]] = {
+  def fromRequestSuccessSearch(resp: RequestSuccess[SearchResponse]): Option[List[Business]] = {
     resp.result.hits.hits.toList match {
       case Nil => None
-      case xs => Some(xs.map(x => BusinessIndexRec.fromMap(x.id.toLong, x.sourceAsMap).secured))
+      case xs => Some(xs.map(x => Business.fromMap(x.id.toLong, x.sourceAsMap).secured))
     }
   }
 
-  def fromRequestSuccessId(resp: RequestSuccess[SearchResponse]): Option[BusinessIndexRec] = {
+  def fromRequestSuccessId(resp: RequestSuccess[SearchResponse]): Option[Business] = {
     resp.result.hits.hits.toList match {
       case Nil => None
-      case x :: _ => Some(BusinessIndexRec.fromMap(x.id.toLong, x.sourceAsMap))
+      case x :: _ => Some(Business.fromMap(x.id.toLong, x.sourceAsMap))
     }
   }
 
-  def toMap(bi: BusinessIndexRec): Map[String, Any] = Map(
+  def toMap(bi: Business): Map[String, Any] = Map(
     cBiName -> bi.businessName.toUpperCase,
     cBiUprn -> bi.uprn.orNull,
     cBiPostCode -> bi.postCode.orNull,

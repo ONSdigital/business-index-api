@@ -1,6 +1,6 @@
 package controllers.v1.api
 
-import models.BusinessIndexRec
+import models.Business
 import play.api.mvc.{ Action, AnyContent }
 import io.swagger.annotations.{ ApiOperation, ApiParam, ApiResponse, ApiResponses }
 
@@ -12,7 +12,7 @@ trait BusinessApi {
   @ApiOperation(
     value = "Json representation of the Business results",
     notes = "Requires a query string search term",
-    response = classOf[List[BusinessIndexRec]],
+    response = classOf[List[Business]],
     code = 200,
     httpMethod = "GET"
   )
@@ -29,7 +29,7 @@ trait BusinessApi {
   @ApiOperation(
     value = "Json representation of the Business results",
     notes = "Requires a query string search term",
-    response = classOf[List[BusinessIndexRec]],
+    response = classOf[List[Business]],
     code = 200,
     httpMethod = "GET"
   )
@@ -46,7 +46,7 @@ trait BusinessApi {
   @ApiOperation(
     value = "Json representation of the Business result",
     notes = "Requires an id to search on",
-    response = classOf[BusinessIndexRec],
+    response = classOf[Business],
     code = 200,
     httpMethod = "GET"
   )

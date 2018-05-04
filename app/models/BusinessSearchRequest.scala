@@ -7,9 +7,7 @@ import scala.util.Try
 /**
  * Created by coolit on 03/05/2018.
  */
-case class BusinessSearchRequest(term: String, offset: Int, limit: Int, suggest: Boolean, defaultOperator: String) {
-  override def toString = s"term: $term, offset: $offset, limit: $limit, suggest: $suggest, operator: $defaultOperator"
-}
+case class BusinessSearchRequest(term: String, offset: Int, limit: Int, suggest: Boolean, defaultOperator: String)
 
 object BusinessSearchRequest {
   def apply(term: String, request: Request[AnyContent], suggest: Boolean = false) = {
