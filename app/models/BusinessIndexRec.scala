@@ -86,6 +86,7 @@ object BusinessIndexRec {
       //        case Some(s) => s.map(x => x.toString)
       //        case None => Seq()
       //      }
+      println(s"vatRefs: ${vatRefs}")
       JsObject(Seq(
         "id" -> Json.toJson(id),
         "businessName" -> Json.toJson(businessName),
@@ -136,7 +137,8 @@ object BusinessIndexRec {
     tradingStatus = map.get(cBiTradingStatus).map(_.toString),
     turnover = map.get(cBiTurnover).map(_.toString),
     employmentBands = map.get(cBiEmploymentBand).map(_.toString),
-    vatRefs = map.get(cBiPayeRefs).map {
+    vatRefs = map.get(cBiVatRefs).map {
+      case a: Seq[Int] => a.map(x => x.toString)
       case e: util.ArrayList[String] => e.asScala
       case ps: Seq[String] => ps
       case e: String => e.split(",").toSeq
