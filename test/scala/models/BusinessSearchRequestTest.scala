@@ -28,4 +28,22 @@ class BusinessSearchRequestTest extends FreeSpec with Matchers with MockFactory 
       searchRequest shouldBe BusinessSearchRequest("BusinessName:test", 0, 100, false, "AND")
     }
   }
+
+  "can be created given a search term and an incomplete request" in {
+    val request = mock[Request[AnyContent]]
+    (request.getQueryString _).expects("limit").returning(
+      None
+    )
+
+    (request.getQueryString _).expects("offset").returning(
+      None
+    )
+
+    (request.getQueryString _).expects("default_operator").returning(
+      None
+    )
+
+    val searchRequest = BusinessSearchRequest("BusinessName:test", request)
+    searchRequest shouldBe BusinessSearchRequest("BusinessName:test", 0, 10000, false, "AND")
+  }
 }

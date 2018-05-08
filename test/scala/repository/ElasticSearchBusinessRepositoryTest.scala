@@ -2,12 +2,12 @@ package scala.repository
 
 import models.BusinessSearchRequest
 import org.scalamock.scalatest.MockFactory
-import org.scalatest.{FreeSpec, Matchers}
-import play.api.mvc.{AnyContent, Request}
+import org.scalatest.{ FreeSpec, Matchers }
+import play.api.mvc.{ AnyContent, Request }
 
 /**
-  * Created by coolit on 04/05/2018.
-  */
+ * Created by coolit on 04/05/2018.
+ */
 class ElasticSearchBusinessRepositoryTest extends FreeSpec with Matchers with MockFactory {
   "A BusinessSearchRequest" - {
     "can be created given a search term and a request" in {
