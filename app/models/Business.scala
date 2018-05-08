@@ -1,20 +1,17 @@
 package models
 
-import java.util
-
 import com.sksamuel.elastic4s.http.RequestSuccess
 import com.sksamuel.elastic4s.http.search.SearchResponse
 import play.api.libs.json._
 import BIndexConsts._
 
-import scala.collection.JavaConverters._
 import play.api.libs.functional.syntax._
 
 /**
  * Created by coolit on 03/05/2018.
  */
 case class Business(
-    id: Long, // the same as uprn ?
+    id: Long,
     businessName: String,
     uprn: Option[Long],
     postCode: Option[String],
@@ -63,17 +60,17 @@ object Business {
       import b._
       JsObject(Seq(
         "id" -> Json.toJson(id),
-        "businessName" -> Json.toJson(businessName),
-        "uprn" -> Json.toJson(uprn),
-        "postCode" -> Json.toJson(postCode.getOrElse("")),
-        "industryCode" -> Json.toJson(industryCode.getOrElse("")),
-        "legalStatus" -> Json.toJson(legalStatus.getOrElse("")),
-        "tradingStatus" -> Json.toJson(tradingStatus.getOrElse("")),
-        "turnover" -> Json.toJson(turnover.getOrElse("")),
-        "employmentBands" -> Json.toJson(employmentBands.getOrElse("")),
-        vatRefs.map(v => ("vatRefs" -> Json.toJson(v.filterNot(_.trim.isEmpty)))).orNull,
-        payeRefs.map(pr => ("payeRefs" -> Json.toJson(pr.filterNot(_.trim.isEmpty)))).orNull,
-        "companyNo" -> Json.toJson(companyNo.getOrElse(""))
+        "BusinessName" -> Json.toJson(businessName),
+        "UPRN" -> Json.toJson(uprn),
+        "PostCode" -> Json.toJson(postCode.getOrElse("")),
+        "IndustryCode" -> Json.toJson(industryCode.getOrElse("")),
+        "LegalStatus" -> Json.toJson(legalStatus.getOrElse("")),
+        "TradingStatus" -> Json.toJson(tradingStatus.getOrElse("")),
+        "Turnover" -> Json.toJson(turnover.getOrElse("")),
+        "EmploymentBands" -> Json.toJson(employmentBands.getOrElse("")),
+        vatRefs.map(v => ("VatRefs" -> Json.toJson(v.filterNot(_.trim.isEmpty)))).orNull,
+        payeRefs.map(pr => ("PayeRefs" -> Json.toJson(pr.filterNot(_.trim.isEmpty)))).orNull,
+        "CompanyNo" -> Json.toJson(companyNo.getOrElse(""))
       ).filter(_ != null))
     }
   }

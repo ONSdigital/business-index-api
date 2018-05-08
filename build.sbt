@@ -146,6 +146,7 @@ lazy val api = (project in file("."))
       "com.outworkers" %% "util-testing" % Versions.util % Test,
       "org.scalamock"  %% "scalamock" % "4.1.0" % Test,
       "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.0-M1" % Test,
+      "com.github.tomakehurst" % "wiremock" % "1.58" % Test,
       "org.scalatest" %% "scalatest" % "3.0.0" % Test,
       "com.google.guava" % "guava" % "18.0",
       "io.swagger" %% "swagger-play2" % "1.5.3",

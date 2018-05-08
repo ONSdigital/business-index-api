@@ -29,14 +29,8 @@ class ElasticSearchBusinessRepository @Inject() (elastic: HttpClient, requestMap
     val searchQuery = search(config.index).query(definition).start(searchRequest.offset).limit(searchRequest.limit)
     logger.info(s"findBusiness for searchQuery [${searchQuery.toString}]")
     elastic.execute(searchQuery).map {
-      case Right(r: RequestSuccess[SearchResponse]) => {
-        logger.info(s"RequestSuccess: ${r}")
-        Right(requestMapper.fromBusinessListResponse(r))
-      }
-      case Left(f: RequestFailure) => {
-        logger.info(s"RequestFailure: ${f.error.reason}")
-        handleRequestFailure[List[Business]](f)
-      }
+      case Right(r: RequestSuccess[SearchResponse]) => Right(requestMapper.fromBusinessListResponse(r))
+      case Left(f: RequestFailure) => handleRequestFailure[List[Business]](f)
     } recover elasticSearchRecover[List[Business]]
   }
 
@@ -45,26 +39,15 @@ class ElasticSearchBusinessRepository @Inject() (elastic: HttpClient, requestMap
     elastic.execute {
       search(config.index).matchQuery("_id", id)
     } map {
-      case Right(r: RequestSuccess[SearchResponse]) => {
-        logger.info(s"RequestSuccess: ${r}")
-        Right(requestMapper.fromBusinessResponse(r))
-      }
-      case Left(f: RequestFailure) => {
-        logger.info(s"RequestFailure: ${f.error.reason}")
-        handleRequestFailure[Business](f)
-      }
+      case Right(r: RequestSuccess[SearchResponse]) => Right(requestMapper.fromBusinessResponse(r))
+      case Left(f: RequestFailure) => handleRequestFailure[Business](f)
     } recover elasticSearchRecover[Business]
   }
 
   def elasticSearchRecover[T]: PartialFunction[Throwable, Either[ErrorMessage, Option[T]]] = {
-    //    case j: JavaClientExceptionWrapper => Left(ServiceUnavailable(s"ElasticSearch is not available: ${j.getMessage}"))
-    //    case t: TimeoutException => Left(GatewayTimeout(s"Gateway Timeout: ${t.getMessage}"))
-    //    case ex => Left(InternalServerError(s"Internal Server Error: ${ex.getMessage}"))
-    case ex => {
-      logger.info(s"Recovery: ${ex.getMessage}")
-      logger.info(s"Recovery: ${ex}")
-      Left(InternalServerError(s"Internal Server Error RECOVER"))
-    }
+    case j: JavaClientExceptionWrapper => Left(ServiceUnavailable(s"ElasticSearch is not available: ${j.getMessage}"))
+    case t: TimeoutException => Left(GatewayTimeout(s"Gateway Timeout: ${t.getMessage}"))
+    case ex => Left(InternalServerError(s"Internal Server Error: ${ex.getMessage}"))
   }
 
   def handleRequestFailure[T](f: RequestFailure): Either[ErrorMessage, Option[T]] = {
