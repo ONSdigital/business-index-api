@@ -106,15 +106,17 @@ object Business {
     turnover = map.get(cBiTurnover).map(_.toString),
     employmentBands = map.get(cBiEmploymentBand).map(_.toString),
     vatRefs = map.get(cBiVatRefs).map {
-      case a: Seq[Int] => a.map(x => x.toString)
-      case e: util.ArrayList[String] => e.asScala
-      case ps: Seq[String] => ps
-      case e: String => e.split(",").toSeq
+      case a: Seq[Any] => a.map(x => x.toString)
+      //      case e: util.ArrayList[String] => e.asScala
+      //      case ps: Seq[String] => ps
+      //      case e: String => e.split(",").toSeq
     },
     payeRefs = map.get(cBiPayeRefs).map {
-      case e: util.ArrayList[String] => e.asScala
-      case ps: Seq[String] => ps
-      case e: String => e.split(",").toSeq
+      case a: Seq[Any] => a.map(x => x.toString)
+      //      case a: Seq[Int] => a.map(x => x.toString)
+      //      case e: util.ArrayList[String] => e.asScala
+      //      case ps: Seq[String] => ps
+      //      case e: String => e.split(",").toSeq
     },
     companyNo = map.get(cBiCompanyNo).map(_.toString)
   )
