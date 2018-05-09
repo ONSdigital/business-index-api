@@ -36,18 +36,14 @@ class BusinessController @Inject() (service: BusinessService)(implicit context: 
    * /v1/search - This endpoint handles the search query string and returns a list of businesses, with
    * UPRN as null and no VAT/PAYE refs.
    */
-  override def searchBusiness(term: Option[String]): Action[AnyContent] = {
-    Action.async { implicit request =>
-      val searchTerm = term.orElse(request.getQueryString("q")).orElse(request.getQueryString("query"))
-
-      searchTerm match {
-        case Some(query) if query.length > 0 => {
-          service.findBusiness(query, request).map { errorOrBusinessSeq =>
-            errorOrBusinessSeq.fold(resultOnFailure, resultSeqOnSuccess)
-          }
+  override def searchBusiness(term: Option[String]): Action[AnyContent] = Action.async { implicit request =>
+    term.orElse(request.getQueryString("q")).orElse(request.getQueryString("query")) match {
+      case Some(query) if query.length > 0 => {
+        service.findBusiness(query, request).map { errorOrBusinessSeq =>
+          errorOrBusinessSeq.fold(resultOnFailure, resultSeqOnSuccess)
         }
-        case _ => BadRequest.future
       }
+      case _ => BadRequest.future
     }
   }
 

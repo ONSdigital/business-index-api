@@ -7,7 +7,7 @@ import services.RequestMapper
 
 class ElasticRequestMapper extends RequestMapper[Business] {
   def fromBusinessSeqResponse(resp: RequestSuccess[SearchResponse]): Seq[Business] =
-    resp.result.hits.hits.toSeq match {
+    resp.result.hits.hits.toList match {
       case Nil => Seq()
       case xs => xs.map(x => Business.fromMap(x.id.toLong, x.sourceAsMap).secured)
     }

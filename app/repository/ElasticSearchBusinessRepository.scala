@@ -13,7 +13,7 @@ import play.api.mvc.{ AnyContent, Request }
 import services.BusinessService
 import utils.ElasticRequestMapper
 
-import scala.concurrent.Future
+import scala.concurrent._
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class ElasticSearchBusinessRepository @Inject() (elastic: HttpClient, requestMapper: ElasticRequestMapper, config: ElasticSearchConfig)
@@ -23,25 +23,34 @@ class ElasticSearchBusinessRepository @Inject() (elastic: HttpClient, requestMap
     val searchRequest = BusinessSearchRequest(query, request)
     val definition = QueryStringQueryDefinition(searchRequest.term).defaultOperator(searchRequest.defaultOperator)
     val searchQuery = search(config.index).query(definition).start(searchRequest.offset).limit(searchRequest.limit)
+    logger.debug(s"Executing ElasticSearch query to find businesses with query [$query]")
     elastic.execute(searchQuery).map {
       case Right(r: RequestSuccess[SearchResponse]) => Right(requestMapper.fromBusinessSeqResponse(r))
       case Left(f: RequestFailure) => handleRequestFailure[Seq[Business]](f)
-    } recover elasticSearchRecover[Seq[Business]]
+    } recover withTranslationOfFailureToError[Seq[Business]]
   }
 
   def findBusinessById(id: Long): Future[Either[ErrorMessage, Option[Business]]] = {
+    logger.debug(s"Executing ElasticSearch query to find business by id with id [${id.toString}]")
     elastic.execute {
       search(config.index).matchQuery("_id", id)
     } map {
       case Right(r: RequestSuccess[SearchResponse]) => Right(requestMapper.fromBusinessResponse(r))
       case Left(f: RequestFailure) => handleRequestFailure[Option[Business]](f)
-    } recover elasticSearchRecover[Option[Business]]
+    } recover withTranslationOfFailureToError[Option[Business]]
   }
 
-  def elasticSearchRecover[T]: PartialFunction[Throwable, Either[ErrorMessage, T]] = {
-    case j: JavaClientExceptionWrapper => Left(ServiceUnavailable(s"ElasticSearch is not available: ${j.getMessage}"))
-    case t: TimeoutException => Left(GatewayTimeout(s"Gateway Timeout: ${t.getMessage}"))
-    case ex => Left(InternalServerError(s"Internal Server Error: ${ex.getMessage}"))
+  private def withTranslationOfFailureToError[B] = new PartialFunction[Throwable, Either[ErrorMessage, B]] {
+    override def isDefinedAt(cause: Throwable): Boolean = true
+
+    override def apply(cause: Throwable): Either[ErrorMessage, B] = {
+      logger.error(s"Recovering from ElasticSearch failure [$cause].")
+      cause match {
+        case j: JavaClientExceptionWrapper => Left(ServiceUnavailable(s"ElasticSearch is not available: ${j.getMessage}"))
+        case t: TimeoutException => Left(GatewayTimeout(s"Gateway Timeout: ${t.getMessage}"))
+        case ex => Left(InternalServerError(s"Internal Server Error: ${ex.getMessage}"))
+      }
+    }
   }
 
   def handleRequestFailure[T](f: RequestFailure): Either[ErrorMessage, T] = {
