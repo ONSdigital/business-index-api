@@ -5,9 +5,6 @@ import play.api.http.Port
 import play.api.libs.ws.WSClient
 import play.api.test.WsTestClient
 
-/**
- * Created by coolit on 08/05/2018.
- */
 trait WsClientFixture extends org.scalatest.fixture.TestSuite {
   override type FixtureParam = WSClient
 

@@ -7,9 +7,6 @@ import play.api.libs.json._
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 
-/**
- * Created by coolit on 04/05/2018.
- */
 trait TestUtils extends PlaySpec with GuiceOneAppPerSuite {
 
   protected[this] def fakeRequest(url: String, method: String = GET, appInstance: Application = app) =

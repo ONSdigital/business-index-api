@@ -5,9 +5,6 @@ import com.sksamuel.elastic4s.http.search.SearchResponse
 import models.Business
 import services.RequestMapper
 
-/**
- * Created by coolit on 03/05/2018.
- */
 class ElasticRequestMapper extends RequestMapper[Business] {
   def fromBusinessListResponse(resp: RequestSuccess[SearchResponse]): Option[List[Business]] =
     resp.result.hits.hits.toList match {

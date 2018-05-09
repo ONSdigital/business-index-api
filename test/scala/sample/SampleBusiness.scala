@@ -2,9 +2,6 @@ package scala.sample
 
 import models.Business
 
-/**
- * Created by coolit on 08/05/2018.
- */
 trait SampleBusiness {
   val SampleBusinessId = 10205415L
   val SampleBusinessName = "TEST GRILL LTD"

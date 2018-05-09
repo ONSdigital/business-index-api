@@ -1,8 +1,5 @@
 package scala.sample
 
-/**
- * Created by coolit on 08/05/2018.
- */
 trait SampleBusinessJson {
   val NotFound = """{
                    |"took": 21,

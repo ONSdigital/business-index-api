@@ -4,9 +4,6 @@ import com.typesafe.config.{ Config, ConfigException, ConfigFactory }
 import config.{ ElasticSearchConfig, ElasticSearchConfigLoader }
 import org.scalatest.{ FreeSpec, Matchers }
 
-/**
- * Created by coolit on 04/05/2018.
- */
 class ElasticConfigTest extends FreeSpec with Matchers {
 
   private trait ValidFixture {

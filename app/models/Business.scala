@@ -3,13 +3,10 @@ package models
 import com.sksamuel.elastic4s.http.RequestSuccess
 import com.sksamuel.elastic4s.http.search.SearchResponse
 import play.api.libs.json._
-import BIndexConsts._
+import BusinessFields._
 
 import play.api.libs.functional.syntax._
 
-/**
- * Created by coolit on 03/05/2018.
- */
 case class Business(
     id: Long,
     businessName: String,
@@ -75,21 +72,11 @@ object Business {
     }
   }
 
-  val Delim = ","
-
-  def toString(fields: List[Any]): String = fields.map {
-    case Some(a) => s"$a"
-    case None => ""
-    case z => s"$z"
-  }.map(x => s""" "$x" """).mkString(Delim)
-
   private[this] def industryCodeNormalize(s: Option[String]) = s match {
     case None | Some("") | Some("0") => None
     case Some(v) if v.length < 5 => Some("0" * (5 - v.length) + v)
     case Some(v) => Some(v)
   }
-
-  def normalize(b: Business): Business = b.copy(industryCode = industryCodeNormalize(b.industryCode))
 
   // build business index from elastic search map of fields
   def fromMap(id: Long, map: Map[String, Any]) = Business(
@@ -104,16 +91,9 @@ object Business {
     employmentBands = map.get(cBiEmploymentBand).map(_.toString),
     vatRefs = map.get(cBiVatRefs).map {
       case a: Seq[Any] => a.map(x => x.toString)
-      //      case e: util.ArrayList[String] => e.asScala
-      //      case ps: Seq[String] => ps
-      //      case e: String => e.split(",").toSeq
     },
     payeRefs = map.get(cBiPayeRefs).map {
       case a: Seq[Any] => a.map(x => x.toString)
-      //      case a: Seq[Int] => a.map(x => x.toString)
-      //      case e: util.ArrayList[String] => e.asScala
-      //      case ps: Seq[String] => ps
-      //      case e: String => e.split(",").toSeq
     },
     companyNo = map.get(cBiCompanyNo).map(_.toString)
   )
@@ -131,42 +111,4 @@ object Business {
       case x :: _ => Some(Business.fromMap(x.id.toLong, x.sourceAsMap))
     }
   }
-
-  def toMap(bi: Business): Map[String, Any] = Map(
-    cBiName -> bi.businessName.toUpperCase,
-    cBiUprn -> bi.uprn.orNull,
-    cBiPostCode -> bi.postCode.orNull,
-    cBiIndustryCode -> bi.industryCode.orNull,
-    cBiLegalStatus -> bi.legalStatus.orNull,
-    cBiTradingStatus -> bi.tradingStatus.orNull,
-    cBiTurnover -> bi.turnover.orNull,
-    cBiEmploymentBand -> bi.employmentBands.orNull,
-    cBiVatRefs -> bi.vatRefs.orNull,
-    cBiPayeRefs -> bi.payeRefs.orNull,
-    cBiCompanyNo -> bi.companyNo.orNull
-  )
-
-  val cBiSecuredHeader: String = toString(List("ID", cBiName, cBiUprn, cBiIndustryCode, cBiLegalStatus,
-    cBiTradingStatus, cBiTurnover, cBiEmploymentBand))
-
-}
-
-object BIndexConsts {
-
-  val cBiType = "business"
-  val cBiName = "BusinessName"
-  val cBiNameSuggest = "BusinessName_suggest"
-  val cBiUprn = "UPRN"
-  val cBiPostCode = "PostCode"
-  val cBiIndustryCode = "IndustryCode"
-  val cBiLegalStatus = "LegalStatus"
-  val cBiTradingStatus = "TradingStatus"
-  val cBiTurnover = "Turnover"
-  val cBiEmploymentBand = "EmploymentBands"
-  val cBiVatRefs = "VatRefs"
-  val cBiPayeRefs = "PayeRefs"
-  val cBiCompanyNo = "CompanyNo"
-
-  val cEmptyStr = ""
-
 }

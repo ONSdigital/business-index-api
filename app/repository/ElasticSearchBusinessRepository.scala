@@ -16,9 +16,6 @@ import utils.ElasticRequestMapper
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 
-/**
- * Created by coolit on 03/05/2018.
- */
 class ElasticSearchBusinessRepository @Inject() (elastic: HttpClient, requestMapper: ElasticRequestMapper, config: ElasticSearchConfig)
     extends BusinessService with ElasticDsl {
 

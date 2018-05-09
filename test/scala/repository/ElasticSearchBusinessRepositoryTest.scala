@@ -15,9 +15,6 @@ import utils.ElasticRequestMapper
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.sample.SampleBusiness
 
-/**
- * Created by coolit on 04/05/2018.
- */
 class ElasticSearchBusinessRepositoryTest extends FreeSpec with Matchers with MockFactory {
   //  elastic: HttpClient, requestMapper: ElasticRequestMapper, config: ElasticSearchConfig
   //

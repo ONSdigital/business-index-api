@@ -1,9 +1,5 @@
 package scala.support
 
-/**
- * Created by coolit on 04/05/2018.
- * @TODO: fix optionalSeqString
- */
 object JsonString {
   def string(name: String, value: String): Option[String] =
     Some(s""""$name":"$value"""")

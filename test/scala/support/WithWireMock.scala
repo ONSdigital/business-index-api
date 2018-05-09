@@ -5,9 +5,6 @@ import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import org.scalatest.{ BeforeAndAfterEach, Suite }
 
-/**
- * Created by coolit on 08/05/2018.
- */
 trait WithWireMock extends BeforeAndAfterEach { this: Suite =>
   val wireMockPort: Int
   private lazy val wireMockConfig = WireMockConfiguration.wireMockConfig().port(wireMockPort)

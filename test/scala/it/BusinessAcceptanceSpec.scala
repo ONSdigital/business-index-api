@@ -9,9 +9,6 @@ import scala.it.fixture.ServerAcceptanceSpec
 import scala.sample.{ SampleBusiness, SampleBusinessJson }
 import scala.support.WithWireMockElasticSearch
 
-/**
- * Created by coolit on 08/05/2018.
- */
 class BusinessAcceptanceSpec extends ServerAcceptanceSpec with WithWireMockElasticSearch with OptionValues
     with SampleBusiness with SampleBusinessJson {
 
