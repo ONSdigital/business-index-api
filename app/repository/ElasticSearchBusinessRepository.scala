@@ -16,8 +16,11 @@ import utils.ElasticRequestMapper
 import scala.concurrent._
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class ElasticSearchBusinessRepository @Inject() (elastic: HttpClient, requestMapper: ElasticRequestMapper, config: ElasticSearchConfig)
-    extends BusinessService with ElasticDsl {
+class ElasticSearchBusinessRepository @Inject() (
+    elastic: HttpClient,
+    requestMapper: ElasticRequestMapper,
+    config: ElasticSearchConfig
+) extends BusinessService with ElasticDsl {
 
   def findBusiness(query: String, request: Request[AnyContent]): Future[Either[ErrorMessage, Seq[Business]]] = {
     val searchRequest = BusinessSearchRequest(query, request)

@@ -132,18 +132,10 @@ lazy val api = (project in file("."))
       filters,
       "org.webjars" %% "webjars-play" % "2.5.0-3",
       "com.typesafe.scala-logging" %% "scala-logging" % "3.5.0",
-      "ch.qos.logback" % "logback-classic" % "1.1.7",
-      "com.splunk.logging" % "splunk-library-javalogging" % "1.5.2" excludeAll(
-        ExclusionRule("commons-logging", "commons-logging"),
-        ExclusionRule("org.apache.logging.log4j", "log4j-core"),
-        ExclusionRule("org.apache.logging.log4j", "log4j-api")
-      ),
       "com.sksamuel.elastic4s" %% "elastic4s-core" % Versions.elastic4s excludeAll ExclusionRule(organization = "org.apache.logging.log4j"),
       "com.sksamuel.elastic4s" %% "elastic4s-http" % Versions.elastic4s excludeAll ExclusionRule(organization = "org.apache.logging.log4j"),
       "com.sksamuel.elastic4s" %% "elastic4s-jackson" % Versions.elastic4s,
-      "com.outworkers" %% "util-parsers-cats" % Versions.util,
       "com.outworkers" %% "util-play" % Versions.util,
-      "com.outworkers" %% "util-testing" % Versions.util % Test,
       "org.scalamock"  %% "scalamock" % "4.1.0" % Test,
       "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.0-M1" % Test,
       "com.github.tomakehurst" % "wiremock" % "1.58" % Test,

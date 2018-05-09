@@ -4,9 +4,6 @@ import play.api.mvc.{ AnyContent, Request }
 
 import scala.util.Try
 
-/**
- * Created by coolit on 03/05/2018.
- */
 case class BusinessSearchRequest(term: String, offset: Int, limit: Int, suggest: Boolean, defaultOperator: String)
 
 object BusinessSearchRequest {

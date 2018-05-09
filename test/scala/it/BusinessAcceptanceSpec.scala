@@ -182,10 +182,7 @@ class BusinessAcceptanceSpec extends ServerAcceptanceSpec with WithWireMockElast
     }
 
     scenario("by searching using a fuzzy match") { wsClient =>
-      Given(s"no businesses exist with a business name that matches the following: 'test g*'")
-      stubElasticSearchFor(aBusinessQuery().willReturn(
-        anOkResponse().withBody(NotFound)
-      ))
+      Given(s"no search term is provided")
 
       When(s"the businesses matching the this term [$InvalidBusinessSearch] are requested")
       val response = await(wsClient.url(s"/v1/search?query=$InvalidBusinessSearch").get())
