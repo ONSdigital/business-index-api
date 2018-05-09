@@ -13,13 +13,17 @@ trait WithWireMockElasticSearch extends WithWireMock { this: Suite =>
 
   private val IndexName = "bi-dev"
 
-  def aBusinessIdRequest(withId: Long): MappingBuilder =
-    aBusinessQuery(withId)
+  //  def aBusinessFuzzyRequest(query: String, request: Request[AnyContent]): MappingBuilder = {
+  //    val searchRequest = BusinessSearchRequest(query, request)
+  //    val definition = QueryStringQueryDefinition(searchRequest.term).defaultOperator(searchRequest.defaultOperator)
+  //    val searchQuery = search(IndexName).query(definition).start(searchRequest.offset).limit(searchRequest.limit)
+  //    aBusinessFuzzyQuery(searchQuery)
+  //  }
 
-  private def aBusinessQuery(id: Long): MappingBuilder =
-    createUrlAndThenGetElasticSearchJson(id)
+  def aBusinessQuery(): MappingBuilder =
+    createUrlAndThenGetElasticSearchJson()
 
-  private def createUrlAndThenGetElasticSearchJson(id: Long): MappingBuilder =
+  private def createUrlAndThenGetElasticSearchJson(): MappingBuilder =
     getElasticSearchJson(s"/$IndexName/_search")
 
   def getElasticSearchJson(url: String): MappingBuilder =

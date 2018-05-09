@@ -45,6 +45,10 @@ class ElasticSearchBusinessRepository @Inject() (elastic: HttpClient, requestMap
   }
 
   def elasticSearchRecover[T]: PartialFunction[Throwable, Either[ErrorMessage, Option[T]]] = {
+    case a => {
+      logger.error(s"recovering..... ${a}")
+      Left(ServiceUnavailable(s"ElasticSearch is not available: "))
+    }
     case j: JavaClientExceptionWrapper => Left(ServiceUnavailable(s"ElasticSearch is not available: ${j.getMessage}"))
     case t: TimeoutException => Left(GatewayTimeout(s"Gateway Timeout: ${t.getMessage}"))
     case ex => Left(InternalServerError(s"Internal Server Error: ${ex.getMessage}"))
