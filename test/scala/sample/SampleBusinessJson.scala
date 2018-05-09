@@ -4,6 +4,21 @@ package scala.sample
  * Created by coolit on 08/05/2018.
  */
 trait SampleBusinessJson {
+  val NotFound = """{
+                   |"took": 21,
+                   |"timed_out": false,
+                   |"_shards": {
+                   |"total": 5,
+                   |"successful": 5,
+                   |"failed": 0
+                   |},
+                   |"hits": {
+                   |"total": 0,
+                   |"max_score": null,
+                   |"hits": []
+                   |}
+                   |}""".stripMargin
+
   val BusinessExactMatchESResponseBody =
     """{
         |"took":3,
@@ -35,6 +50,28 @@ trait SampleBusinessJson {
         |    }]
         |  }
         |}""".stripMargin
+
+  val BusinessExactMatchESResponseBodyEmptyFields =
+    """{
+      |"took":3,
+      |"timed_out":false,
+      |"_shards": {
+      |  "total":5,"successful":5,"failed":0},
+      |  "hits":{
+      |    "total":1,
+      |    "max_score":1.0,
+      |    "hits":[{
+      |        "_index":"bi-dev",
+      |        "_type":"business",
+      |        "_id":"10205415",
+      |        "_version":1,
+      |        "_score":1.0,
+      |        "_source":{
+      |          "BusinessName":"TEST GRILL LTD"
+      |        }
+      |    }]
+      |  }
+      |}""".stripMargin
 
   val BusinessFuzzyMatchESResponseBody =
     """{
@@ -100,4 +137,41 @@ trait SampleBusinessJson {
        |]
        |}
        |}""".stripMargin
+
+  val BusinessFuzzyMatchESResponseBodyEmptyFields =
+    """{
+      |"took": 99,
+      |"timed_out": false,
+      |"_shards": {
+      |"total": 5,
+      |"successful": 5,
+      |"failed": 0
+      |},
+      |"hits": {
+      |"total": 6,
+      |"max_score": 19.635054,
+      |"hits": [
+      |  {
+      |"_index": "bi-dev",
+      |"_type": "business",
+      |"_id": "10205415",
+      |"_version": 1,
+      |"_score": 19.635054,
+      |"_source": {
+      |"BusinessName": "TEST GRILL LTD"
+      |}
+      |},
+      |  {
+      |"_index": "bi-dev",
+      |"_type": "business",
+      |"_id": "87504854",
+      |"_version": 1,
+      |"_score": 19.624659,
+      |"_source": {
+      |"BusinessName": "GO LIVE TEST LIMITED"
+      |}
+      |}
+      |]
+      |}
+      |}""".stripMargin
 }
