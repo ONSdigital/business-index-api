@@ -42,8 +42,8 @@ class BusinessController @Inject() (service: BusinessService)(implicit context: 
 
       searchTerm match {
         case Some(query) if query.length > 0 => {
-          service.findBusiness(query, request).map { errorOrBusinessList =>
-            errorOrBusinessList.fold(resultOnFailure, resultOnSuccess[List[Business]])
+          service.findBusiness(query, request).map { errorOrBusinessSeq =>
+            errorOrBusinessSeq.fold(resultOnFailure, resultSeqOnSuccess)
           }
         }
         case _ => BadRequest.future

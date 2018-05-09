@@ -6,6 +6,6 @@ import play.api.mvc.{ Request, AnyContent }
 import scala.concurrent.Future
 
 trait BusinessService {
-  def findBusiness(query: String, request: Request[AnyContent]): Future[Either[ErrorMessage, Option[List[Business]]]]
+  def findBusiness(query: String, request: Request[AnyContent]): Future[Either[ErrorMessage, Seq[Business]]]
   def findBusinessById(id: Long): Future[Either[ErrorMessage, Option[Business]]]
 }

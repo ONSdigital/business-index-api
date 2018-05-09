@@ -6,10 +6,10 @@ import models.Business
 import services.RequestMapper
 
 class ElasticRequestMapper extends RequestMapper[Business] {
-  def fromBusinessListResponse(resp: RequestSuccess[SearchResponse]): Option[List[Business]] =
-    resp.result.hits.hits.toList match {
-      case Nil => None
-      case xs => Some(xs.map(x => Business.fromMap(x.id.toLong, x.sourceAsMap).secured))
+  def fromBusinessSeqResponse(resp: RequestSuccess[SearchResponse]): Seq[Business] =
+    resp.result.hits.hits.toSeq match {
+      case Nil => Seq()
+      case xs => xs.map(x => Business.fromMap(x.id.toLong, x.sourceAsMap).secured)
     }
 
   def fromBusinessResponse(resp: RequestSuccess[SearchResponse]): Option[Business] =
