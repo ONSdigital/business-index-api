@@ -1,7 +1,5 @@
 package models
 
-import com.sksamuel.elastic4s.http.RequestSuccess
-import com.sksamuel.elastic4s.http.search.SearchResponse
 import play.api.libs.json._
 import BusinessFields._
 
@@ -97,18 +95,4 @@ object Business {
     },
     companyNo = map.get(cBiCompanyNo).map(_.toString)
   )
-
-  def fromRequestSuccessSearch(resp: RequestSuccess[SearchResponse]): Option[List[Business]] = {
-    resp.result.hits.hits.toList match {
-      case Nil => None
-      case xs => Some(xs.map(x => Business.fromMap(x.id.toLong, x.sourceAsMap).secured))
-    }
-  }
-
-  def fromRequestSuccessId(resp: RequestSuccess[SearchResponse]): Option[Business] = {
-    resp.result.hits.hits.toList match {
-      case Nil => None
-      case x :: _ => Some(Business.fromMap(x.id.toLong, x.sourceAsMap))
-    }
-  }
 }

@@ -9,7 +9,6 @@ import play.api.mvc._
 import models._
 import services.BusinessService
 import ControllerResultProcessor._
-import com.typesafe.scalalogging.LazyLogging
 import controllers.v1.api.BusinessApi
 
 import scala.concurrent.ExecutionContext
