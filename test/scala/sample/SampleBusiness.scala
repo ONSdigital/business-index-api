@@ -46,4 +46,7 @@ trait SampleBusiness {
   val SampleBusinessWithNoOptionalFields1: Business = Business(
     SampleBusinessId1, SampleBusinessName1, None, None, None, None, None, None, None, None, None, None
   )
+
+  def aBusinessSample(ubrn: Long, template: Business = SampleBusinessWithAllFields): Business =
+    template.copy(id = ubrn)
 }
