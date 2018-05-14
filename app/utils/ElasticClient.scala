@@ -18,7 +18,7 @@ object ElasticClient extends LazyLogging {
     lazy val provider = {
       logger.info("Connecting to Elasticsearch...")
       val provider = new BasicCredentialsProvider
-      val credentials = new UsernamePasswordCredentials("elastic", "changeme")
+      val credentials = new UsernamePasswordCredentials(elasticConfig.username, elasticConfig.password)
       provider.setCredentials(AuthScope.ANY, credentials)
       provider
     }

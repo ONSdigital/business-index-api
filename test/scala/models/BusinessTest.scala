@@ -8,7 +8,7 @@ import scala.sample.SampleBusiness
 import support.JsonString
 import support.JsonString._
 
-class BusinessTest extends FreeSpec with Matchers with SampleBusiness {
+class BusinessSpec extends FreeSpec with Matchers with SampleBusiness {
 
   private trait Fixture {
     def expectedJsonStrOf(business: Business): String =

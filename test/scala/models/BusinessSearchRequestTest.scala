@@ -5,7 +5,7 @@ import org.scalatest.{ FreeSpec, Matchers }
 import org.scalamock.scalatest.MockFactory
 import play.api.mvc.{ AnyContent, Request }
 
-class BusinessSearchRequestTest extends FreeSpec with Matchers with MockFactory {
+class BusinessSearchRequestSpec extends FreeSpec with Matchers with MockFactory {
   "A BusinessSearchRequest" - {
     "can be created given a search term and a request" in {
       val request = mock[Request[AnyContent]]

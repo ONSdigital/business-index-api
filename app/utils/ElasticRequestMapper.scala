@@ -3,9 +3,9 @@ package utils
 import com.sksamuel.elastic4s.http.RequestSuccess
 import com.sksamuel.elastic4s.http.search.SearchResponse
 import models.Business
-import services.RequestMapper
+import services.ResponseMapper
 
-class ElasticRequestMapper extends RequestMapper[Business] {
+class ElasticResponseMapper extends ResponseMapper[Business] {
   def fromBusinessSeqResponse(resp: RequestSuccess[SearchResponse]): Seq[Business] =
     resp.result.hits.hits.toList match {
       case Nil => Seq()

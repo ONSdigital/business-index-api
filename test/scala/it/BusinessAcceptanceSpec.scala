@@ -50,9 +50,9 @@ class BusinessAcceptanceSpec extends ServerAcceptanceSpec with WithWireMockElast
       Then(s"the details of the businesses matching the search term [$BusinessSearch] are returned")
       response.status shouldBe OK
       response.header(CONTENT_TYPE).value shouldBe "application/json"
-      response.json.as[List[Business]].length shouldBe 2
-      response.json.as[List[Business]].head shouldBe SampleBusinessWithAllFields.secured
-      response.json.as[List[Business]].tail.head shouldBe SampleBusinessWithAllFields1.secured
+      response.json.as[Seq[Business]].length shouldBe 2
+      response.json.as[Seq[Business]] should contain theSameElementsInOrderAs
+        Seq(SampleBusinessWithAllFields.secured, SampleBusinessWithAllFields1.secured)
     }
 
     scenario("by searching using a fuzzy match using a search term") { wsClient =>
@@ -69,9 +69,9 @@ class BusinessAcceptanceSpec extends ServerAcceptanceSpec with WithWireMockElast
       Then(s"the details of the businesses matching the search term [$BusinessSearch] are returned")
       response.status shouldBe OK
       response.header(CONTENT_TYPE).value shouldBe "application/json"
-      response.json.as[List[Business]].length shouldBe 2
-      response.json.as[List[Business]].head shouldBe SampleBusinessWithAllFields.secured
-      response.json.as[List[Business]].tail.head shouldBe SampleBusinessWithAllFields1.secured
+      response.json.as[Seq[Business]].length shouldBe 2
+      response.json.as[Seq[Business]] should contain theSameElementsInOrderAs
+        Seq(SampleBusinessWithAllFields.secured, SampleBusinessWithAllFields1.secured)
     }
   }
 

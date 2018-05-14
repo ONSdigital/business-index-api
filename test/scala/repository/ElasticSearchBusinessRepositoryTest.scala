@@ -13,7 +13,7 @@ import play.core.j.HttpExecutionContext
 import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
 import repository.ElasticSearchBusinessRepository
-import utils.{ ElasticClient, ElasticRequestMapper }
+import utils.{ ElasticClient, ElasticResponseMapper }
 
 import scala.concurrent.{ Await, ExecutionContext, Future }
 import scala.sample.SampleBusiness
@@ -30,8 +30,8 @@ class ElasticSearchBusinessRepositoryTest extends FreeSpec with Matchers with Mo
   }
 
   private trait Fixture extends SampleBusiness {
-    val requestMapper: ElasticRequestMapper = mock[ElasticRequestMapper]
-    val config = ElasticSearchConfig(index = "bi-dev", host = "localhost", port = 9000, ssl = true)
+    val requestMapper: ElasticResponseMapper = mock[ElasticResponseMapper]
+    val config = ElasticSearchConfig(username = "es123", password = "abc", index = "bi-dev", host = "localhost", port = 9000, ssl = true)
     val esClient: HttpClient = ElasticClient.getElasticClient(config) // mock[HttpClient]
     val repository = new ElasticSearchBusinessRepository(esClient, requestMapper, config)
   }

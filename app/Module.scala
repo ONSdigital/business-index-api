@@ -1,9 +1,9 @@
 import com.google.inject.AbstractModule
 import com.sksamuel.elastic4s.http.ElasticDsl
 import play.api.{ Configuration, Environment }
-import services.BusinessService
+import services.BusinessRepository
 import repository.ElasticSearchBusinessRepository
-import utils.{ ElasticClient, ElasticRequestMapper }
+import utils.{ ElasticClient, ElasticResponseMapper }
 
 import config.ElasticSearchConfigLoader
 
@@ -13,7 +13,7 @@ class Module(environment: Environment, configuration: Configuration) extends Abs
     val underlyingConfig = configuration.underlying
     val elasticConfig = ElasticSearchConfigLoader.load(underlyingConfig)
     val elasticSearchClient = ElasticClient.getElasticClient(elasticConfig)
-    val elasticSearchBusinessRepository = new ElasticSearchBusinessRepository(elasticSearchClient, new ElasticRequestMapper, elasticConfig)
-    bind(classOf[BusinessService]).toInstance(elasticSearchBusinessRepository)
+    val elasticSearchBusinessRepository = new ElasticSearchBusinessRepository(elasticSearchClient, new ElasticResponseMapper, elasticConfig)
+    bind(classOf[BusinessRepository]).toInstance(elasticSearchBusinessRepository)
   }
 }

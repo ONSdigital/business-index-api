@@ -4,42 +4,81 @@ import com.typesafe.config.{ Config, ConfigException, ConfigFactory }
 import config.{ ElasticSearchConfig, ElasticSearchConfigLoader }
 import org.scalatest.{ FreeSpec, Matchers }
 
-class ElasticConfigTest extends FreeSpec with Matchers {
+import scala.sample.SampleConfig
+
+class ElasticConfigTest extends FreeSpec with Matchers with SampleConfig {
 
   private trait ValidFixture {
     val SampleConfiguration: String =
-      """|db {
+      s"""|db {
         |  elasticsearch {
-        |    index = "bi-dev"
-        |    host = "localhost"
-        |    port = 9000
-        |    ssl = true
+        |    username = $SampleUsername
+        |    password = $SamplePassword
+        |    index = $SampleIndex
+        |    host = $SampleHost
+        |    port = $SamplePort
+        |    ssl = $SampleSsl
         |  }
         |}""".stripMargin
     val config: Config = ConfigFactory.parseString(SampleConfiguration)
   }
 
-  private trait InvalidFixture {
+  private trait InvalidKeysFixture {
     val SampleConfiguration: String =
-      """|db {
+      s"""|db {
+          |  elasticsearch {
+          |    Username = $SampleUsername
+          |    Password = $SamplePassword
+          |    Index = $SampleIndex
+          |    Host = $SampleHost
+          |    Port = $SamplePort
+          |    Ssl = $SampleSsl
+          |  }
+          |}""".stripMargin
+    val config: Config = ConfigFactory.parseString(SampleConfiguration)
+  }
+
+  private def parseConf(port: Any, ssl: Any): Config = {
+    val SampleConfiguration: String =
+      s"""|db {
         |  elasticsearch {
-        |    indexName = "bi-dev"
-        |    hostName = "localhost"
-        |    portNumber = 9000
-        |    ssl = true
+        |    username = "esUser"
+        |    password = "qwerty"
+        |    index = "bi-dev"
+        |    host = "localhost"
+        |    port = $port
+        |    ssl = $ssl
         |  }
         |}""".stripMargin
-    val config: Config = ConfigFactory.parseString(SampleConfiguration)
+    ConfigFactory.parseString(SampleConfiguration)
   }
 
   "The config for the HBase REST LocalUnit repository" - {
     "can be successfully loaded when valid" in new ValidFixture {
-      ElasticSearchConfigLoader.load(config) shouldBe ElasticSearchConfig("bi-dev", "localhost", 9000, true)
+      ElasticSearchConfigLoader.load(config) shouldBe ElasticSearchConfig(
+        "esUser", "secret", "bi-dev", "localhost", 9000, ssl = false
+      )
     }
 
-    "will fail fast when incorrect config is provided" in new InvalidFixture {
-      a[ConfigException] should be thrownBy {
-        ElasticSearchConfigLoader.load(config)
+    "will fail fast when incorrect config is provided" - {
+      "invalid config keys" in new InvalidKeysFixture {
+        a[ConfigException] should be thrownBy {
+          ElasticSearchConfigLoader.load(config)
+        }
+      }
+
+      "invalid port type" in {
+        val config: Config = parseConf(port = false, ssl = true)
+        a[ConfigException] should be thrownBy {
+          ElasticSearchConfigLoader.load(config)
+        }
+      }
+
+      "invalid ssl type" in {
+        val config: Config = parseConf(port = 9000, ssl = 100)
+        a[ConfigException] should be thrownBy {
+          ElasticSearchConfigLoader.load(config)
+        }
       }
     }
   }

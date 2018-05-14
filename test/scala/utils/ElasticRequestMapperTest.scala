@@ -4,14 +4,14 @@ import com.sksamuel.elastic4s.http.search.{ SearchHit, SearchHits, SearchRespons
 import com.sksamuel.elastic4s.http.{ RequestSuccess, Shards }
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{ FreeSpec, Matchers }
-import utils.ElasticRequestMapper
+import utils.ElasticResponseMapper
 
 import scala.sample.SampleBusiness
 
-class ElasticRequestMapperTest extends FreeSpec with Matchers with MockFactory with SampleBusiness {
+class ElasticResponseMapperTest extends FreeSpec with Matchers with MockFactory with SampleBusiness {
 
   private trait Fixture {
-    val elasticRequestMapper = new ElasticRequestMapper()
+    val elasticRequestMapper = new ElasticResponseMapper()
   }
 
   private def createRequestSuccess(hitsArr: Array[SearchHit]): RequestSuccess[SearchResponse] = {

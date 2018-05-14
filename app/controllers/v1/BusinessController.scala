@@ -7,16 +7,16 @@ import com.sksamuel.elastic4s.http._
 import io.swagger.annotations._
 import play.api.mvc._
 import models._
-import services.BusinessService
-import ControllerResultProcessor._
+import services.BusinessRepository
 import controllers.v1.api.BusinessApi
+import play.api.libs.json.Json._
+import play.api.libs.json.Writes
 
-import scala.concurrent.ExecutionContext
+import play.api.libs.concurrent.Execution.Implicits.defaultContext
 
 @Api("Search")
 @Singleton
-class BusinessController @Inject() (service: BusinessService)(implicit context: ExecutionContext)
-    extends Controller with ElasticDsl with BusinessApi {
+class BusinessController @Inject() (service: BusinessRepository) extends Controller with ElasticDsl with BusinessApi {
 
   /**
    * /v1/search/:term - This endpoint can be used like this: /v1/search/BusinessName:test
@@ -38,7 +38,7 @@ class BusinessController @Inject() (service: BusinessService)(implicit context: 
    */
   override def searchBusiness(term: Option[String]): Action[AnyContent] = Action.async { implicit request =>
     term.orElse(request.getQueryString("q")).orElse(request.getQueryString("query")) match {
-      case Some(query) if query.length > 0 => {
+      case Some(query) if query.trim.length > 0 => {
         service.findBusiness(query, request).map { errorOrBusinessSeq =>
           errorOrBusinessSeq.fold(resultOnFailure, resultSeqOnSuccess)
         }
@@ -53,4 +53,17 @@ class BusinessController @Inject() (service: BusinessService)(implicit context: 
   def badRequest(a: String) = Action {
     BadRequest
   }
+
+  private def resultOnFailure(errorMessage: ErrorMessage): Result = errorMessage match {
+    case g: GatewayTimeout => GatewayTimeout
+    case s: ServiceUnavailable => ServiceUnavailable
+    case _ => InternalServerError
+  }
+
+  private def resultOnSuccess[T](optBusiness: Option[T])(implicit writes: Writes[T]): Result =
+    optBusiness.fold[Result](NotFound)(business => Ok(toJson(business)))
+
+  private def resultSeqOnSuccess(businesses: Seq[Business]): Result =
+    if (businesses.isEmpty) NotFound
+    else Ok(toJson(businesses))
 }

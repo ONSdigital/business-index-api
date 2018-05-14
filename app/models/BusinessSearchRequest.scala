@@ -8,8 +8,8 @@ case class BusinessSearchRequest(term: String, offset: Int, limit: Int, suggest:
 
 object BusinessSearchRequest {
   def apply(term: String, request: Request[AnyContent], suggest: Boolean = false) = {
-    val offset = Try(request.getQueryString("offset").get.toInt).getOrElse(0)
-    val limit = Try(request.getQueryString("limit").get.toInt).getOrElse(10000)
+    val offset = request.getQueryString("offset").flatMap(str => Try(str.toInt).toOption).getOrElse(0)
+    val limit = request.getQueryString("limit").flatMap(str => Try(str.toInt).toOption).getOrElse(10000)
     val defaultOperator = request.getQueryString("default_operator").getOrElse("AND")
     new BusinessSearchRequest(term, offset, limit, suggest, defaultOperator)
   }

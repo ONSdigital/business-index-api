@@ -51,8 +51,8 @@ trait BusinessApi {
     httpMethod = "GET"
   )
   @ApiResponses(Array(
-    new ApiResponse(code = 400, message = "No query has been provided (length > 0)"),
-    new ApiResponse(code = 404, message = "No businesses for your search term can be found"),
+    new ApiResponse(code = 400, message = "The supplied unique business reference number (UBRN) has an invalid length"),
+    new ApiResponse(code = 404, message = "No business id's exist that match the input id"),
     new ApiResponse(code = 500, message = "The attempt to retrieve search results could not complete due to some failure"),
     new ApiResponse(code = 504, message = "A response was not received from the database within the required time interval")
   ))

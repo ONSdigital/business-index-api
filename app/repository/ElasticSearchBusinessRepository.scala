@@ -10,17 +10,17 @@ import com.sksamuel.elastic4s.searches.queries.QueryStringQueryDefinition
 import config.ElasticSearchConfig
 import models._
 import play.api.mvc.{ AnyContent, Request }
-import services.BusinessService
-import utils.ElasticRequestMapper
+import services.BusinessRepository
+import utils.ElasticResponseMapper
 
 import scala.concurrent._
-import scala.concurrent.ExecutionContext.Implicits.global
+import play.api.libs.concurrent.Execution.Implicits.defaultContext
 
 class ElasticSearchBusinessRepository @Inject() (
     elastic: HttpClient,
-    requestMapper: ElasticRequestMapper,
+    requestMapper: ElasticResponseMapper,
     config: ElasticSearchConfig
-) extends BusinessService with ElasticDsl {
+) extends BusinessRepository with ElasticDsl {
 
   def findBusiness(query: String, request: Request[AnyContent]): Future[Either[ErrorMessage, Seq[Business]]] = {
     val searchRequest = BusinessSearchRequest(query, request)
