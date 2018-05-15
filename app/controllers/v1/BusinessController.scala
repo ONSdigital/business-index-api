@@ -28,7 +28,7 @@ class BusinessController @Inject() (service: BusinessRepository) extends Control
    */
   override def searchBusinessById(id: Long): Action[AnyContent] = Action.async {
     service.findBusinessById(id).map { errorOrBusiness =>
-      errorOrBusiness.fold(resultOnFailure, resultOnSuccess[Business])
+      errorOrBusiness.fold(resultOnFailure, resultOnSuccess)
     }
   }
 
@@ -60,7 +60,7 @@ class BusinessController @Inject() (service: BusinessRepository) extends Control
     case _ => InternalServerError
   }
 
-  private def resultOnSuccess[T](optBusiness: Option[T])(implicit writes: Writes[T]): Result =
+  private def resultOnSuccess(optBusiness: Option[Business]): Result =
     optBusiness.fold[Result](NotFound)(business => Ok(toJson(business)))
 
   private def resultSeqOnSuccess(businesses: Seq[Business]): Result =
