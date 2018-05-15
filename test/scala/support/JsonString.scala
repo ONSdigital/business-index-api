@@ -13,8 +13,10 @@ object JsonString {
   def long(name: String, value: Long): Option[String] =
     Some(s""""$name":$value""")
 
-  def seqStr(name: String, value: Seq[String]): Option[String] =
-    Some(s""""$name":$value""")
+  def seqStr(name: String, value: Seq[String]): Option[String] = {
+    val s = value.map(x => s""""$x"""")
+    Some(s""""$name":[${s.mkString(",")}]""")
+  }
 
   def optionalInt(name: String, optValue: Option[Int]): Option[String] =
     optValue.flatMap(int(name, _))

@@ -14,27 +14,28 @@ class BusinessSpec extends FreeSpec with Matchers with SampleBusiness {
     def expectedJsonStrOf(business: Business): String =
       JsonString.withObject(
         long("id", business.id),
-        string("businessName", business.businessName),
-        optionalLong("uprn", business.uprn),
-        optionalString("postCode", business.postCode),
-        optionalString("industryCode", business.industryCode),
-        optionalString("legalStatus", business.legalStatus),
-        optionalString("tradingStatus", business.tradingStatus),
-        optionalString("turnover", business.turnover),
-        optionalString("employmentBands", business.employmentBands),
-        optionalSeqString("vatRefs", business.vatRefs),
-        optionalSeqString("payeRefs", business.payeRefs),
-        optionalString("companyNo", business.companyNo)
+        string("BusinessName", business.businessName),
+        optionalLong("UPRN", business.uprn),
+        optionalString("PostCode", business.postCode),
+        optionalString("IndustryCode", business.industryCode),
+        optionalString("LegalStatus", business.legalStatus),
+        optionalString("TradingStatus", business.tradingStatus),
+        optionalString("Turnover", business.turnover),
+        optionalString("EmploymentBands", business.employmentBands),
+        optionalSeqString("VatRefs", business.vatRefs),
+        optionalSeqString("PayeRefs", business.payeRefs),
+        optionalString("CompanyNo", business.companyNo)
       )
   }
 
   "A Business" - {
     "can be represented as JSON" - {
-      "when all fields are defined" ignore new Fixture {
+      "when all fields are defined" in new Fixture {
         Json.toJson(SampleBusinessWithAllFields) shouldBe Json.parse(expectedJsonStrOf(SampleBusinessWithAllFields))
       }
 
       "when only mandatory fields are defined" ignore new Fixture {
+        // TODO: need to modify JsonString to handle empty values rather than None's
         Json.toJson(SampleBusinessWithNoOptionalFields) shouldBe Json.parse(expectedJsonStrOf(SampleBusinessWithNoOptionalFields))
       }
     }

@@ -8,7 +8,7 @@ import utils.ElasticResponseMapper
 
 import scala.sample.SampleBusiness
 
-class ElasticResponseMapperTest extends FreeSpec with Matchers with MockFactory with SampleBusiness {
+class ElasticResponseMapperSpec extends FreeSpec with Matchers with MockFactory with SampleBusiness {
 
   private trait Fixture {
     val elasticRequestMapper = new ElasticResponseMapper()

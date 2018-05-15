@@ -43,9 +43,9 @@ object Business {
     (JsPath \ "VatRefs").readNullable[Seq[String]] and
     (JsPath \ "PayeRefs").readNullable[Seq[String]] and
     (JsPath \ "CompanyNo").readNullable[String]
-  )((id, businessName, uprn, postcode, industryCode, legalstatus, radingstatus, turnover, employmentbands, vatrefs, payerefs, companyno) =>
+  )((id, businessName, uprn, postcode, industryCode, legalstatus, tradingstatus, turnover, employmentbands, vatrefs, payerefs, companyno) =>
       Business.apply(id, businessName, uprn, mapStrOption(postcode), mapStrOption(industryCode),
-        mapStrOption(legalstatus), mapStrOption(radingstatus), mapStrOption(turnover), mapStrOption(employmentbands),
+        mapStrOption(legalstatus), mapStrOption(tradingstatus), mapStrOption(turnover), mapStrOption(employmentbands),
         vatrefs,
         payerefs,
         mapStrOption(companyno)))
