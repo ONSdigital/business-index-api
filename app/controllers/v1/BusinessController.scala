@@ -10,9 +10,9 @@ import models._
 import services.BusinessRepository
 import controllers.v1.api.BusinessApi
 import play.api.libs.json.Json._
-import play.api.libs.json.Writes
-
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
+
+import scala.util.Try
 
 @Api("Search")
 @Singleton
@@ -39,7 +39,12 @@ class BusinessController @Inject() (service: BusinessRepository) extends Control
   override def searchBusiness(term: Option[String]): Action[AnyContent] = Action.async { implicit request =>
     term.orElse(request.getQueryString("q")).orElse(request.getQueryString("query")) match {
       case Some(query) if query.trim.length > 0 => {
-        service.findBusiness(query, request).map { errorOrBusinessSeq =>
+        val offset = request.getQueryString("offset").flatMap(str => Try(str.toInt).toOption).getOrElse(0)
+        val limit = request.getQueryString("limit").flatMap(str => Try(str.toInt).toOption).getOrElse(10000)
+        val defaultOperator = request.getQueryString("default_operator").getOrElse("AND")
+        val searchParams = BusinessSearchRequest(query, offset, limit, defaultOperator)
+
+        service.findBusiness(searchParams).map { errorOrBusinessSeq =>
           errorOrBusinessSeq.fold(resultOnFailure, resultSeqOnSuccess)
         }
       }

@@ -11,24 +11,30 @@ import config.ElasticSearchConfig
 import models._
 import play.api.mvc.{ AnyContent, Request }
 import services.BusinessRepository
-import utils.ElasticResponseMapper
+import utils.{ ElasticResponseMapper, ElasticResponseMapperSecured }
 
 import scala.concurrent._
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 
 class ElasticSearchBusinessRepository @Inject() (
     elastic: HttpClient,
-    requestMapper: ElasticResponseMapper,
+    responseMapper: ElasticResponseMapper,
+    responseMapperSecured: ElasticResponseMapperSecured,
     config: ElasticSearchConfig
 ) extends BusinessRepository with ElasticDsl {
 
-  def findBusiness(query: String, request: Request[AnyContent]): Future[Either[ErrorMessage, Seq[Business]]] = {
-    val searchRequest = BusinessSearchRequest(query, request)
-    val definition = QueryStringQueryDefinition(searchRequest.term).defaultOperator(searchRequest.defaultOperator)
-    val searchQuery = search(config.index).query(definition).start(searchRequest.offset).limit(searchRequest.limit)
+  /**
+   * This method is used by the /v1/search endpoint, which can be used externally, hence we must
+   * return null values for VatRefs/PayeRefs/UPRN by using the secured responseMapper.
+   */
+  def findBusiness(query: BusinessSearchRequest): Future[Either[ErrorMessage, Seq[Business]]] = {
+    val definition = QueryStringQueryDefinition(query.term).defaultOperator(query.defaultOperator)
+    val searchQuery = search(config.index).query(definition).start(query.offset).limit(query.limit)
     logger.debug(s"Executing ElasticSearch query to find businesses with query [$query]")
     elastic.execute(searchQuery).map {
-      case Right(r: RequestSuccess[SearchResponse]) => Right(requestMapper.fromBusinessSeqResponse(r))
+      case Right(r: RequestSuccess[SearchResponse]) => Right(
+        r.result.hits.hits.map(hit => responseMapperSecured.fromSearchHit(hit)).toSeq
+      )
       case Left(f: RequestFailure) => handleRequestFailure[Seq[Business]](f)
     } recover withTranslationOfFailureToError[Seq[Business]]
   }
@@ -38,7 +44,9 @@ class ElasticSearchBusinessRepository @Inject() (
     elastic.execute {
       search(config.index).matchQuery("_id", id)
     } map {
-      case Right(r: RequestSuccess[SearchResponse]) => Right(requestMapper.fromBusinessResponse(r))
+      case Right(r: RequestSuccess[SearchResponse]) => Right(
+        r.result.hits.hits.map(hit => responseMapper.fromSearchHit(hit)).toSeq.headOption
+      )
       case Left(f: RequestFailure) => handleRequestFailure[Option[Business]](f)
     } recover withTranslationOfFailureToError[Option[Business]]
   }

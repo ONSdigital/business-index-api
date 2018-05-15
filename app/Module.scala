@@ -3,8 +3,7 @@ import com.sksamuel.elastic4s.http.ElasticDsl
 import play.api.{ Configuration, Environment }
 import services.BusinessRepository
 import repository.ElasticSearchBusinessRepository
-import utils.{ ElasticClient, ElasticResponseMapper }
-
+import utils.{ ElasticClient, ElasticResponseMapper, ElasticResponseMapperSecured }
 import config.ElasticSearchConfigLoader
 
 class Module(environment: Environment, configuration: Configuration) extends AbstractModule with ElasticDsl {
@@ -13,7 +12,9 @@ class Module(environment: Environment, configuration: Configuration) extends Abs
     val underlyingConfig = configuration.underlying
     val elasticConfig = ElasticSearchConfigLoader.load(underlyingConfig)
     val elasticSearchClient = ElasticClient.getElasticClient(elasticConfig)
-    val elasticSearchBusinessRepository = new ElasticSearchBusinessRepository(elasticSearchClient, new ElasticResponseMapper, elasticConfig)
+    val elasticSearchBusinessRepository = new ElasticSearchBusinessRepository(
+      elasticSearchClient, new ElasticResponseMapper, new ElasticResponseMapperSecured, elasticConfig
+    )
     bind(classOf[BusinessRepository]).toInstance(elasticSearchBusinessRepository)
   }
 }

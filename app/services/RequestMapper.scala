@@ -1,9 +1,8 @@
 package services
 
-import com.sksamuel.elastic4s.http.RequestSuccess
-import com.sksamuel.elastic4s.http.search.SearchResponse
+import com.sksamuel.elastic4s.http.search.SearchHit
+import models.Business
 
-trait ResponseMapper[A] {
-  def fromBusinessSeqResponse(resp: RequestSuccess[SearchResponse]): Seq[A]
-  def fromBusinessResponse(resp: RequestSuccess[SearchResponse]): Option[A]
+trait ResponseMapper {
+  def fromSearchHit(hit: SearchHit): Business
 }
