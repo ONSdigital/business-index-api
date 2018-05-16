@@ -18,9 +18,9 @@ class XResponseTimeHeader @Inject() (implicit val mat: Materializer) extends Fil
     nextFilter(requestHeader).map { result =>
       val endTime = System.currentTimeMillis
       val responseTime = endTime - startTime
-      val env = sys.props.get("environment").getOrElse("default")
+      val cors = sys.props.getOrElse("ONS_BI_API_CORS_ENABLED", "false").toBoolean
 
-      if (env == "local") {
+      if (cors) {
         result.withHeaders(
           "X-Response-Time" -> responseTime.toString,
           "Server" -> (BuildInfo.name + "/" + BuildInfo.version),

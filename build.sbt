@@ -4,7 +4,7 @@ import sbtbuildinfo.BuildInfoPlugin.autoImport._
 
 lazy val Versions = new {
   val util = "0.27.8"
-  val elastic4s = "2.3.1"
+  val elastic4s = "6.1.2"
   val spark = "1.6.0"
   val elasticSearchSpark = "2.4.0"
 }
@@ -132,25 +132,15 @@ lazy val api = (project in file("."))
       filters,
       "org.webjars" %% "webjars-play" % "2.5.0-3",
       "com.typesafe.scala-logging" %% "scala-logging" % "3.5.0",
-      "ch.qos.logback" % "logback-classic" % "1.1.7",
-      "com.splunk.logging" % "splunk-library-javalogging" % "1.5.2" excludeAll(
-        ExclusionRule("commons-logging", "commons-logging"),
-        ExclusionRule("org.apache.logging.log4j", "log4j-core"),
-        ExclusionRule("org.apache.logging.log4j", "log4j-api")
-      ),
-      "nl.grons" %% "metrics-scala" % "3.5.5",
-      "com.sksamuel.elastic4s" %% "elastic4s-streams" % Versions.elastic4s,
+      "com.sksamuel.elastic4s" %% "elastic4s-core" % Versions.elastic4s excludeAll ExclusionRule(organization = "org.apache.logging.log4j"),
+      "com.sksamuel.elastic4s" %% "elastic4s-http" % Versions.elastic4s excludeAll ExclusionRule(organization = "org.apache.logging.log4j"),
       "com.sksamuel.elastic4s" %% "elastic4s-jackson" % Versions.elastic4s,
-      "com.outworkers" %% "util-parsers-cats" % Versions.util,
       "com.outworkers" %% "util-play" % Versions.util,
-      "com.outworkers" %% "util-testing" % Versions.util % Test,
+      "org.scalamock"  %% "scalamock" % "4.1.0" % Test,
       "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.0-M1" % Test,
+      "com.github.tomakehurst" % "wiremock" % "1.58" % Test,
       "org.scalatest" %% "scalatest" % "3.0.0" % Test,
       "com.google.guava" % "guava" % "18.0",
-      "org.apache.hadoop" % "hadoop-common" % "2.6.0",
-      "org.apache.hadoop" % "hadoop-mapred" % "0.22.0",
-      "org.apache.hbase" % "hbase-common" % "1.3.0",
-      "org.apache.hbase" % "hbase-client" % "1.3.0",
       "io.swagger" %% "swagger-play2" % "1.5.3",
       "org.webjars" % "swagger-ui" % "2.2.10-1"
     ),
