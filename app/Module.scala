@@ -1,5 +1,6 @@
 import com.google.inject.AbstractModule
 import com.sksamuel.elastic4s.analyzers._
+import com.sksamuel.elastic4s.http.ElasticDsl._
 import play.api.{ Configuration, Environment }
 import services.BusinessRepository
 import repository.ElasticSearchBusinessRepository
@@ -10,8 +11,6 @@ import models.IndexConsts._
 class Module(environment: Environment, configuration: Configuration) extends AbstractModule {
 
   override def configure(): Unit = {
-    import com.sksamuel.elastic4s.http.ElasticDsl._
-
     val underlyingConfig = configuration.underlying
     val elasticConfig = ElasticSearchConfigLoader.load(underlyingConfig)
     val elasticSearchClient = ElasticClient.getElasticClient(elasticConfig)
@@ -31,7 +30,7 @@ class Module(environment: Environment, configuration: Configuration) extends Abs
     // - cannot use a KeywordAnalyzer on a long field
     // - using KeywordAnalyzer instead of NotAnalyzed - achieves the same thing?
     // - what does includeInAll do?
-    val a = elasticSearchClient.execute {
+    elasticSearchClient.execute {
       createIndex(elasticConfig.index).analysis(
         CustomAnalyzerDefinition(cBiAnalyzer, WhitespaceTokenizer, LowercaseTokenFilter)
       ).mappings(
