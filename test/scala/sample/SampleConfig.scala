@@ -7,4 +7,5 @@ trait SampleConfig {
   val SampleHost = "localhost"
   val SamplePort = 9000
   val SampleSsl = false
+  val SampleLoad = false
 }

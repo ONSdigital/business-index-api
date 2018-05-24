@@ -18,6 +18,7 @@ class ElasticConfigTest extends FreeSpec with Matchers with SampleConfig {
         |    host = $SampleHost
         |    port = $SamplePort
         |    ssl = $SampleSsl
+        |    loadTestData = $SampleLoad
         |  }
         |}""".stripMargin
     val config: Config = ConfigFactory.parseString(SampleConfiguration)
@@ -33,12 +34,13 @@ class ElasticConfigTest extends FreeSpec with Matchers with SampleConfig {
           |    Host = $SampleHost
           |    Port = $SamplePort
           |    Ssl = $SampleSsl
+          |    LoadTestData = $SampleLoad
           |  }
           |}""".stripMargin
     val config: Config = ConfigFactory.parseString(SampleConfiguration)
   }
 
-  private def parseConf(port: Any, ssl: Any): Config = {
+  private def parseConf(port: Any, ssl: Any, load: Any): Config = {
     val SampleConfiguration: String =
       s"""|db {
         |  elasticsearch {
@@ -48,6 +50,7 @@ class ElasticConfigTest extends FreeSpec with Matchers with SampleConfig {
         |    host = "localhost"
         |    port = $port
         |    ssl = $ssl
+        |    loadTestData = $load
         |  }
         |}""".stripMargin
     ConfigFactory.parseString(SampleConfiguration)
@@ -56,7 +59,7 @@ class ElasticConfigTest extends FreeSpec with Matchers with SampleConfig {
   "The config for the HBase REST LocalUnit repository" - {
     "can be successfully loaded when valid" in new ValidFixture {
       ElasticSearchConfigLoader.load(config) shouldBe ElasticSearchConfig(
-        "esUser", "secret", "bi-dev", "localhost", 9000, ssl = false
+        "esUser", "secret", "bi-dev", "localhost", 9000, ssl = false, loadTestData = false
       )
     }
 
@@ -68,14 +71,21 @@ class ElasticConfigTest extends FreeSpec with Matchers with SampleConfig {
       }
 
       "invalid port type" in {
-        val config: Config = parseConf(port = false, ssl = true)
+        val config: Config = parseConf(port = false, ssl = true, load = false)
         a[ConfigException] should be thrownBy {
           ElasticSearchConfigLoader.load(config)
         }
       }
 
       "invalid ssl type" in {
-        val config: Config = parseConf(port = 9000, ssl = 100)
+        val config: Config = parseConf(port = 9000, ssl = 100, load = false)
+        a[ConfigException] should be thrownBy {
+          ElasticSearchConfigLoader.load(config)
+        }
+      }
+
+      "invalid loadTestData type" in {
+        val config: Config = parseConf(port = 9000, ssl = 100, load = "100")
         a[ConfigException] should be thrownBy {
           ElasticSearchConfigLoader.load(config)
         }
