@@ -27,16 +27,18 @@ class ElasticSearchBusinessRepository @Inject() (
    * This method is used by the /v1/search endpoint, which can be used externally, hence we must
    * return null values for VatRefs/PayeRefs/UPRN by using the secured responseMapper.
    */
-  def findBusiness(query: BusinessSearchRequest): Future[Either[ErrorMessage, Seq[Business]]] = {
+  def findBusiness(query: BusinessSearchRequest): Future[Either[ErrorMessage, FindBusinessResult]] = {
     val definition = QueryStringQueryDefinition(query.term).defaultOperator(query.defaultOperator)
     val searchQuery = search(config.index).query(definition).start(query.offset).limit(query.limit)
     logger.debug(s"Executing ElasticSearch query to find businesses with query [$query]")
     elastic.execute(searchQuery).map {
-      case Right(r: RequestSuccess[SearchResponse]) => Right(
-        r.result.hits.hits.map(hit => responseMapperSecured.fromSearchHit(hit)).toSeq
-      )
-      case Left(f: RequestFailure) => handleRequestFailure[Seq[Business]](f)
-    } recover withTranslationOfFailureToError[Seq[Business]]
+      case Right(r: RequestSuccess[SearchResponse]) => {
+        val businesses = r.result.hits.hits.map(hit => responseMapperSecured.fromSearchHit(hit)).toSeq
+        val numUncappedResults = r.result.hits.total
+        Right(FindBusinessResult(businesses, numUncappedResults))
+      }
+      case Left(f: RequestFailure) => handleRequestFailure[FindBusinessResult](f)
+    } recover withTranslationOfFailureToError[FindBusinessResult]
   }
 
   def findBusinessById(id: Long): Future[Either[ErrorMessage, Option[Business]]] = {

@@ -44,8 +44,8 @@ class BusinessController @Inject() (service: BusinessRepository) extends Control
         val defaultOperator = request.getQueryString("default_operator").getOrElse("AND")
         val searchParams = BusinessSearchRequest(query, offset, limit, defaultOperator)
 
-        service.findBusiness(searchParams).map { errorOrBusinessSeq =>
-          errorOrBusinessSeq.fold(resultOnFailure, resultSeqOnSuccess)
+        service.findBusiness(searchParams).map { errorOrFindBusinessResult =>
+          errorOrFindBusinessResult.fold(resultOnFailure, resultSeqOnSuccess)
         }
       }
       case _ => BadRequest.future
@@ -68,7 +68,7 @@ class BusinessController @Inject() (service: BusinessRepository) extends Control
   private def resultOnSuccess(optBusiness: Option[Business]): Result =
     optBusiness.fold[Result](NotFound)(business => Ok(toJson(business)))
 
-  private def resultSeqOnSuccess(businesses: Seq[Business]): Result =
-    if (businesses.isEmpty) NotFound
-    else Ok(toJson(businesses))
+  private def resultSeqOnSuccess(result: FindBusinessResult): Result =
+    if (result.businesses.isEmpty) NotFound
+    else Ok(toJson(result.businesses)).withHeaders(("X-Total-Count", result.numUncappedResults.toString))
 }
