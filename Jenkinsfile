@@ -83,10 +83,10 @@ pipeline {
                         },
                         "Style" : {
                             colourText("info","Running style tests")
-//                            sh """
-//                                $SBT scalastyleGenerateConfig
-//                                $SBT scalastyle
-//                            """
+                            sh """
+                                $SBT scalastyleGenerateConfig
+                                $SBT scalastyle
+                            """
                         },
                         "Additional" : {
                             colourText("info","Running additional tests")
