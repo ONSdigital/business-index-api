@@ -78,9 +78,10 @@ class BusinessControllerSpec extends FreeSpec with Matchers with MockFactory wit
     "to retrieve a number of Businesses that match a search term" - {
       "returns a JSON representation of multiple businesses when found" in new Fixture {
         val query = BusinessSearchRequest(TargetQuery, 0, 10000, "AND")
+        val businesses = Seq(SampleBusinessWithAllFields.secured, SampleBusinessWithAllFields1.secured)
 
         (repository.findBusiness _).expects(query).returning(
-          Future.successful(Right(Seq(SampleBusinessWithAllFields.secured, SampleBusinessWithAllFields1.secured)))
+          Future.successful(Right(FindBusinessResult(businesses, businesses.length)))
         )
 
         val request = controller.searchBusiness(Some(TargetQuery))
@@ -96,7 +97,7 @@ class BusinessControllerSpec extends FreeSpec with Matchers with MockFactory wit
         val query = BusinessSearchRequest(TargetQuery, 0, 10000, "AND")
 
         (repository.findBusiness _).expects(query).returning(
-          Future.successful(Right(Seq()))
+          Future.successful(Right(FindBusinessResult(Seq(), 0)))
         )
 
         val request = controller.searchBusiness(Some(TargetQuery))
