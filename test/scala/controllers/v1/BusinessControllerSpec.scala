@@ -91,6 +91,7 @@ class BusinessControllerSpec extends FreeSpec with Matchers with MockFactory wit
         contentType(response) shouldBe Some(JSON)
         contentAsJson(response).as[Seq[Business]] should contain theSameElementsInOrderAs
           Seq(SampleBusinessWithAllFields.secured, SampleBusinessWithAllFields1.secured)
+        headers(response).get("X-Total-Count") shouldBe Some(businesses.length.toString)
       }
 
       "returns NOT_FOUND when a business with a valid UBRN is not found" in new Fixture {
