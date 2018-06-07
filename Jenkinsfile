@@ -79,7 +79,7 @@ pipeline {
                 parallel (
                         "Unit" :  {
                             colourText("info","Running unit tests")
-                            // sh "$SBT test"
+                            sh "$SBT test"
                         },
                         "Style" : {
                             colourText("info","Running style tests")
@@ -130,7 +130,7 @@ pipeline {
                 }
                 colourText("info", "Bundling....")
                 dir('conf') {
-                    git(url: "$GITLAB_URL/BusinessIndex/${MODULE_NAME}.git", credentialsId: GITLAB_CREDS, branch: "${BRANCH_NAME}")
+                    git(url: "$GITLAB_URL/BusinessIndex/${MODULE_NAME}.git", credentialsId: GITLAB_CREDS, branch: "develop")
                 }
                 // stash name: "zip"
             }
