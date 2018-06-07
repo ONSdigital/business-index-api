@@ -89,8 +89,7 @@ class BusinessControllerSpec extends FreeSpec with Matchers with MockFactory wit
 
         status(response) shouldBe OK
         contentType(response) shouldBe Some(JSON)
-        contentAsJson(response).as[Seq[Business]] should contain theSameElementsInOrderAs
-          Seq(SampleBusinessWithAllFields.secured, SampleBusinessWithAllFields1.secured)
+        contentAsJson(response).as[Seq[Business]] should contain theSameElementsInOrderAs businesses
         headers(response).get("X-Total-Count") shouldBe Some(businesses.length.toString)
       }
 
