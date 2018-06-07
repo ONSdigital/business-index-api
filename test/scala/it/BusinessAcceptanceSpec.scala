@@ -53,6 +53,7 @@ class BusinessAcceptanceSpec extends ServerAcceptanceSpec with WithWireMockElast
       response.json.as[Seq[Business]].length shouldBe 2
       response.json.as[Seq[Business]] should contain theSameElementsInOrderAs
         Seq(SampleBusinessWithAllFields.secured, SampleBusinessWithAllFields1.secured)
+      response.header("X-Total-Count") shouldBe Some("2")
     }
 
     scenario("by searching using a fuzzy match using a search term") { wsClient =>
@@ -72,6 +73,7 @@ class BusinessAcceptanceSpec extends ServerAcceptanceSpec with WithWireMockElast
       response.json.as[Seq[Business]].length shouldBe 2
       response.json.as[Seq[Business]] should contain theSameElementsInOrderAs
         Seq(SampleBusinessWithAllFields.secured, SampleBusinessWithAllFields1.secured)
+      response.header("X-Total-Count") shouldBe Some("2")
     }
   }
 
@@ -107,6 +109,7 @@ class BusinessAcceptanceSpec extends ServerAcceptanceSpec with WithWireMockElast
       response.json.as[List[Business]].length shouldBe 2
       response.json.as[List[Business]].head shouldBe SampleBusinessWithNoOptionalFields.secured
       response.json.as[List[Business]].tail.head shouldBe SampleBusinessWithNoOptionalFields1.secured
+      response.header("X-Total-Count") shouldBe Some("2")
     }
 
     scenario("by searching using a fuzzy match using a search term") { wsClient =>
@@ -126,6 +129,7 @@ class BusinessAcceptanceSpec extends ServerAcceptanceSpec with WithWireMockElast
       response.json.as[List[Business]].length shouldBe 2
       response.json.as[List[Business]].head shouldBe SampleBusinessWithNoOptionalFields.secured
       response.json.as[List[Business]].tail.head shouldBe SampleBusinessWithNoOptionalFields1.secured
+      response.header("X-Total-Count") shouldBe Some("2")
     }
   }
 
