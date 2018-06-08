@@ -95,6 +95,35 @@ object Business {
     },
     companyNo = map.get(cBiCompanyNo).map(_.toString)
   )
+
+  def fromMap1(id: Long, map: Map[String, Any]) = Business(
+    id = id,
+    businessName = map.getOrElse(cBiName, cEmptyStr).toString,
+    uprn = map.get(cBiUprn).map(x => java.lang.Long.parseLong(x.toString)),
+    postCode = map.get(cBiPostCode).map(_.toString),
+    industryCode = industryCodeNormalize(map.get(cBiIndustryCode).map(_.toString)),
+    legalStatus = map.get(cBiLegalStatus).map(_.toString),
+    tradingStatus = map.get(cBiTradingStatus).map(_.toString),
+    turnover = map.get(cBiTurnover).map(_.toString),
+    employmentBands = map.get(cBiEmploymentBand).map(_.toString),
+    vatRefs = map.get(cBiVatRefs).map(x => Seq(x.toString)),
+    payeRefs = map.get(cBiPayeRefs).map(x => Seq(x.toString)),
+    companyNo = map.get(cBiCompanyNo).map(_.toString)
+  )
+
+  def toMap(b: Business): Map[String, Any] = Map(
+    cBiName -> b.businessName.toUpperCase,
+    cBiUprn -> b.uprn.orNull,
+    cBiPostCode -> b.postCode.orNull,
+    cBiIndustryCode -> b.industryCode.orNull,
+    cBiLegalStatus -> b.legalStatus.orNull,
+    cBiTradingStatus -> b.tradingStatus.orNull,
+    cBiTurnover -> b.turnover.orNull,
+    cBiEmploymentBand -> b.employmentBands.orNull,
+    cBiVatRefs -> b.vatRefs.orNull,
+    cBiPayeRefs -> b.payeRefs.orNull,
+    cBiCompanyNo -> b.companyNo.orNull
+  )
 }
 
 object IndexConsts {

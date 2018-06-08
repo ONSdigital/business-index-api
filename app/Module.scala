@@ -1,8 +1,8 @@
 import com.google.inject.AbstractModule
-import play.api.{Configuration, Environment}
+import play.api.{ Configuration, Environment }
 import services.BusinessRepository
 import repository.ElasticSearchBusinessRepository
-import utils.{ElasticClient, ElasticResponseMapper, ElasticResponseMapperSecured, ElasticUtils}
+import utils.{ ElasticClient, ElasticResponseMapper, ElasticResponseMapperSecured, ElasticUtils }
 import config.ElasticSearchConfigLoader
 
 class Module(environment: Environment, configuration: Configuration) extends AbstractModule {
