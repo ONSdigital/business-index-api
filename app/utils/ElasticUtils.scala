@@ -23,6 +23,8 @@ import scala.util.Try
  */
 class ElasticUtils @Inject() (elastic: HttpClient, config: ElasticSearchConfig) extends LazyLogging {
 
+  private val csvFilePath = "conf/demo/sample.csv"
+
   def init(): Unit = {
     removeIndex()
     createNewIndex()
@@ -67,21 +69,18 @@ class ElasticUtils @Inject() (elastic: HttpClient, config: ElasticSearchConfig) 
 
   def splitCsvLine(s: String): List[String] = s.split(Delimiter, -1).toList.map(v => unquote(v.trim))
 
+  // https://stackoverflow.com/questions/4255021/how-do-i-read-a-large-csv-file-with-scala-stream-class
   def insertTestData(): Unit = { // Either[RequestFailure, RequestSuccess[BulkResponse]] = {
-    logger.info("Insert test data")
-    // https://stackoverflow.com/questions/4255021/how-do-i-read-a-large-csv-file-with-scala-stream-class
+    logger.info(s"Inserting test data [$csvFilePath] into ElasticSearch")
 
-    // Load in 1000 records from the CSV file
-    val csvFilePath = "conf/demo/sample.csv"
-    val src = Source.fromFile(csvFilePath)
-    val iter = src.getLines()
-
+    val t0 = System.currentTimeMillis()
+    val iter = Source.fromFile(csvFilePath).getLines()
     val header = splitCsvLine(iter.next)
 
-    logger.info(s"header: ${header}")
+    logger.info(s"Using first line of file as header: $header")
 
-    val gr = iter.filter(_.trim.nonEmpty).grouped(1000).map(batchRows => {
-      logger.debug(s"processing dataLine...")
+    val gr = iter.filter(_.trim.nonEmpty).grouped(6250).map(batchRows => {
+      logger.debug(s"Transforming batch of size ${batchRows.length} into Business model")
       val res = batchRows.map { rowStr =>
         val rowList = splitCsvLine(rowStr)
         val csvRowMap = (header zip rowList).toMap
@@ -96,6 +95,16 @@ class ElasticUtils @Inject() (elastic: HttpClient, config: ElasticSearchConfig) 
       }
     })
     val p = Await.result(Future.sequence(gr), 5 minutes)
+    val t1 = System.currentTimeMillis()
+    logger.error("Elapsed time: " + (t1 - t0) + "ms")
+    // batch 10000     6403ms
+    // batch 7500      5751ms
+    // batch 6250      5658ms
+    // batch 5000      5751ms
+    // batch 2000      6118ms
+    // batch 1000      6233ms
+    // batch 500       6435ms
+    // batch 100       error
     throw new Exception("Error")
   }
 }
