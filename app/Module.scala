@@ -11,12 +11,13 @@ class Module(environment: Environment, configuration: Configuration) extends Abs
     val underlyingConfig = configuration.underlying
     val elasticConfig = ElasticSearchConfigLoader.load(underlyingConfig)
     val elasticSearchClient = ElasticClient.getElasticClient(elasticConfig)
-    val elasticUtils = new ElasticUtils(elasticSearchClient, elasticConfig)
+    val esUtils = new ElasticUtils(elasticSearchClient, elasticConfig)
     val elasticSearchBusinessRepository = new ElasticSearchBusinessRepository(
       elasticSearchClient, new ElasticResponseMapper, new ElasticResponseMapperSecured, elasticConfig
     )
 
-    if (elasticConfig.loadTestData) elasticUtils.init
+    if (elasticConfig.recreateIndex) esUtils.recreateIndex()
+    if (elasticConfig.loadTestData) esUtils.insertTestData()
 
     bind(classOf[BusinessRepository]).toInstance(elasticSearchBusinessRepository)
   }

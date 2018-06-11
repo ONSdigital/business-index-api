@@ -18,17 +18,24 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.io.Source
 import scala.util.Try
 
+case class BulkInsertException(msg: String) extends Exception
+case class CreateIndexException(msg: String) extends Exception
+
 class ElasticUtils @Inject() (elastic: HttpClient, config: ElasticSearchConfig) extends LazyLogging {
 
   private val Delimiter = ",(?=(?:[^\\\"]*\\\"[^\\\"]*\\\")*[^\\\"]*$)" // coma, ignore quoted comas
-  private val csvFilePath = "conf/demo/sample.csv"
-  private val batchSize = 6250
+  private val csvFilePath = config.csvFilePath
+  private val batchSize = 6250 // 6250 gave the best results after testing between 100 and 10,000
   private val indexType = "business"
 
-  def init(): Unit = {
-    removeIndex()
-    createNewIndex()
-    insertTestData()
+  def recreateIndex(): Unit = {
+    removeIndex() // We don't care whether this works or not
+    createNewIndex() match {
+      case Left(f: RequestFailure) =>
+        throw CreateIndexException(s"Creation of ElasticSearch index failed with status: ${f.status}")
+      case Right(s: RequestSuccess[CreateIndexResponse]) =>
+        logger.info(s"Successfully created ElasticSearch index [${config.index}]")
+    }
   }
 
   def removeIndex(): Unit = elastic.execute {
@@ -55,7 +62,6 @@ class ElasticUtils @Inject() (elastic: HttpClient, config: ElasticSearchConfig) 
       )
   }.await
 
-  // https://stackoverflow.com/questions/4255021/how-do-i-read-a-large-csv-file-with-scala-stream-class
   def insertTestData(): Unit = {
     logger.info(s"Inserting test data [$csvFilePath] into ElasticSearch")
     val t0 = System.currentTimeMillis()
@@ -63,15 +69,19 @@ class ElasticUtils @Inject() (elastic: HttpClient, config: ElasticSearchConfig) 
     val header = splitCsvLine(iter.next)
     logger.info(s"Using first line of file as header: $header")
     val batchInsert = iter.filter(_.trim.nonEmpty).grouped(batchSize).map(batchRows => {
-      logger.debug(s"Transforming batch rows of size ${batchRows.length} into Business model")
       val seqMaybeBusiness = batchStrToBusinesses(header, batchRows)
       val flattenedBusinesses = seqMaybeBusiness.flatten
-      logger.info(s"Successfully converted ${flattenedBusinesses.length} rows into Business model from total of ${seqMaybeBusiness.length} rows")
+      logger.debug(s"Successfully converted ${flattenedBusinesses.length} rows into Business model from total of ${seqMaybeBusiness.length} rows")
       batchInsertIntoElasticSearch(flattenedBusinesses)
     })
-    Await.result(Future.sequence(batchInsert), 1 minutes)
+    val res = Await.result(Future.sequence(batchInsert), 1 minutes).toList
     val t1 = System.currentTimeMillis()
     logger.info(s"Inserted records into ElasticSearch in ${t1 - t0} ms")
+    EitherSupport.sequence(res) match {
+      case Left(f: RequestFailure) => throw BulkInsertException(f.error.reason)
+      case Right(s: Seq[RequestSuccess[BulkResponse]]) =>
+        logger.info(s"Successfully inserted ${s.length} batches of $batchSize records into ElasticSearch.")
+    }
   }
 
   def batchStrToBusinesses(header: List[String], batchRows: Seq[String]): Seq[Option[Business]] =
@@ -81,7 +91,7 @@ class ElasticUtils @Inject() (elastic: HttpClient, config: ElasticSearchConfig) 
     }
 
   def batchInsertIntoElasticSearch(businesses: Seq[Business]): Future[Either[RequestFailure, RequestSuccess[BulkResponse]]] = {
-    logger.debug(s"Batch inserting ${businesses.length} businesses into ElasticSearch")
+    logger.info(s"Batch inserting ${businesses.length} businesses into ElasticSearch")
     elastic.execute {
       bulk(
         businesses map { business =>

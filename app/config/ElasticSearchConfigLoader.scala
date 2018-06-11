@@ -13,7 +13,9 @@ object ElasticSearchConfigLoader extends ConfigLoader[ElasticSearchConfig] {
       port = config.getInt("port"),
       ssl = config.getBoolean("ssl"),
       host = config.getString("host"),
-      loadTestData = config.getBoolean("loadTestData")
+      loadTestData = config.getBoolean("loadTestData"),
+      recreateIndex = config.getBoolean("recreateIndex"),
+      csvFilePath = config.getString("csvFilePath")
     )
   }
 }

@@ -3,6 +3,7 @@ package scala.sample
 import models.Business
 
 trait SampleBusiness {
+  val SampleBusinessString = "10205415,TEST GRILL LTD,380268,86762,2,A,A,B,ID80 5QB,105463,210926,29531562"
   val SampleBusinessId = 10205415L
   val SampleBusinessName = "TEST GRILL LTD"
   val SampleUPRN = Some(380268L)
@@ -16,6 +17,7 @@ trait SampleBusiness {
   val SamplePayeRefs = Some(Seq("210926"))
   val SampleCompanyNo = Some("29531562")
 
+  val SampleBusinessString1 = "87504854,GO LIVE TEST LIMITED,578740,27520,6,D,F,O,ZD38 1TI,81153,162306,96743003"
   val SampleBusinessId1 = 87504854L
   val SampleBusinessName1 = "GO LIVE TEST LIMITED"
   val SampleUPRN1 = Some(578740L)

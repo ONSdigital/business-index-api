@@ -8,4 +8,6 @@ trait SampleConfig {
   val SamplePort = 9000
   val SampleSsl = false
   val SampleLoad = false
+  val SampleRecreate = false
+  val SampleCsvFilePath = "conf/test/sample.csv"
 }

@@ -19,6 +19,8 @@ class ElasticConfigTest extends FreeSpec with Matchers with SampleConfig {
         |    port = $SamplePort
         |    ssl = $SampleSsl
         |    loadTestData = $SampleLoad
+        |    recreateIndex = $SampleRecreate
+        |    csvFilePath = $SampleCsvFilePath
         |  }
         |}""".stripMargin
     val config: Config = ConfigFactory.parseString(SampleConfiguration)
@@ -35,12 +37,14 @@ class ElasticConfigTest extends FreeSpec with Matchers with SampleConfig {
           |    Port = $SamplePort
           |    Ssl = $SampleSsl
           |    LoadTestData = $SampleLoad
+          |    RecreateIndex = $SampleRecreate
+          |    CsvFilePath = $SampleCsvFilePath
           |  }
           |}""".stripMargin
     val config: Config = ConfigFactory.parseString(SampleConfiguration)
   }
 
-  private def parseConf(port: Any, ssl: Any, load: Any): Config = {
+  private def parseConf(port: Any, ssl: Any, load: Any, recreate: Any): Config = {
     val SampleConfiguration: String =
       s"""|db {
         |  elasticsearch {
@@ -51,6 +55,8 @@ class ElasticConfigTest extends FreeSpec with Matchers with SampleConfig {
         |    port = $port
         |    ssl = $ssl
         |    loadTestData = $load
+        |    recreateIndex = $recreate
+        |    csvFilePath = "conf/test/sample.csv"
         |  }
         |}""".stripMargin
     ConfigFactory.parseString(SampleConfiguration)
@@ -59,7 +65,8 @@ class ElasticConfigTest extends FreeSpec with Matchers with SampleConfig {
   "The config for the HBase REST LocalUnit repository" - {
     "can be successfully loaded when valid" in new ValidFixture {
       ElasticSearchConfigLoader.load(config) shouldBe ElasticSearchConfig(
-        "esUser", "secret", "bi-dev", "localhost", 9000, ssl = false, loadTestData = false
+        "esUser", "secret", "bi-dev", "localhost", 9000, ssl = false, loadTestData = false,
+        recreateIndex = false, "conf/test/sample.csv"
       )
     }
 
@@ -71,21 +78,28 @@ class ElasticConfigTest extends FreeSpec with Matchers with SampleConfig {
       }
 
       "invalid port type" in {
-        val config: Config = parseConf(port = false, ssl = true, load = false)
+        val config: Config = parseConf(port = false, ssl = true, load = false, recreate = false)
         a[ConfigException] should be thrownBy {
           ElasticSearchConfigLoader.load(config)
         }
       }
 
       "invalid ssl type" in {
-        val config: Config = parseConf(port = 9000, ssl = 100, load = false)
+        val config: Config = parseConf(port = 9000, ssl = 100, load = false, recreate = false)
         a[ConfigException] should be thrownBy {
           ElasticSearchConfigLoader.load(config)
         }
       }
 
       "invalid loadTestData type" in {
-        val config: Config = parseConf(port = 9000, ssl = 100, load = "100")
+        val config: Config = parseConf(port = 9000, ssl = 100, load = "100", recreate = false)
+        a[ConfigException] should be thrownBy {
+          ElasticSearchConfigLoader.load(config)
+        }
+      }
+
+      "invalid recreateIndex type" in {
+        val config: Config = parseConf(port = 9000, ssl = 100, load = "100", recreate = 200)
         a[ConfigException] should be thrownBy {
           ElasticSearchConfigLoader.load(config)
         }
