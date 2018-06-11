@@ -24,6 +24,7 @@ import scala.util.Try
 class ElasticUtils @Inject() (elastic: HttpClient, config: ElasticSearchConfig) extends LazyLogging {
 
   private val csvFilePath = "conf/demo/sample.csv"
+  private val batchSize = 6250
 
   def init(): Unit = {
     removeIndex()
@@ -79,8 +80,9 @@ class ElasticUtils @Inject() (elastic: HttpClient, config: ElasticSearchConfig) 
 
     logger.info(s"Using first line of file as header: $header")
 
-    val gr = iter.filter(_.trim.nonEmpty).grouped(6250).map(batchRows => {
+    val gr = iter.filter(_.trim.nonEmpty).grouped(batchSize).map(batchRows => {
       logger.debug(s"Transforming batch of size ${batchRows.length} into Business model")
+      // SeqStrToBusiness -> SeqOptBusiness -> SeqBusiness ->
       val res = batchRows.map { rowStr =>
         val rowList = splitCsvLine(rowStr)
         val csvRowMap = (header zip rowList).toMap
@@ -105,6 +107,6 @@ class ElasticUtils @Inject() (elastic: HttpClient, config: ElasticSearchConfig) 
     // batch 1000      6233ms
     // batch 500       6435ms
     // batch 100       error
-    throw new Exception("Error")
+    // throw new Exception("Error")
   }
 }
