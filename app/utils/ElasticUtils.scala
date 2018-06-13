@@ -87,7 +87,7 @@ class ElasticUtils @Inject() (elastic: HttpClient, config: ElasticSearchConfig) 
   def batchStrToBusinesses(header: List[String], batchRows: Seq[String]): Seq[Option[Business]] =
     batchRows.map { rowStr =>
       val rowList = (header zip splitCsvLine(rowStr)).toMap
-      Try(Business.fromMap1(rowList("ID").toLong, rowList)).toOption
+      Try(Business.fromCSVMap(rowList("ID").toLong, rowList)).toOption
     }
 
   def batchInsertIntoElasticSearch(businesses: Seq[Business]): Future[Either[RequestFailure, RequestSuccess[BulkResponse]]] = {

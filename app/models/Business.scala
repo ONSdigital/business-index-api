@@ -96,9 +96,9 @@ object Business {
     companyNo = map.get(cBiCompanyNo).map(_.toString)
   )
 
-  def fromMap1(id: Long, map: Map[String, Any]) = Business(
+  def fromCSVMap(id: Long, map: Map[String, String]) = Business(
     id = id,
-    businessName = map.getOrElse(cBiName, cEmptyStr).toString,
+    businessName = map.getOrElse(cBiName, cEmptyStr),
     uprn = map.get(cBiUprn).map(x => java.lang.Long.parseLong(x.toString)),
     postCode = map.get(cBiPostCode).map(_.toString),
     industryCode = industryCodeNormalize(map.get(cBiIndustryCode).map(_.toString)),
