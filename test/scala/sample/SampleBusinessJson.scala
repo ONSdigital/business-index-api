@@ -80,7 +80,7 @@ trait SampleBusinessJson {
        |"failed": 0
        |},
        |"hits": {
-       |"total": 6,
+       |"total": 2,
        |"max_score": 19.635054,
        |"hits": [
        |  {
@@ -145,7 +145,7 @@ trait SampleBusinessJson {
       |"failed": 0
       |},
       |"hits": {
-      |"total": 6,
+      |"total": 2,
       |"max_score": 19.635054,
       |"hits": [
       |  {
