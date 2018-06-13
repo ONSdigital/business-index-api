@@ -56,7 +56,7 @@ class ElasticUtilsSpec extends FreeSpec with Matchers with SampleConfig with Sam
     "can unqoute a string with double qoutes" in new ConfigFixture {
       val elasticSearchClient = ElasticClient.getElasticClient(esConfig)
       val esUtils = new ElasticUtils(elasticSearchClient, esConfig)
-      esUtils.unquote("""tesco limited""") shouldBe "tesco limited"
+      esUtils.unquote("\"tesco limited\"") shouldBe "tesco limited"
     }
   }
 
