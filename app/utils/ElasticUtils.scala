@@ -20,6 +20,7 @@ import scala.util.Try
 
 case class BulkInsertException(msg: String) extends Exception
 case class CreateIndexException(msg: String) extends Exception
+case class EmptyCsvFileException(msg: String) extends Exception
 
 class ElasticUtils @Inject() (elastic: HttpClient, config: ElasticSearchConfig) extends LazyLogging {
 
@@ -66,6 +67,10 @@ class ElasticUtils @Inject() (elastic: HttpClient, config: ElasticSearchConfig) 
     logger.info(s"Inserting test data [$csvFilePath] into ElasticSearch")
     val t0 = System.currentTimeMillis()
     val iter = Source.fromFile(csvFilePath).getLines()
+
+    // Throw an informative exception if the CSV file is empty
+    if (!iter.hasNext) throw EmptyCsvFileException(s"No data present in CSV file [$csvFilePath]")
+
     val header = splitCsvLine(iter.next)
     logger.info(s"Using first line of file as header: $header")
     val batchInsert = iter.filter(_.trim.nonEmpty).grouped(batchSize).map(batchRows => {

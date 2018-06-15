@@ -15,7 +15,8 @@ object ElasticSearchConfigLoader extends ConfigLoader[ElasticSearchConfig] {
       host = config.getString("host"),
       loadTestData = config.getBoolean("loadTestData"),
       recreateIndex = config.getBoolean("recreateIndex"),
-      csvFilePath = config.getString("csvFilePath")
+      csvFilePath = config.getString("csvFilePath"),
+      connectionTimeout = config.getInt("connectionTimeout")
     )
   }
 }

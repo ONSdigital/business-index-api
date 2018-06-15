@@ -22,6 +22,7 @@ class ElasticUtilsSpec extends FreeSpec with Matchers with SampleConfig with Sam
           |    loadTestData = $SampleLoad
           |    recreateIndex = $SampleRecreate
           |    csvFilePath = $SampleCsvFilePath
+          |    connectionTimeout = $SampleConnectionTimeout
           |  }
           |}""".stripMargin
     val config: Config = ConfigFactory.parseString(SampleConfiguration)

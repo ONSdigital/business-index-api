@@ -37,7 +37,7 @@ object ElasticClient extends LazyLogging {
     ), new RequestConfigCallback {
       override def customizeRequestConfig(requestConfigBuilder: Builder) = {
         // https://github.com/sksamuel/elastic4s/issues/1261
-        requestConfigBuilder.setConnectionRequestTimeout(10000)
+        requestConfigBuilder.setConnectionRequestTimeout(elasticConfig.connectionTimeout)
       }
     }, new HttpClientConfigCallback {
       override def customizeHttpClient(httpClientBuilder: HttpAsyncClientBuilder) = {

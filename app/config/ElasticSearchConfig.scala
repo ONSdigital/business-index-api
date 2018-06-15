@@ -9,5 +9,6 @@ case class ElasticSearchConfig(
   ssl: Boolean,
   loadTestData: Boolean,
   recreateIndex: Boolean,
-  csvFilePath: String
+  csvFilePath: String,
+  connectionTimeout: Int
 )

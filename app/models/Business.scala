@@ -2,8 +2,9 @@ package models
 
 import play.api.libs.json._
 import BusinessFields._
-
 import play.api.libs.functional.syntax._
+
+import scala.util.Try
 
 case class Business(
     id: Long,
@@ -99,16 +100,16 @@ object Business {
   def fromCSVMap(id: Long, map: Map[String, String]) = Business(
     id = id,
     businessName = map.getOrElse(cBiName, cEmptyStr),
-    uprn = map.get(cBiUprn).map(x => java.lang.Long.parseLong(x.toString)),
-    postCode = map.get(cBiPostCode).map(_.toString),
-    industryCode = industryCodeNormalize(map.get(cBiIndustryCode).map(_.toString)),
-    legalStatus = map.get(cBiLegalStatus).map(_.toString),
-    tradingStatus = map.get(cBiTradingStatus).map(_.toString),
-    turnover = map.get(cBiTurnover).map(_.toString),
-    employmentBands = map.get(cBiEmploymentBand).map(_.toString),
+    uprn = Try(map.get(cBiUprn).map(x => x.toLong)).toOption.flatten,
+    postCode = map.get(cBiPostCode),
+    industryCode = industryCodeNormalize(map.get(cBiIndustryCode)),
+    legalStatus = map.get(cBiLegalStatus),
+    tradingStatus = map.get(cBiTradingStatus),
+    turnover = map.get(cBiTurnover),
+    employmentBands = map.get(cBiEmploymentBand),
     vatRefs = map.get(cBiVatRefs).map(x => Seq(x.toString)),
     payeRefs = map.get(cBiPayeRefs).map(x => Seq(x.toString)),
-    companyNo = map.get(cBiCompanyNo).map(_.toString)
+    companyNo = map.get(cBiCompanyNo)
   )
 
   def toMap(b: Business): Map[String, Any] = Map(

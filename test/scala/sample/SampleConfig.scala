@@ -10,4 +10,5 @@ trait SampleConfig {
   val SampleLoad = false
   val SampleRecreate = false
   val SampleCsvFilePath = "conf/test/sample.csv"
+  val SampleConnectionTimeout = 10000
 }
