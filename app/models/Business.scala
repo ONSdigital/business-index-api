@@ -107,8 +107,8 @@ object Business {
     tradingStatus = map.get(cBiTradingStatus),
     turnover = map.get(cBiTurnover),
     employmentBands = map.get(cBiEmploymentBand),
-    vatRefs = map.get(cBiVatRefs).map(x => Seq(x.toString)),
-    payeRefs = map.get(cBiPayeRefs).map(x => Seq(x.toString)),
+    vatRefs = map.get(cBiVatRefs).map(Seq(_)),
+    payeRefs = map.get(cBiPayeRefs).map(Seq(_)),
     companyNo = map.get(cBiCompanyNo)
   )
 
