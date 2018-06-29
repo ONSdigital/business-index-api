@@ -12,7 +12,11 @@ object ElasticSearchConfigLoader extends ConfigLoader[ElasticSearchConfig] {
       index = config.getString("index"),
       port = config.getInt("port"),
       ssl = config.getBoolean("ssl"),
-      host = config.getString("host")
+      host = config.getString("host"),
+      loadTestData = config.getBoolean("loadTestData"),
+      recreateIndex = config.getBoolean("recreateIndex"),
+      csvFilePath = config.getString("csvFilePath"),
+      connectionTimeout = config.getInt("connectionTimeout")
     )
   }
 }

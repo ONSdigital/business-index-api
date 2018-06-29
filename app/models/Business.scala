@@ -2,8 +2,9 @@ package models
 
 import play.api.libs.json._
 import BusinessFields._
-
 import play.api.libs.functional.syntax._
+
+import scala.util.Try
 
 case class Business(
     id: Long,
@@ -95,4 +96,52 @@ object Business {
     },
     companyNo = map.get(cBiCompanyNo).map(_.toString)
   )
+
+  def fromCSVMap(id: Long, map: Map[String, String]) = Business(
+    id = id,
+    businessName = map.getOrElse(cBiName, cEmptyStr),
+    uprn = Try(map.get(cBiUprn).map(x => x.toLong)).toOption.flatten,
+    postCode = map.get(cBiPostCode),
+    industryCode = industryCodeNormalize(map.get(cBiIndustryCode)),
+    legalStatus = map.get(cBiLegalStatus),
+    tradingStatus = map.get(cBiTradingStatus),
+    turnover = map.get(cBiTurnover),
+    employmentBands = map.get(cBiEmploymentBand),
+    vatRefs = map.get(cBiVatRefs).map(Seq(_)),
+    payeRefs = map.get(cBiPayeRefs).map(Seq(_)),
+    companyNo = map.get(cBiCompanyNo)
+  )
+
+  def toMap(b: Business): Map[String, Any] = Map(
+    cBiName -> b.businessName.toUpperCase,
+    cBiUprn -> b.uprn.orNull,
+    cBiPostCode -> b.postCode.orNull,
+    cBiIndustryCode -> b.industryCode.orNull,
+    cBiLegalStatus -> b.legalStatus.orNull,
+    cBiTradingStatus -> b.tradingStatus.orNull,
+    cBiTurnover -> b.turnover.orNull,
+    cBiEmploymentBand -> b.employmentBands.orNull,
+    cBiVatRefs -> b.vatRefs.orNull,
+    cBiPayeRefs -> b.payeRefs.orNull,
+    cBiCompanyNo -> b.companyNo.orNull
+  )
+}
+
+object IndexConsts {
+  val cBiType = "business"
+  val cBiName = "BusinessName"
+  val cBiNameSuggest = "BusinessName_suggest"
+  val cBiUprn = "UPRN"
+  val cBiPostCode = "PostCode"
+  val cBiIndustryCode = "IndustryCode"
+  val cBiLegalStatus = "LegalStatus"
+  val cBiTradingStatus = "TradingStatus"
+  val cBiTurnover = "Turnover"
+  val cBiEmploymentBand = "EmploymentBands"
+  val cBiVatRefs = "VatRefs"
+  val cBiPayeRefs = "PayeRefs"
+  val cBiCompanyNo = "CompanyNo"
+  val cEmptyStr = ""
+  val cBiAnalyzer = "bi-analyzer"
+  val cBiNameBoost = 4
 }

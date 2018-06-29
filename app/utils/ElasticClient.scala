@@ -36,7 +36,8 @@ object ElasticClient extends LazyLogging {
       s"elasticsearch://${elasticConfig.host}:${elasticConfig.port}?ssl=${elasticConfig.ssl}"
     ), new RequestConfigCallback {
       override def customizeRequestConfig(requestConfigBuilder: Builder) = {
-        requestConfigBuilder
+        // https://github.com/sksamuel/elastic4s/issues/1261
+        requestConfigBuilder.setConnectionRequestTimeout(elasticConfig.connectionTimeout)
       }
     }, new HttpClientConfigCallback {
       override def customizeHttpClient(httpClientBuilder: HttpAsyncClientBuilder) = {

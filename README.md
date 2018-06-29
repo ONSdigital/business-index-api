@@ -6,29 +6,37 @@
 
 * Java 8 or higher
 * SBT (http://www.scala-sbt.org/)
+* Docker (https://www.docker.com/)
 
-### Development Setup (MacOS)
+### Development Setup
 
-To install/run ElasticSearch on MacOS, use Homebrew (http://brew.sh):
+To run ElasticSearch, use Docker:
 
-- `brew install homebrew/versions/elasticsearch24`
-- `elasticsearch`
-
-The last command runs an interactive Elasticsearch 2.4.1 session that the application can connect to using cluster name
-`elasticsearch_<your username>`. 
+```shell
+docker pull docker.elastic.co/elasticsearch/elasticsearch:5.6.9
+docker run -p 9200:9200 -p 9300:9300 -e "discovery.type=single-node" -e "xpack.security.enabled=false" docker.elastic.co/elasticsearch/elasticsearch:5.6.9
+```
 
 ### Running
 
-To compile, build and run the application (by default it will connect to your local ElasticSearch):
+To run the business-index-api locally, including the loading of 100,000 test records, run the following:
 
 ```shell
-sbt "api/run"
+sbt "run -DONS_BI_ES_RECREATE_INDEX=true -DONS_BI_ES_LOAD_TEST_DATA=true"
 ```
 
-To package the project in a runnable fat-jar:
+### Packaging
+
+To package the project into a runnable fat-jar:
 
 ```shell
 sbt assembly
+```
+
+To package the project into a `.zip` file ready for deployment to CloudFoundry, run the following:
+
+```shell
+sbt universal:packageBin
 ```
 
 ### API Documentation: swagger-ui
@@ -52,3 +60,9 @@ If any sbt changes performed - please re-generate dependency graph by executing:
 ```shell
 sbt -no-colors dependencyTree > dependencies.txt
 ```
+
+### License
+
+Copyright © 2017, Office for National Statistics (https://www.ons.gov.uk)
+
+Released under MIT license, see [LICENSE](LICENSE.md) for details.

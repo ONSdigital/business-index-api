@@ -1,5 +1,5 @@
 #!groovy
-@Library('jenkins-pipeline-shared@master') _
+@Library('jenkins-pipeline-shared') _
 
 pipeline {
     environment {

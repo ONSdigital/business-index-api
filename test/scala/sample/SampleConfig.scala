@@ -7,4 +7,8 @@ trait SampleConfig {
   val SampleHost = "localhost"
   val SamplePort = 9000
   val SampleSsl = false
+  val SampleLoad = false
+  val SampleRecreate = false
+  val SampleCsvFilePath = "conf/test/sample.csv"
+  val SampleConnectionTimeout = 10000
 }
