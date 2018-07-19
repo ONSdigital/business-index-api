@@ -5,21 +5,15 @@ pipeline {
     environment {
         RELEASE_TYPE = "PATCH"
 
-        BRANCH_DEV = "develop"
-        BRANCH_TEST = "release"
-        BRANCH_PROD = "master"
-
-        DEPLOY_DEV = "dev"
-        DEPLOY_TEST = "test"
-        DEPLOY_PROD = "beta"
-
-        GIT_TYPE = "Github"
-        GIT_CREDS = "github-bi-user"
         GITLAB_CREDS = "bi-gitlab-id"
 
         ORGANIZATION = "ons"
         TEAM = "bi"
         MODULE_NAME = "business-index-api"
+	    
+    	STAGE = "NONE"
+        SBT_HOME = tool name: 'sbt.13.13', type: 'org.jvnet.hudson.plugins.SbtPluginBuilder$SbtInstallation'
+        PATH = "${env.SBT_HOME}/bin:${env.PATH}"
     }
     options {
         skipDefaultCheckout()
@@ -29,225 +23,155 @@ pipeline {
     }
     agent any
     stages {
-        stage('Checkout'){
+        stage('Checkout') {
             agent any
-            steps{
+            environment{ STAGE = "Checkout" }
+            steps {
                 deleteDir()
                 checkout scm
                 stash name: 'app'
-                sh "$SBT version"
+                sh "sbt version"
                 script {
                     version = '1.0.' + env.BUILD_NUMBER
                     currentBuild.displayName = version
-                    env.NODE_STAGE = "Checkout"
                 }
             }
         }
 
-        stage('Build'){
+        stage('Build') {
             agent any
+            environment{ STAGE = "Build" }
+            steps{
+                sh "sbt clean compile"
+            }
+            post {
+                success {
+                    colourText("info","Stage: ${env.STAGE} successful!")
+                }
+                failure {
+                    colourText("warn","Stage: ${env.STAGE} failed!")
+                }
+            }
+        }
+
+        stage('Test'){
+            agent any
+            environment{ STAGE = "Test"  }
             steps {
                 colourText("info", "Building ${env.BUILD_ID} on ${env.JENKINS_URL} from branch ${env.BRANCH_NAME}")
-                script {
-                    env.NODE_STAGE = "Build"
-                    sh '''
-                        $SBT clean compile universal:packageBin coverage test coverageReport
-                    '''
-                    stash name: 'compiled'
-                    if (BRANCH_NAME == BRANCH_DEV) {
-                        env.DEPLOY_NAME = DEPLOY_DEV
-                        sh "cp target/universal/${ORGANIZATION}-${MODULE_NAME}-*.zip ${DEPLOY_DEV}-${ORGANIZATION}-${MODULE_NAME}.zip"
-                    }
-                    else if  (BRANCH_NAME == BRANCH_TEST) {
-                        env.DEPLOY_NAME = DEPLOY_TEST
-                        sh "cp target/universal/${ORGANIZATION}-${MODULE_NAME}-*.zip ${DEPLOY_TEST}-${ORGANIZATION}-${MODULE_NAME}.zip"
-                    }
-                    else if (BRANCH_NAME == BRANCH_PROD) {
-                        env.DEPLOY_NAME = DEPLOY_PROD
-                        sh "cp target/universal/${ORGANIZATION}-${MODULE_NAME}-*.zip ${DEPLOY_PROD}-${ORGANIZATION}-${MODULE_NAME}.zip"
-                    }
-                    else {
-                        colourText("info", "Not a deployable Git banch!")
-                    }
+
+                sh 'sbt coverage test coverageReport coverageAggregate'
+            }
+            post {
+                success {
+                    junit '**/target/test-reports/*.xml'
+                    step([$class: 'CoberturaPublisher', coberturaReportFile: '**/target/coverage-report/*.xml'])
+                    colourText("info","Stage: ${env.STAGE} successful!")
+                }
+                failure {
+                    colourText("warn","Stage: ${env.STAGE} failed!")
                 }
             }
         }
 
         stage('Static Analysis') {
             agent any
+            environment{ STAGE = "Static Analysis" }
             steps {
                 parallel (
-                        "Unit" :  {
-                            colourText("info","Running unit tests")
-                            sh "$SBT test"
-                        },
-                        "Style" : {
-                            colourText("info","Running style tests")
-                            sh """
-                                $SBT scalastyleGenerateConfig
-                                $SBT scalastyle
-                            """
-                        },
-                        "Additional" : {
-                            colourText("info","Running additional tests")
-                            sh "$SBT scapegoat"
-                        }
+                    "Scalastyle" : {
+                        colourText("info","Running scalastyle analysis")
+                        sh "sbt scalastyle"
+                    },
+                    "Scapegoat" : {
+                        colourText("info","Running scapegoat analysis")
+                        sh "sbt scapegoat"
+                    }
                 )
             }
             post {
-                always {
-                    script {
-                        env.NODE_STAGE = "Static Analysis"
-                    }
-                }
                 success {
-                    colourText("info","Generating reports for tests")
-                    //   junit '**/target/test-reports/*.xml'
-
-                    step([$class: 'CoberturaPublisher', coberturaReportFile: '**/target/scala-2.11/coverage-report/*.xml'])
-                    step([$class: 'CheckStylePublisher', pattern: 'target/scalastyle-result.xml, target/scala-2.11/scapegoat-report/scapegoat-scalastyle.xml'])
+                    step([$class: 'CheckStylePublisher', pattern: '**/target/code-quality/style/*scalastyle*.xml'])
+                    colourText("info","Stage: ${env.STAGE} successful!")
                 }
                 failure {
-                    colourText("warn","Failed on Tests.")
+                    colourText("warn","Stage: ${env.STAGE} failed!")
                 }
             }
         }
 
-
-        // bundle all libs and dependencies
-        stage ('Bundle') {
+        stage('Package'){
             agent any
-            when {
-                anyOf {
-                    branch BRANCH_DEV
-                    branch BRANCH_TEST
-                    branch BRANCH_PROD
-                }
+            when{ expression{ isBranch("master") }}
+            environment{ 
+                STAGE = "Package" 
+                DEPLOY_TO = "dev"    
             }
             steps {
-                script {
-                    env.NODE_STAGE = "Bundle"
+                dir('gitlab') {
+                    git(url: "$GITLAB_URL/BusinessIndex/${MODULE_NAME}-api.git", credentialsId: GITLAB_CREDS, branch: "master")
                 }
-                colourText("info", "Bundling....")
-                dir('conf') {
-                    git(url: "$GITLAB_URL/BusinessIndex/${MODULE_NAME}.git", credentialsId: GITLAB_CREDS, branch: "develop")
-                }
-                // stash name: "zip"
+                sh 'sbt universal:packageBin'
+                sh "cp target/universal/${ORGANIZATION}-${MODULE_NAME}-*.zip ${DEPLOY_TO}-${ORGANIZATION}-${MODULE_NAME}.zip"
             }
-        }
-
-        stage("Releases"){
-            agent any
-            when {
-                anyOf {
-                    branch BRANCH_DEV
-                    branch BRANCH_TEST
-                    branch BRANCH_PROD
+            post {
+                success {
+                    colourText("info","Stage: ${env.STAGE} successful!")
                 }
-            }
-            steps {
-                script {
-                    env.NODE_STAGE = "Releases"
-                    currentTag = getLatestGitTag()
-                    colourText("info", "Found latest tag: ${currentTag}")
-                    newTag =  IncrementTag( currentTag, RELEASE_TYPE )
-                    colourText("info", "Generated new tag: ${newTag}")
-                    //push(newTag, currentTag)
+                failure {
+                    colourText("warn","Stage: ${env.STAGE} failed!")
                 }
             }
         }
 
-        stage ('Package and Push Artifact') {
+        stage('Deploy CF'){
             agent any
-            when {
-                branch BRANCH_PROD
+            when{ expression{ isBranch("master") }}
+            environment{ 
+                STAGE = "Deploy CF"
+                DEPLOY_TO = "dev" 
             }
             steps {
-                script {
-                    env.NODE_STAGE = "Package and Push Artifact"
-                }
-                sh """
-                    $SBT clean compile package
-                    $SBT clean compile assembly
-                """
-                colourText("success", 'Package.')
-            }
-        }
-
-        stage('Deploy'){
-            agent any
-            when {
-                anyOf {
-                    branch BRANCH_DEV
-                    branch BRANCH_TEST
-                    branch BRANCH_PROD
-                }
-            }
-            steps {
-                script {
-                    env.NODE_STAGE = "Deploy"
-                }
                 milestone(1)
-                lock('Deployment Initiated') {
-                    colourText("info", 'deployment in progress')
+                lock('BI API Deployment Initiated') {
+                    colourText("info", "${env.DEPLOY_TO}-${CH_TABLE}-${MODULE_NAME} deployment in progress")
                     deploy()
-                    colourText("success", 'Deploy.')
+                    colourText("success", "${env.DEPLOY_TO}-${CH_TABLE}-${MODULE_NAME} Deployed.")
                 }
             }
-        }
-
-        stage('Integration Tests') {
-            agent any
-            when {
-                anyOf {
-                    branch BRANCH_DEV
-                    branch BRANCH_TEST
+            post {
+                success {
+                    colourText("info","Stage: ${env.STAGE} successful!")
                 }
-            }
-            steps {
-                script {
-                    env.NODE_STAGE = "Integration Tests"
+                failure {
+                    colourText("warn","Stage: ${env.STAGE} failed!")
                 }
-                unstash 'compiled'
-                sh "$SBT box:test"
-                colourText("success", 'Integration Tests - For Release or Dev environment.')
             }
         }
     }
     post {
-        always {
-            script {
-                colourText("info", 'Post steps initiated')
-                deleteDir()
-            }
-        }
         success {
             colourText("success", "All stages complete. Build was successful.")
             sendNotifications currentBuild.result, "\$SBR_EMAIL_LIST"
         }
         unstable {
             colourText("warn", "Something went wrong, build finished with result ${currentResult}. This may be caused by failed tests, code violation or in some cases unexpected interrupt.")
-            sendNotifications currentBuild.result, "\$SBR_EMAIL_LIST", "${env.NODE_STAGE}"
+            sendNotifications currentBuild.result, "\$SBR_EMAIL_LIST", "${env.STAGE}"
         }
         failure {
-            colourText("warn","Process failed at: ${env.NODE_STAGE}")
-            sendNotifications currentBuild.result, "\$SBR_EMAIL_LIST", "${env.NODE_STAGE}"
+            colourText("warn","Process failed at: ${env.STAGE}")
+            sendNotifications currentBuild.result, "\$SBR_EMAIL_LIST", "${env.STAGE}"
         }
     }
 }
 
-
-def push (String newTag, String currentTag) {
-    echo "Pushing tag ${newTag} to Gitlab"
-    GitRelease( GIT_CREDS, newTag, currentTag, "${env.BUILD_ID}", "${env.BRANCH_NAME}", GIT_TYPE)
+def isBranch(String branchName){
+    return env.BRANCH_NAME.toString().equals(branchName)
 }
-
 
 def deploy () {
     CF_SPACE = "${env.DEPLOY_NAME}".capitalize()
     CF_ORG = "${TEAM}".toUpperCase()
-    echo "Deploying Api app to ${env.DEPLOY_NAME}"
-//    withCredentials([string(credentialsId: CF_CREDS, variable: 'APPLICATION_SECRET')]) {
+    echo "Deploying app to ${env.DEPLOY_NAME}"
     deployToCloudFoundry("${TEAM}-${env.DEPLOY_NAME}-cf", "${CF_ORG}", "${CF_SPACE}", "${env.DEPLOY_NAME}-${MODULE_NAME}", "${env.DEPLOY_NAME}-${ORGANIZATION}-${MODULE_NAME}.zip", "conf/${env.DEPLOY_NAME}/manifest.yml")
-//    }
 }
