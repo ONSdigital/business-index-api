@@ -1,0 +1,2561 @@
+{
+  "pipelineConfig" : {
+    "schemaVersion" : 2,
+    "version" : 5,
+    "uuid" : "24f8554f-0417-46c9-bc77-88873009301e",
+    "title" : "[ENV_VAR] BI Bulk Match",
+    "description" : "",
+    "configuration" : [ {
+      "name" : "executionMode",
+      "value" : "STANDALONE"
+    }, {
+      "name" : "deliveryGuarantee",
+      "value" : "AT_MOST_ONCE"
+    }, {
+      "name" : "shouldRetry",
+      "value" : false
+    }, {
+      "name" : "retryAttempts",
+      "value" : -1
+    }, {
+      "name" : "memoryLimit",
+      "value" : "${jvm:maxMemoryMB() * 0.65}"
+    }, {
+      "name" : "memoryLimitExceeded",
+      "value" : "ALERT"
+    }, {
+      "name" : "notifyOnStates",
+      "value" : [ "RUN_ERROR", "STOPPED", "FINISHED" ]
+    }, {
+      "name" : "emailIDs",
+      "value" : [ ]
+    }, {
+      "name" : "constants",
+      "value" : [ {
+        "key" : "DATA_HOME",
+        "value" : "DATA_HOME_VAR"
+      }, {
+        "key" : "SFTPUSER",
+        "value" : "SFTP_USER_VAR"
+      }, {
+        "key" : "SFTPHOST",
+        "value" : "SFTP_HOST_VAR"
+      }, {
+        "key" : "SFTPPORT",
+        "value" : "SFTP_PORT_VAR"
+      }, {
+        "key" : "SFTPPASS",
+        "value" : "SFTP_PASS_VAR"
+      }, {
+        "key" : "SFTPHOME",
+        "value" : "ENV_VAR"
+      }, {
+        "key" : "SFTPIN",
+        "value" : "SFTP_IN_VAR"
+      }, {
+        "key" : "GATEWAY_URL",
+        "value" : "GATEWAY_URL_VAR"
+      }, {
+        "key" : "ENV",
+        "value" : "ENV_VAR"
+      } ]
+    }, {
+      "name" : "badRecordsHandling",
+      "value" : "streamsets-datacollector-basic-lib::com_streamsets_pipeline_stage_destination_recordstolocalfilesystem_ToErrorLocalFSDTarget::1"
+    }, {
+      "name" : "clusterSlaveMemory",
+      "value" : 1024
+    }, {
+      "name" : "clusterSlaveJavaOpts",
+      "value" : "-XX:PermSize=128M -XX:MaxPermSize=256M -Dhttps.protocols=TLSv1.2,TLSv1.1 -Dlog4j.debug"
+    }, {
+      "name" : "clusterLauncherEnv",
+      "value" : [ ]
+    }, {
+      "name" : "mesosDispatcherURL",
+      "value" : null
+    }, {
+      "name" : "hdfsS3ConfDir",
+      "value" : null
+    }, {
+      "name" : "rateLimit",
+      "value" : 0
+    }, {
+      "name" : "statsAggregatorStage",
+      "value" : ""
+    } ],
+    "uiInfo" : {
+      "previewConfig" : {
+        "previewSource" : "CONFIGURED_SOURCE",
+        "batchSize" : "10",
+        "timeout" : 10000,
+        "writeToDestinations" : true,
+        "showHeader" : true,
+        "showFieldType" : true,
+        "rememberMe" : false
+      }
+    },
+    "stages" : [ {
+      "instanceName" : "SFTPFTPClient_01",
+      "library" : "streamsets-datacollector-basic-lib",
+      "stageName" : "com_streamsets_pipeline_stage_origin_remote_RemoteDownloadDSource",
+      "stageVersion" : "3",
+      "configuration" : [ {
+        "name" : "conf.basic.maxBatchSize",
+        "value" : 200
+      }, {
+        "name" : "conf.basic.maxWaitTime",
+        "value" : 2000
+      }, {
+        "name" : "conf.dataFormatConfig.compression",
+        "value" : "NONE"
+      }, {
+        "name" : "conf.dataFormatConfig.filePatternInArchive",
+        "value" : "*"
+      }, {
+        "name" : "conf.dataFormatConfig.charset",
+        "value" : "UTF-8"
+      }, {
+        "name" : "conf.dataFormatConfig.removeCtrlChars",
+        "value" : false
+      }, {
+        "name" : "conf.dataFormatConfig.textMaxLineLen",
+        "value" : 1024
+      }, {
+        "name" : "conf.dataFormatConfig.useCustomDelimiter",
+        "value" : false
+      }, {
+        "name" : "conf.dataFormatConfig.customDelimiter",
+        "value" : "\\r\\n"
+      }, {
+        "name" : "conf.dataFormatConfig.includeCustomDelimiterInTheText",
+        "value" : false
+      }, {
+        "name" : "conf.dataFormatConfig.jsonContent",
+        "value" : "MULTIPLE_OBJECTS"
+      }, {
+        "name" : "conf.dataFormatConfig.jsonMaxObjectLen",
+        "value" : 4096
+      }, {
+        "name" : "conf.dataFormatConfig.csvFileFormat",
+        "value" : "CSV"
+      }, {
+        "name" : "conf.dataFormatConfig.csvHeader",
+        "value" : "WITH_HEADER"
+      }, {
+        "name" : "conf.dataFormatConfig.csvMaxObjectLen",
+        "value" : 102400000
+      }, {
+        "name" : "conf.dataFormatConfig.csvCustomDelimiter",
+        "value" : "|"
+      }, {
+        "name" : "conf.dataFormatConfig.csvCustomEscape",
+        "value" : "\\"
+      }, {
+        "name" : "conf.dataFormatConfig.csvCustomQuote",
+        "value" : "\""
+      }, {
+        "name" : "conf.dataFormatConfig.csvEnableComments",
+        "value" : false
+      }, {
+        "name" : "conf.dataFormatConfig.csvCommentMarker",
+        "value" : "#"
+      }, {
+        "name" : "conf.dataFormatConfig.csvIgnoreEmptyLines",
+        "value" : true
+      }, {
+        "name" : "conf.dataFormatConfig.csvRecordType",
+        "value" : "LIST_MAP"
+      }, {
+        "name" : "conf.dataFormatConfig.csvSkipStartLines",
+        "value" : 0
+      }, {
+        "name" : "conf.dataFormatConfig.parseNull",
+        "value" : false
+      }, {
+        "name" : "conf.dataFormatConfig.nullConstant",
+        "value" : "\\\\N"
+      }, {
+        "name" : "conf.dataFormatConfig.xmlRecordElement",
+        "value" : null
+      }, {
+        "name" : "conf.dataFormatConfig.xPathNamespaceContext",
+        "value" : [ ]
+      }, {
+        "name" : "conf.dataFormatConfig.xmlMaxObjectLen",
+        "value" : 4096
+      }, {
+        "name" : "conf.dataFormatConfig.logMode",
+        "value" : "COMMON_LOG_FORMAT"
+      }, {
+        "name" : "conf.dataFormatConfig.logMaxObjectLen",
+        "value" : 1024
+      }, {
+        "name" : "conf.dataFormatConfig.retainOriginalLine",
+        "value" : false
+      }, {
+        "name" : "conf.dataFormatConfig.customLogFormat",
+        "value" : "%h %l %u %t \"%r\" %>s %b"
+      }, {
+        "name" : "conf.dataFormatConfig.regex",
+        "value" : "^(\\S+) (\\S+) (\\S+) \\[([\\w:/]+\\s[+\\-]\\d{4})\\] \"(\\S+) (\\S+) (\\S+)\" (\\d{3}) (\\d+)"
+      }, {
+        "name" : "conf.dataFormatConfig.fieldPathsToGroupName",
+        "value" : [ {
+          "fieldPath" : "/",
+          "group" : 1
+        } ]
+      }, {
+        "name" : "conf.dataFormatConfig.grokPatternDefinition",
+        "value" : null
+      }, {
+        "name" : "conf.dataFormatConfig.grokPattern",
+        "value" : "%{COMMONAPACHELOG}"
+      }, {
+        "name" : "conf.dataFormatConfig.onParseError",
+        "value" : "ERROR"
+      }, {
+        "name" : "conf.dataFormatConfig.maxStackTraceLines",
+        "value" : 50
+      }, {
+        "name" : "conf.dataFormatConfig.enableLog4jCustomLogFormat",
+        "value" : false
+      }, {
+        "name" : "conf.dataFormatConfig.log4jCustomLogFormat",
+        "value" : "%r [%t] %-5p %c %x - %m%n"
+      }, {
+        "name" : "conf.dataFormatConfig.avroSchemaSource",
+        "value" : null
+      }, {
+        "name" : "conf.dataFormatConfig.avroSchema",
+        "value" : null
+      }, {
+        "name" : "conf.dataFormatConfig.schemaRegistryUrls",
+        "value" : [ ]
+      }, {
+        "name" : "conf.dataFormatConfig.schemaLookupMode",
+        "value" : "SUBJECT"
+      }, {
+        "name" : "conf.dataFormatConfig.subject",
+        "value" : null
+      }, {
+        "name" : "conf.dataFormatConfig.schemaId",
+        "value" : null
+      }, {
+        "name" : "conf.dataFormatConfig.protoDescriptorFile",
+        "value" : null
+      }, {
+        "name" : "conf.dataFormatConfig.messageType",
+        "value" : null
+      }, {
+        "name" : "conf.dataFormatConfig.isDelimited",
+        "value" : true
+      }, {
+        "name" : "conf.dataFormatConfig.binaryMaxObjectLen",
+        "value" : 1024
+      }, {
+        "name" : "conf.dataFormatConfig.datagramMode",
+        "value" : "SYSLOG"
+      }, {
+        "name" : "conf.dataFormatConfig.typesDbPath",
+        "value" : null
+      }, {
+        "name" : "conf.dataFormatConfig.convertTime",
+        "value" : false
+      }, {
+        "name" : "conf.dataFormatConfig.excludeInterval",
+        "value" : true
+      }, {
+        "name" : "conf.dataFormatConfig.authFilePath",
+        "value" : null
+      }, {
+        "name" : "conf.dataFormatConfig.wholeFileMaxObjectLen",
+        "value" : 8192
+      }, {
+        "name" : "conf.dataFormatConfig.rateLimit",
+        "value" : "-1"
+      }, {
+        "name" : "conf.remoteAddress",
+        "value" : "sftp://${SFTPHOST}:${SFTPPORT}/${SFTPHOME}/${SFTPIN}"
+      }, {
+        "name" : "conf.auth",
+        "value" : "PASSWORD"
+      }, {
+        "name" : "conf.username",
+        "value" : "${SFTPUSER}"
+      }, {
+        "name" : "conf.password",
+        "value" : "${SFTPPASS}"
+      }, {
+        "name" : "conf.privateKey",
+        "value" : null
+      }, {
+        "name" : "conf.privateKeyPassphrase",
+        "value" : null
+      }, {
+        "name" : "conf.userDirIsRoot",
+        "value" : true
+      }, {
+        "name" : "conf.strictHostChecking",
+        "value" : false
+      }, {
+        "name" : "conf.knownHosts",
+        "value" : null
+      }, {
+        "name" : "conf.dataFormat",
+        "value" : "DELIMITED"
+      }, {
+        "name" : "conf.archiveOnError",
+        "value" : false
+      }, {
+        "name" : "conf.errorArchiveDir",
+        "value" : null
+      }, {
+        "name" : "conf.processSubDirectories",
+        "value" : true
+      }, {
+        "name" : "conf.filePattern",
+        "value" : "*.csv"
+      }, {
+        "name" : "stageOnRecordError",
+        "value" : "TO_ERROR"
+      } ],
+      "uiInfo" : {
+        "description" : "",
+        "label" : "SFTP IN",
+        "xPos" : 14.376614570617676,
+        "yPos" : 126.55281829833984,
+        "stageType" : "SOURCE"
+      },
+      "inputLanes" : [ ],
+      "outputLanes" : [ "SFTPFTPClient_01OutputLane14907898534810" ],
+      "eventLanes" : [ ]
+    }, {
+      "instanceName" : "GroovyEvaluator_05",
+      "library" : "streamsets-datacollector-groovy_2_4-lib",
+      "stageName" : "com_streamsets_pipeline_stage_processor_groovy_GroovyDProcessor",
+      "stageVersion" : "1",
+      "configuration" : [ {
+        "name" : "processingMode",
+        "value" : "BATCH"
+      }, {
+        "name" : "script",
+        "value" : "names = [\"IndustryCode\", \"PayeRefs\", \"VatRefs\", \"PostCode\", \"BusinessName\", \n         \"EmploymentBands\", \"Turnover\", \"TradingStatus\", \"LegalStatus\", \"Request\", \"CompanyNo\"]\n\nno_fail = '&fail_on_bad_query=false'\nfor (record in records) {\n  try {\n   requestField = names.find { record.value[it] != null }\n    if (requestField == null) {\n        record.value['ErrMsg'] = \"Search fields is not supported.\"\n    } else if (requestField == 'BusinessName') {\n      // Request fields BusinessName and Request required special processing.\n      /* we remove all special symbols and also adding fuzzines to word longer than 3 symbols */\n      bn = record.value['BusinessName'] // .replaceAll(\"[^a-zA-Z\\\\d\\\\s]\", \"\")\n      bn = URLEncoder.encode(bn, 'UTF-8')\n      bn = bn.split('\\\\++').collect { it -> it.length() > 8 ?'(' + it + '~2)' : it }.join('+')\n      record.value['dataRequest'] = 'BusinessName:(' + bn + ')?limit=3' + no_fail\n      record.value['countRequest'] = 'BusinessName:(' + bn + ')?limit=0' + no_fail\n    } else if (requestField == 'Request') {\n      record.value['dataRequest'] = record.value[requestField] + '?x=1' + no_fail\n      record.value['countRequest'] = record.value[requestField] + '?limit=0' + no_fail\n    } else {\n      fn = URLEncoder.encode(record.value[requestField].replaceAll(\"[^a-zA-Z\\\\d\\\\s]\", \"\"), 'UTF-8')\n      record.value['dataRequest'] = requestField +':' + fn + '?x=1' + no_fail\n      record.value['countRequest'] = requestField +':' + fn + '?limit=0' + no_fail\n    }\n    output.write(record)\n  } catch (e) {\n    // Write a record to the error pipeline\n    log.error(e.toString(), e)\n    error.write(record, e.toString())\n  }\n}"
+      }, {
+        "name" : "invokeDynamic",
+        "value" : false
+      }, {
+        "name" : "stageOnRecordError",
+        "value" : "TO_ERROR"
+      }, {
+        "name" : "stageRequiredFields",
+        "value" : [ ]
+      }, {
+        "name" : "stageRecordPreconditions",
+        "value" : [ ]
+      } ],
+      "uiInfo" : {
+        "description" : "",
+        "label" : "Choose field",
+        "xPos" : 277.1334228515625,
+        "yPos" : 77.79093170166016,
+        "stageType" : "PROCESSOR"
+      },
+      "inputLanes" : [ "SFTPFTPClient_01OutputLane14907898534810" ],
+      "outputLanes" : [ "GroovyEvaluator_05OutputLane14901773508030" ],
+      "eventLanes" : [ ]
+    }, {
+      "instanceName" : "ExpressionEvaluator_07",
+      "library" : "streamsets-datacollector-basic-lib",
+      "stageName" : "com_streamsets_pipeline_stage_processor_expression_ExpressionDProcessor",
+      "stageVersion" : "2",
+      "configuration" : [ {
+        "name" : "expressionProcessorConfigs",
+        "value" : [ {
+          "fieldToSet" : "/",
+          "expression" : "${record:value('/')}"
+        } ]
+      }, {
+        "name" : "headerAttributeConfigs",
+        "value" : [ {
+          "headerAttributeExpression" : "${str:replace(record:attribute('file'),str:concat(\"/\",str:concat(str:concat(SFTPHOME,\"/\"),SFTPIN)),'')}",
+          "attributeToSet" : "outfile"
+        } ]
+      }, {
+        "name" : "fieldAttributeConfigs",
+        "value" : [ {
+          "fieldToSet" : "/"
+        } ]
+      }, {
+        "name" : "stageOnRecordError",
+        "value" : "TO_ERROR"
+      }, {
+        "name" : "stageRequiredFields",
+        "value" : [ ]
+      }, {
+        "name" : "stageRecordPreconditions",
+        "value" : [ ]
+      } ],
+      "uiInfo" : {
+        "description" : "",
+        "label" : "Out File",
+        "xPos" : 488.053955078125,
+        "yPos" : 82.51600408554077,
+        "stageType" : "PROCESSOR"
+      },
+      "inputLanes" : [ "GroovyEvaluator_05OutputLane14901773508030" ],
+      "outputLanes" : [ "ExpressionEvaluator_07OutputLane14909470992160" ],
+      "eventLanes" : [ ]
+    }, {
+      "instanceName" : "GroovyEvaluator_07",
+      "library" : "streamsets-datacollector-groovy_2_4-lib",
+      "stageName" : "com_streamsets_pipeline_stage_processor_groovy_GroovyDProcessor",
+      "stageVersion" : "1",
+      "configuration" : [ {
+        "name" : "processingMode",
+        "value" : "BATCH"
+      }, {
+        "name" : "script",
+        "value" : "for (record in records) {\n  try {\n    def path = record.attributes['file']\n    def group = (path =~ /.*in\\/(.+)\\/.*/)\n    if (group.matches()) {\n      def org = group[0][1]\n      record.attributes['organization'] = org\n      def key = System.getProperty('auth.key.'+org)\n      if (key != null && Math.random() < 0.95) {\n        record.value['auth'] = new java.util.HashMap()\n        record.value['auth']['key'] = key\n      }\n    } else {\n        record.value['ErrMsg'] = \"Organization can not be extracted from file path. Check SFTP configuration!\"\n    }\n    output.write(record)\n  } catch (e) {\n    // Write a record to the error pipeline\n    log.error(e.toString(), e)\n    error.write(record, e.toString())\n  }\n}"
+      }, {
+        "name" : "invokeDynamic",
+        "value" : false
+      }, {
+        "name" : "stageOnRecordError",
+        "value" : "TO_ERROR"
+      }, {
+        "name" : "stageRequiredFields",
+        "value" : [ ]
+      }, {
+        "name" : "stageRecordPreconditions",
+        "value" : [ ]
+      } ],
+      "uiInfo" : {
+        "description" : "",
+        "label" : "Get Organization",
+        "xPos" : 687.5093994140625,
+        "yPos" : 72.3922348022461,
+        "stageType" : "PROCESSOR"
+      },
+      "inputLanes" : [ "ExpressionEvaluator_07OutputLane14909470992160" ],
+      "outputLanes" : [ "GroovyEvaluator_07OutputLane14919201355980" ],
+      "eventLanes" : [ ]
+    }, {
+      "instanceName" : "StreamSelector_05",
+      "library" : "streamsets-datacollector-basic-lib",
+      "stageName" : "com_streamsets_pipeline_stage_processor_selector_SelectorDProcessor",
+      "stageVersion" : "1",
+      "configuration" : [ {
+        "name" : "lanePredicates",
+        "value" : [ {
+          "outputLane" : "StreamSelector_05OutputLane1493797173936",
+          "predicate" : "${record:value('/auth/key')!=NULL}"
+        }, {
+          "outputLane" : "StreamSelector_05OutputLane14907957176030",
+          "predicate" : "${record:value('/ErrMsg') == NULL && record:value('/auth/key') == NULL}"
+        }, {
+          "outputLane" : "StreamSelector_05OutputLane14907957176031",
+          "predicate" : "default"
+        } ]
+      }, {
+        "name" : "stageOnRecordError",
+        "value" : "TO_ERROR"
+      }, {
+        "name" : "stageRequiredFields",
+        "value" : [ ]
+      }, {
+        "name" : "stageRecordPreconditions",
+        "value" : [ ]
+      } ],
+      "uiInfo" : {
+        "description" : "",
+        "label" : "SearchField",
+        "xPos" : 909.3713989257812,
+        "yPos" : 32.92527770996094,
+        "stageType" : "PROCESSOR"
+      },
+      "inputLanes" : [ "GroovyEvaluator_07OutputLane14919201355980" ],
+      "outputLanes" : [ "StreamSelector_05OutputLane1493797173936", "StreamSelector_05OutputLane14907957176030", "StreamSelector_05OutputLane14907957176031" ],
+      "eventLanes" : [ ]
+    }, {
+      "instanceName" : "HTTPClient_03",
+      "library" : "streamsets-datacollector-basic-lib",
+      "stageName" : "com_streamsets_pipeline_stage_processor_http_HttpDProcessor",
+      "stageVersion" : "7",
+      "configuration" : [ {
+        "name" : "conf.dataFormatConfig.filePatternInArchive",
+        "value" : "*"
+      }, {
+        "name" : "conf.dataFormatConfig.charset",
+        "value" : "UTF-8"
+      }, {
+        "name" : "conf.dataFormatConfig.removeCtrlChars",
+        "value" : false
+      }, {
+        "name" : "conf.dataFormatConfig.textMaxLineLen",
+        "value" : 1024
+      }, {
+        "name" : "conf.dataFormatConfig.useCustomDelimiter",
+        "value" : false
+      }, {
+        "name" : "conf.dataFormatConfig.customDelimiter",
+        "value" : "\\r\\n"
+      }, {
+        "name" : "conf.dataFormatConfig.includeCustomDelimiterInTheText",
+        "value" : false
+      }, {
+        "name" : "conf.dataFormatConfig.jsonMaxObjectLen",
+        "value" : 4096
+      }, {
+        "name" : "conf.dataFormatConfig.csvFileFormat",
+        "value" : "CSV"
+      }, {
+        "name" : "conf.dataFormatConfig.csvHeader",
+        "value" : "NO_HEADER"
+      }, {
+        "name" : "conf.dataFormatConfig.csvMaxObjectLen",
+        "value" : 1024
+      }, {
+        "name" : "conf.dataFormatConfig.csvCustomDelimiter",
+        "value" : "|"
+      }, {
+        "name" : "conf.dataFormatConfig.csvCustomEscape",
+        "value" : "\\"
+      }, {
+        "name" : "conf.dataFormatConfig.csvCustomQuote",
+        "value" : "\""
+      }, {
+        "name" : "conf.dataFormatConfig.csvEnableComments",
+        "value" : false
+      }, {
+        "name" : "conf.dataFormatConfig.csvCommentMarker",
+        "value" : "#"
+      }, {
+        "name" : "conf.dataFormatConfig.csvIgnoreEmptyLines",
+        "value" : true
+      }, {
+        "name" : "conf.dataFormatConfig.csvRecordType",
+        "value" : "LIST_MAP"
+      }, {
+        "name" : "conf.dataFormatConfig.csvSkipStartLines",
+        "value" : 0
+      }, {
+        "name" : "conf.dataFormatConfig.parseNull",
+        "value" : false
+      }, {
+        "name" : "conf.dataFormatConfig.nullConstant",
+        "value" : "\\\\N"
+      }, {
+        "name" : "conf.dataFormatConfig.xmlRecordElement",
+        "value" : null
+      }, {
+        "name" : "conf.dataFormatConfig.xPathNamespaceContext",
+        "value" : [ ]
+      }, {
+        "name" : "conf.dataFormatConfig.xmlMaxObjectLen",
+        "value" : 4096
+      }, {
+        "name" : "conf.dataFormatConfig.logMode",
+        "value" : "COMMON_LOG_FORMAT"
+      }, {
+        "name" : "conf.dataFormatConfig.logMaxObjectLen",
+        "value" : 1024
+      }, {
+        "name" : "conf.dataFormatConfig.retainOriginalLine",
+        "value" : false
+      }, {
+        "name" : "conf.dataFormatConfig.customLogFormat",
+        "value" : "%h %l %u %t \"%r\" %>s %b"
+      }, {
+        "name" : "conf.dataFormatConfig.regex",
+        "value" : "^(\\S+) (\\S+) (\\S+) \\[([\\w:/]+\\s[+\\-]\\d{4})\\] \"(\\S+) (\\S+) (\\S+)\" (\\d{3}) (\\d+)"
+      }, {
+        "name" : "conf.dataFormatConfig.fieldPathsToGroupName",
+        "value" : [ {
+          "fieldPath" : "/",
+          "group" : 1
+        } ]
+      }, {
+        "name" : "conf.dataFormatConfig.grokPatternDefinition",
+        "value" : null
+      }, {
+        "name" : "conf.dataFormatConfig.grokPattern",
+        "value" : "%{COMMONAPACHELOG}"
+      }, {
+        "name" : "conf.dataFormatConfig.onParseError",
+        "value" : "ERROR"
+      }, {
+        "name" : "conf.dataFormatConfig.maxStackTraceLines",
+        "value" : 50
+      }, {
+        "name" : "conf.dataFormatConfig.enableLog4jCustomLogFormat",
+        "value" : false
+      }, {
+        "name" : "conf.dataFormatConfig.log4jCustomLogFormat",
+        "value" : "%r [%t] %-5p %c %x - %m%n"
+      }, {
+        "name" : "conf.dataFormatConfig.avroSchemaSource",
+        "value" : null
+      }, {
+        "name" : "conf.dataFormatConfig.avroSchema",
+        "value" : null
+      }, {
+        "name" : "conf.dataFormatConfig.schemaRegistryUrls",
+        "value" : [ ]
+      }, {
+        "name" : "conf.dataFormatConfig.schemaLookupMode",
+        "value" : "SUBJECT"
+      }, {
+        "name" : "conf.dataFormatConfig.subject",
+        "value" : null
+      }, {
+        "name" : "conf.dataFormatConfig.schemaId",
+        "value" : null
+      }, {
+        "name" : "conf.dataFormatConfig.protoDescriptorFile",
+        "value" : null
+      }, {
+        "name" : "conf.dataFormatConfig.messageType",
+        "value" : null
+      }, {
+        "name" : "conf.dataFormatConfig.isDelimited",
+        "value" : true
+      }, {
+        "name" : "conf.dataFormatConfig.binaryMaxObjectLen",
+        "value" : 1024
+      }, {
+        "name" : "conf.dataFormatConfig.datagramMode",
+        "value" : "SYSLOG"
+      }, {
+        "name" : "conf.dataFormatConfig.typesDbPath",
+        "value" : null
+      }, {
+        "name" : "conf.dataFormatConfig.convertTime",
+        "value" : false
+      }, {
+        "name" : "conf.dataFormatConfig.excludeInterval",
+        "value" : true
+      }, {
+        "name" : "conf.dataFormatConfig.authFilePath",
+        "value" : null
+      }, {
+        "name" : "conf.dataFormatConfig.wholeFileMaxObjectLen",
+        "value" : 8192
+      }, {
+        "name" : "conf.dataFormatConfig.rateLimit",
+        "value" : "-1"
+      }, {
+        "name" : "conf.dataFormatConfig.verifyChecksum",
+        "value" : false
+      }, {
+        "name" : "conf.outputField",
+        "value" : "/auth"
+      }, {
+        "name" : "conf.headerOutputLocation",
+        "value" : "HEADER"
+      }, {
+        "name" : "conf.headerAttributePrefix",
+        "value" : null
+      }, {
+        "name" : "conf.headerOutputField",
+        "value" : null
+      }, {
+        "name" : "conf.dataFormat",
+        "value" : "JSON"
+      }, {
+        "name" : "conf.resourceUrl",
+        "value" : "${GATEWAY_URL}/${ENV}/bi/v1/key/${record:attribute(\"organization\")}"
+      }, {
+        "name" : "conf.headers",
+        "value" : [ ]
+      }, {
+        "name" : "conf.httpMethod",
+        "value" : "GET"
+      }, {
+        "name" : "conf.methodExpression",
+        "value" : null
+      }, {
+        "name" : "conf.requestBody",
+        "value" : null
+      }, {
+        "name" : "conf.defaultRequestContentType",
+        "value" : "application/json"
+      }, {
+        "name" : "conf.client.transferEncoding",
+        "value" : "CHUNKED"
+      }, {
+        "name" : "conf.client.connectTimeoutMillis",
+        "value" : 0
+      }, {
+        "name" : "conf.client.readTimeoutMillis",
+        "value" : 0
+      }, {
+        "name" : "conf.client.numThreads",
+        "value" : 5
+      }, {
+        "name" : "conf.client.authType",
+        "value" : "NONE"
+      }, {
+        "name" : "conf.client.useOAuth2",
+        "value" : false
+      }, {
+        "name" : "conf.client.oauth.consumerKey",
+        "value" : null
+      }, {
+        "name" : "conf.client.oauth.consumerSecret",
+        "value" : null
+      }, {
+        "name" : "conf.client.oauth.token",
+        "value" : null
+      }, {
+        "name" : "conf.client.oauth.tokenSecret",
+        "value" : null
+      }, {
+        "name" : "conf.client.oauth2.credentialsGrantType",
+        "value" : null
+      }, {
+        "name" : "conf.client.oauth2.tokenUrl",
+        "value" : null
+      }, {
+        "name" : "conf.client.oauth2.clientId",
+        "value" : null
+      }, {
+        "name" : "conf.client.oauth2.clientSecret",
+        "value" : null
+      }, {
+        "name" : "conf.client.oauth2.username",
+        "value" : null
+      }, {
+        "name" : "conf.client.oauth2.password",
+        "value" : null
+      }, {
+        "name" : "conf.client.oauth2.resourceOwnerClientId",
+        "value" : null
+      }, {
+        "name" : "conf.client.oauth2.resourceOwnerClientSecret",
+        "value" : null
+      }, {
+        "name" : "conf.client.oauth2.algorithm",
+        "value" : "NONE"
+      }, {
+        "name" : "conf.client.oauth2.key",
+        "value" : null
+      }, {
+        "name" : "conf.client.oauth2.jwtClaims",
+        "value" : null
+      }, {
+        "name" : "conf.client.oauth2.transferEncoding",
+        "value" : "BUFFERED"
+      }, {
+        "name" : "conf.client.oauth2.additionalValues",
+        "value" : [ ]
+      }, {
+        "name" : "conf.client.basicAuth.username",
+        "value" : null
+      }, {
+        "name" : "conf.client.basicAuth.password",
+        "value" : null
+      }, {
+        "name" : "conf.client.useProxy",
+        "value" : false
+      }, {
+        "name" : "conf.client.proxy.uri",
+        "value" : null
+      }, {
+        "name" : "conf.client.proxy.username",
+        "value" : null
+      }, {
+        "name" : "conf.client.proxy.password",
+        "value" : null
+      }, {
+        "name" : "conf.client.sslConfig.trustStorePath",
+        "value" : null
+      }, {
+        "name" : "conf.client.sslConfig.trustStorePassword",
+        "value" : null
+      }, {
+        "name" : "conf.client.sslConfig.keyStorePath",
+        "value" : null
+      }, {
+        "name" : "conf.client.sslConfig.keyStorePassword",
+        "value" : null
+      }, {
+        "name" : "conf.rateLimit",
+        "value" : 100
+      }, {
+        "name" : "conf.maxRequestCompletionSecs",
+        "value" : 60
+      }, {
+        "name" : "stageOnRecordError",
+        "value" : "TO_ERROR"
+      }, {
+        "name" : "stageRequiredFields",
+        "value" : [ ]
+      }, {
+        "name" : "stageRecordPreconditions",
+        "value" : [ ]
+      } ],
+      "uiInfo" : {
+        "description" : "",
+        "label" : "Auth Key",
+        "xPos" : 1201.0306396484375,
+        "yPos" : -1.7851753234863281,
+        "stageType" : "PROCESSOR"
+      },
+      "inputLanes" : [ "StreamSelector_05OutputLane14907957176030" ],
+      "outputLanes" : [ "HTTPClient_03OutputLane14919197852810" ],
+      "eventLanes" : [ ]
+    }, {
+      "instanceName" : "HTTPClient_02",
+      "library" : "streamsets-datacollector-basic-lib",
+      "stageName" : "com_streamsets_pipeline_stage_processor_http_HttpDProcessor",
+      "stageVersion" : "7",
+      "configuration" : [ {
+        "name" : "conf.dataFormatConfig.filePatternInArchive",
+        "value" : "*"
+      }, {
+        "name" : "conf.dataFormatConfig.charset",
+        "value" : "UTF-8"
+      }, {
+        "name" : "conf.dataFormatConfig.removeCtrlChars",
+        "value" : false
+      }, {
+        "name" : "conf.dataFormatConfig.textMaxLineLen",
+        "value" : 1024
+      }, {
+        "name" : "conf.dataFormatConfig.useCustomDelimiter",
+        "value" : false
+      }, {
+        "name" : "conf.dataFormatConfig.customDelimiter",
+        "value" : "\\r\\n"
+      }, {
+        "name" : "conf.dataFormatConfig.includeCustomDelimiterInTheText",
+        "value" : false
+      }, {
+        "name" : "conf.dataFormatConfig.jsonMaxObjectLen",
+        "value" : 64000
+      }, {
+        "name" : "conf.dataFormatConfig.csvFileFormat",
+        "value" : "CSV"
+      }, {
+        "name" : "conf.dataFormatConfig.csvHeader",
+        "value" : "NO_HEADER"
+      }, {
+        "name" : "conf.dataFormatConfig.csvMaxObjectLen",
+        "value" : 1024
+      }, {
+        "name" : "conf.dataFormatConfig.csvCustomDelimiter",
+        "value" : "|"
+      }, {
+        "name" : "conf.dataFormatConfig.csvCustomEscape",
+        "value" : "\\"
+      }, {
+        "name" : "conf.dataFormatConfig.csvCustomQuote",
+        "value" : "\""
+      }, {
+        "name" : "conf.dataFormatConfig.csvRecordType",
+        "value" : "LIST_MAP"
+      }, {
+        "name" : "conf.dataFormatConfig.csvSkipStartLines",
+        "value" : 0
+      }, {
+        "name" : "conf.dataFormatConfig.parseNull",
+        "value" : false
+      }, {
+        "name" : "conf.dataFormatConfig.nullConstant",
+        "value" : "\\\\N"
+      }, {
+        "name" : "conf.dataFormatConfig.xmlRecordElement",
+        "value" : null
+      }, {
+        "name" : "conf.dataFormatConfig.xPathNamespaceContext",
+        "value" : [ ]
+      }, {
+        "name" : "conf.dataFormatConfig.xmlMaxObjectLen",
+        "value" : 4096
+      }, {
+        "name" : "conf.dataFormatConfig.logMode",
+        "value" : "COMMON_LOG_FORMAT"
+      }, {
+        "name" : "conf.dataFormatConfig.logMaxObjectLen",
+        "value" : 1024
+      }, {
+        "name" : "conf.dataFormatConfig.retainOriginalLine",
+        "value" : false
+      }, {
+        "name" : "conf.dataFormatConfig.customLogFormat",
+        "value" : "%h %l %u %t \"%r\" %>s %b"
+      }, {
+        "name" : "conf.dataFormatConfig.regex",
+        "value" : "^(\\S+) (\\S+) (\\S+) \\[([\\w:/]+\\s[+\\-]\\d{4})\\] \"(\\S+) (\\S+) (\\S+)\" (\\d{3}) (\\d+)"
+      }, {
+        "name" : "conf.dataFormatConfig.fieldPathsToGroupName",
+        "value" : [ {
+          "fieldPath" : "/",
+          "group" : 1
+        } ]
+      }, {
+        "name" : "conf.dataFormatConfig.grokPatternDefinition",
+        "value" : null
+      }, {
+        "name" : "conf.dataFormatConfig.grokPattern",
+        "value" : "%{COMMONAPACHELOG}"
+      }, {
+        "name" : "conf.dataFormatConfig.onParseError",
+        "value" : "ERROR"
+      }, {
+        "name" : "conf.dataFormatConfig.maxStackTraceLines",
+        "value" : 50
+      }, {
+        "name" : "conf.dataFormatConfig.enableLog4jCustomLogFormat",
+        "value" : false
+      }, {
+        "name" : "conf.dataFormatConfig.log4jCustomLogFormat",
+        "value" : "%r [%t] %-5p %c %x - %m%n"
+      }, {
+        "name" : "conf.dataFormatConfig.avroSchemaSource",
+        "value" : null
+      }, {
+        "name" : "conf.dataFormatConfig.avroSchema",
+        "value" : null
+      }, {
+        "name" : "conf.dataFormatConfig.schemaRegistryUrls",
+        "value" : [ ]
+      }, {
+        "name" : "conf.dataFormatConfig.schemaLookupMode",
+        "value" : "SUBJECT"
+      }, {
+        "name" : "conf.dataFormatConfig.subject",
+        "value" : null
+      }, {
+        "name" : "conf.dataFormatConfig.schemaId",
+        "value" : null
+      }, {
+        "name" : "conf.dataFormatConfig.protoDescriptorFile",
+        "value" : null
+      }, {
+        "name" : "conf.dataFormatConfig.messageType",
+        "value" : null
+      }, {
+        "name" : "conf.dataFormatConfig.isDelimited",
+        "value" : true
+      }, {
+        "name" : "conf.dataFormatConfig.binaryMaxObjectLen",
+        "value" : 1024
+      }, {
+        "name" : "conf.dataFormatConfig.datagramMode",
+        "value" : "SYSLOG"
+      }, {
+        "name" : "conf.dataFormatConfig.typesDbPath",
+        "value" : null
+      }, {
+        "name" : "conf.dataFormatConfig.convertTime",
+        "value" : false
+      }, {
+        "name" : "conf.dataFormatConfig.excludeInterval",
+        "value" : true
+      }, {
+        "name" : "conf.dataFormatConfig.authFilePath",
+        "value" : null
+      }, {
+        "name" : "conf.dataFormatConfig.wholeFileMaxObjectLen",
+        "value" : 8192
+      }, {
+        "name" : "conf.dataFormatConfig.rateLimit",
+        "value" : "-1"
+      }, {
+        "name" : "conf.dataFormatConfig.verifyChecksum",
+        "value" : false
+      }, {
+        "name" : "conf.outputField",
+        "value" : "/response"
+      }, {
+        "name" : "conf.headerOutputLocation",
+        "value" : "FIELD"
+      }, {
+        "name" : "conf.headerAttributePrefix",
+        "value" : null
+      }, {
+        "name" : "conf.headerOutputField",
+        "value" : "/responseHeaders"
+      }, {
+        "name" : "conf.dataFormat",
+        "value" : "JSON"
+      }, {
+        "name" : "conf.resourceUrl",
+        "value" : "${GATEWAY_URL}/${ENV}/bi/v1/search/${record:value('/countRequest')}"
+      }, {
+        "name" : "conf.headers",
+        "value" : [ {
+          "key" : "Authorization",
+          "value" : "${record:value('/auth/key')}"
+        } ]
+      }, {
+        "name" : "conf.httpMethod",
+        "value" : "GET"
+      }, {
+        "name" : "conf.methodExpression",
+        "value" : null
+      }, {
+        "name" : "conf.requestBody",
+        "value" : null
+      }, {
+        "name" : "conf.defaultRequestContentType",
+        "value" : "application/json"
+      }, {
+        "name" : "conf.client.transferEncoding",
+        "value" : "CHUNKED"
+      }, {
+        "name" : "conf.client.connectTimeoutMillis",
+        "value" : 0
+      }, {
+        "name" : "conf.client.readTimeoutMillis",
+        "value" : 0
+      }, {
+        "name" : "conf.client.numThreads",
+        "value" : 200
+      }, {
+        "name" : "conf.client.authType",
+        "value" : "NONE"
+      }, {
+        "name" : "conf.client.useOAuth2",
+        "value" : false
+      }, {
+        "name" : "conf.client.oauth.consumerKey",
+        "value" : null
+      }, {
+        "name" : "conf.client.oauth.consumerSecret",
+        "value" : null
+      }, {
+        "name" : "conf.client.oauth.token",
+        "value" : null
+      }, {
+        "name" : "conf.client.oauth.tokenSecret",
+        "value" : null
+      }, {
+        "name" : "conf.client.oauth2.credentialsGrantType",
+        "value" : null
+      }, {
+        "name" : "conf.client.oauth2.tokenUrl",
+        "value" : null
+      }, {
+        "name" : "conf.client.oauth2.clientId",
+        "value" : null
+      }, {
+        "name" : "conf.client.oauth2.clientSecret",
+        "value" : null
+      }, {
+        "name" : "conf.client.oauth2.username",
+        "value" : null
+      }, {
+        "name" : "conf.client.oauth2.password",
+        "value" : null
+      }, {
+        "name" : "conf.client.oauth2.resourceOwnerClientId",
+        "value" : null
+      }, {
+        "name" : "conf.client.oauth2.resourceOwnerClientSecret",
+        "value" : null
+      }, {
+        "name" : "conf.client.oauth2.algorithm",
+        "value" : "NONE"
+      }, {
+        "name" : "conf.client.oauth2.key",
+        "value" : null
+      }, {
+        "name" : "conf.client.oauth2.jwtClaims",
+        "value" : null
+      }, {
+        "name" : "conf.client.oauth2.transferEncoding",
+        "value" : "BUFFERED"
+      }, {
+        "name" : "conf.client.oauth2.additionalValues",
+        "value" : [ ]
+      }, {
+        "name" : "conf.client.basicAuth.username",
+        "value" : null
+      }, {
+        "name" : "conf.client.basicAuth.password",
+        "value" : null
+      }, {
+        "name" : "conf.client.useProxy",
+        "value" : false
+      }, {
+        "name" : "conf.client.proxy.uri",
+        "value" : null
+      }, {
+        "name" : "conf.client.proxy.username",
+        "value" : null
+      }, {
+        "name" : "conf.client.proxy.password",
+        "value" : null
+      }, {
+        "name" : "conf.client.sslConfig.trustStorePath",
+        "value" : ""
+      }, {
+        "name" : "conf.client.sslConfig.trustStorePassword",
+        "value" : ""
+      }, {
+        "name" : "conf.client.sslConfig.keyStorePath",
+        "value" : ""
+      }, {
+        "name" : "conf.client.sslConfig.keyStorePassword",
+        "value" : ""
+      }, {
+        "name" : "conf.rateLimit",
+        "value" : 200
+      }, {
+        "name" : "conf.maxRequestCompletionSecs",
+        "value" : 60
+      }, {
+        "name" : "stageOnRecordError",
+        "value" : "TO_ERROR"
+      }, {
+        "name" : "stageRequiredFields",
+        "value" : [ ]
+      }, {
+        "name" : "stageRecordPreconditions",
+        "value" : [ ]
+      }, {
+        "name" : "conf.dataFormatConfig.csvEnableComments",
+        "value" : false
+      }, {
+        "name" : "conf.dataFormatConfig.csvCommentMarker",
+        "value" : "#"
+      }, {
+        "name" : "conf.dataFormatConfig.csvIgnoreEmptyLines",
+        "value" : true
+      } ],
+      "uiInfo" : {
+        "description" : "",
+        "label" : "BI API COUNT",
+        "xPos" : 1401.38232421875,
+        "yPos" : -174.80619716644287,
+        "stageType" : "PROCESSOR"
+      },
+      "inputLanes" : [ "HTTPClient_03OutputLane14919197852810", "StreamSelector_05OutputLane1493797173936" ],
+      "outputLanes" : [ "HTTPClient_02OutputLane14901795165400" ],
+      "eventLanes" : [ ]
+    }, {
+      "instanceName" : "GroovyEvaluator_06",
+      "library" : "streamsets-datacollector-groovy_2_4-lib",
+      "stageName" : "com_streamsets_pipeline_stage_processor_groovy_GroovyDProcessor",
+      "stageVersion" : "1",
+      "configuration" : [ {
+        "name" : "processingMode",
+        "value" : "BATCH"
+      }, {
+        "name" : "script",
+        "value" : "RESPONSE_LIMIT = 100000\nfor (record in records) {\n  System.setProperty('auth.key.'+record.attributes['organization'], record.value['auth']['key'])\n  try {\n    if (record.value['response']['status'] == 500) {\n       record.value['ErrMsg'] = record.value['response']['message_en']\n    } else {\n      total = record.value['responseHeaders']['x-total-count'].toLong()\n      if (total > RESPONSE_LIMIT) {\n        record.value['ErrMsg'] = 'Response contains ' + total + ' records, but should be less than ' + RESPONSE_LIMIT + '.  Please refine your search parameters to achieve a response within this allowable limit.\"'\n      } else if (total == 0) {\n        record.value['ErrMsg'] = 'No matching records found for request'\n      }\n    }\n    output.write(record)\n  } catch (e) {\n    // Write a record to the error pipeline\n    log.error(e.toString(), e)\n    error.write(record, e.toString())\n  }\n}"
+      }, {
+        "name" : "invokeDynamic",
+        "value" : false
+      }, {
+        "name" : "stageOnRecordError",
+        "value" : "TO_ERROR"
+      }, {
+        "name" : "stageRequiredFields",
+        "value" : [ ]
+      }, {
+        "name" : "stageRecordPreconditions",
+        "value" : [ ]
+      } ],
+      "uiInfo" : {
+        "description" : "",
+        "label" : "COUNT Response",
+        "xPos" : 1609.8446044921875,
+        "yPos" : -48.60151147842407,
+        "stageType" : "PROCESSOR"
+      },
+      "inputLanes" : [ "HTTPClient_02OutputLane14901795165400" ],
+      "outputLanes" : [ "GroovyEvaluator_06OutputLane14901809212050" ],
+      "eventLanes" : [ ]
+    }, {
+      "instanceName" : "StreamSelector_04",
+      "library" : "streamsets-datacollector-basic-lib",
+      "stageName" : "com_streamsets_pipeline_stage_processor_selector_SelectorDProcessor",
+      "stageVersion" : "1",
+      "configuration" : [ {
+        "name" : "lanePredicates",
+        "value" : [ {
+          "outputLane" : "StreamSelector_04OutputLane1490179703747",
+          "predicate" : "${record:value('/ErrMsg') == NULL}"
+        }, {
+          "outputLane" : "StreamSelector_04OutputLane1490179587941",
+          "predicate" : "default"
+        } ]
+      }, {
+        "name" : "stageOnRecordError",
+        "value" : "TO_ERROR"
+      }, {
+        "name" : "stageRequiredFields",
+        "value" : [ ]
+      }, {
+        "name" : "stageRecordPreconditions",
+        "value" : [ ]
+      } ],
+      "uiInfo" : {
+        "description" : "",
+        "label" : "Counts ?",
+        "xPos" : 1837.22802734375,
+        "yPos" : 32.616539001464844,
+        "stageType" : "PROCESSOR"
+      },
+      "inputLanes" : [ "GroovyEvaluator_06OutputLane14901809212050" ],
+      "outputLanes" : [ "StreamSelector_04OutputLane1490179703747", "StreamSelector_04OutputLane1490179587941" ],
+      "eventLanes" : [ ]
+    }, {
+      "instanceName" : "HTTPClient_01",
+      "library" : "streamsets-datacollector-basic-lib",
+      "stageName" : "com_streamsets_pipeline_stage_processor_http_HttpDProcessor",
+      "stageVersion" : "7",
+      "configuration" : [ {
+        "name" : "conf.dataFormatConfig.filePatternInArchive",
+        "value" : "*"
+      }, {
+        "name" : "conf.dataFormatConfig.charset",
+        "value" : "UTF-8"
+      }, {
+        "name" : "conf.dataFormatConfig.removeCtrlChars",
+        "value" : false
+      }, {
+        "name" : "conf.dataFormatConfig.textMaxLineLen",
+        "value" : 1024
+      }, {
+        "name" : "conf.dataFormatConfig.useCustomDelimiter",
+        "value" : false
+      }, {
+        "name" : "conf.dataFormatConfig.customDelimiter",
+        "value" : "\\r\\n"
+      }, {
+        "name" : "conf.dataFormatConfig.includeCustomDelimiterInTheText",
+        "value" : false
+      }, {
+        "name" : "conf.dataFormatConfig.jsonMaxObjectLen",
+        "value" : 10240000
+      }, {
+        "name" : "conf.dataFormatConfig.csvFileFormat",
+        "value" : "CSV"
+      }, {
+        "name" : "conf.dataFormatConfig.csvHeader",
+        "value" : "NO_HEADER"
+      }, {
+        "name" : "conf.dataFormatConfig.csvMaxObjectLen",
+        "value" : 1024
+      }, {
+        "name" : "conf.dataFormatConfig.csvCustomDelimiter",
+        "value" : "|"
+      }, {
+        "name" : "conf.dataFormatConfig.csvCustomEscape",
+        "value" : "\\"
+      }, {
+        "name" : "conf.dataFormatConfig.csvCustomQuote",
+        "value" : "\""
+      }, {
+        "name" : "conf.dataFormatConfig.csvRecordType",
+        "value" : "LIST_MAP"
+      }, {
+        "name" : "conf.dataFormatConfig.csvSkipStartLines",
+        "value" : 0
+      }, {
+        "name" : "conf.dataFormatConfig.parseNull",
+        "value" : false
+      }, {
+        "name" : "conf.dataFormatConfig.nullConstant",
+        "value" : "\\\\N"
+      }, {
+        "name" : "conf.dataFormatConfig.xmlRecordElement",
+        "value" : null
+      }, {
+        "name" : "conf.dataFormatConfig.xPathNamespaceContext",
+        "value" : [ ]
+      }, {
+        "name" : "conf.dataFormatConfig.xmlMaxObjectLen",
+        "value" : 4096
+      }, {
+        "name" : "conf.dataFormatConfig.logMode",
+        "value" : "COMMON_LOG_FORMAT"
+      }, {
+        "name" : "conf.dataFormatConfig.logMaxObjectLen",
+        "value" : 1024
+      }, {
+        "name" : "conf.dataFormatConfig.retainOriginalLine",
+        "value" : false
+      }, {
+        "name" : "conf.dataFormatConfig.customLogFormat",
+        "value" : "%h %l %u %t \"%r\" %>s %b"
+      }, {
+        "name" : "conf.dataFormatConfig.regex",
+        "value" : "^(\\S+) (\\S+) (\\S+) \\[([\\w:/]+\\s[+\\-]\\d{4})\\] \"(\\S+) (\\S+) (\\S+)\" (\\d{3}) (\\d+)"
+      }, {
+        "name" : "conf.dataFormatConfig.fieldPathsToGroupName",
+        "value" : [ {
+          "fieldPath" : "/",
+          "group" : 1
+        } ]
+      }, {
+        "name" : "conf.dataFormatConfig.grokPatternDefinition",
+        "value" : null
+      }, {
+        "name" : "conf.dataFormatConfig.grokPattern",
+        "value" : "%{COMMONAPACHELOG}"
+      }, {
+        "name" : "conf.dataFormatConfig.onParseError",
+        "value" : "ERROR"
+      }, {
+        "name" : "conf.dataFormatConfig.maxStackTraceLines",
+        "value" : 50
+      }, {
+        "name" : "conf.dataFormatConfig.enableLog4jCustomLogFormat",
+        "value" : false
+      }, {
+        "name" : "conf.dataFormatConfig.log4jCustomLogFormat",
+        "value" : "%r [%t] %-5p %c %x - %m%n"
+      }, {
+        "name" : "conf.dataFormatConfig.avroSchemaSource",
+        "value" : null
+      }, {
+        "name" : "conf.dataFormatConfig.avroSchema",
+        "value" : null
+      }, {
+        "name" : "conf.dataFormatConfig.schemaRegistryUrls",
+        "value" : [ ]
+      }, {
+        "name" : "conf.dataFormatConfig.schemaLookupMode",
+        "value" : "SUBJECT"
+      }, {
+        "name" : "conf.dataFormatConfig.subject",
+        "value" : null
+      }, {
+        "name" : "conf.dataFormatConfig.schemaId",
+        "value" : null
+      }, {
+        "name" : "conf.dataFormatConfig.protoDescriptorFile",
+        "value" : null
+      }, {
+        "name" : "conf.dataFormatConfig.messageType",
+        "value" : null
+      }, {
+        "name" : "conf.dataFormatConfig.isDelimited",
+        "value" : true
+      }, {
+        "name" : "conf.dataFormatConfig.binaryMaxObjectLen",
+        "value" : 1024
+      }, {
+        "name" : "conf.dataFormatConfig.datagramMode",
+        "value" : "SYSLOG"
+      }, {
+        "name" : "conf.dataFormatConfig.typesDbPath",
+        "value" : null
+      }, {
+        "name" : "conf.dataFormatConfig.convertTime",
+        "value" : false
+      }, {
+        "name" : "conf.dataFormatConfig.excludeInterval",
+        "value" : true
+      }, {
+        "name" : "conf.dataFormatConfig.authFilePath",
+        "value" : null
+      }, {
+        "name" : "conf.dataFormatConfig.wholeFileMaxObjectLen",
+        "value" : 8192
+      }, {
+        "name" : "conf.dataFormatConfig.rateLimit",
+        "value" : "-1"
+      }, {
+        "name" : "conf.dataFormatConfig.verifyChecksum",
+        "value" : false
+      }, {
+        "name" : "conf.outputField",
+        "value" : "/response"
+      }, {
+        "name" : "conf.headerOutputLocation",
+        "value" : "HEADER"
+      }, {
+        "name" : "conf.headerAttributePrefix",
+        "value" : null
+      }, {
+        "name" : "conf.headerOutputField",
+        "value" : null
+      }, {
+        "name" : "conf.dataFormat",
+        "value" : "JSON"
+      }, {
+        "name" : "conf.resourceUrl",
+        "value" : "${GATEWAY_URL}/${ENV}/bi/v1/search/${record:value('/dataRequest')}"
+      }, {
+        "name" : "conf.headers",
+        "value" : [ {
+          "key" : "Authorization",
+          "value" : "${record:value('/auth/key')}"
+        } ]
+      }, {
+        "name" : "conf.httpMethod",
+        "value" : "GET"
+      }, {
+        "name" : "conf.methodExpression",
+        "value" : null
+      }, {
+        "name" : "conf.requestBody",
+        "value" : null
+      }, {
+        "name" : "conf.defaultRequestContentType",
+        "value" : "application/json"
+      }, {
+        "name" : "conf.client.transferEncoding",
+        "value" : "CHUNKED"
+      }, {
+        "name" : "conf.client.connectTimeoutMillis",
+        "value" : 0
+      }, {
+        "name" : "conf.client.readTimeoutMillis",
+        "value" : 0
+      }, {
+        "name" : "conf.client.numThreads",
+        "value" : 200
+      }, {
+        "name" : "conf.client.authType",
+        "value" : "NONE"
+      }, {
+        "name" : "conf.client.useOAuth2",
+        "value" : false
+      }, {
+        "name" : "conf.client.oauth.consumerKey",
+        "value" : null
+      }, {
+        "name" : "conf.client.oauth.consumerSecret",
+        "value" : null
+      }, {
+        "name" : "conf.client.oauth.token",
+        "value" : null
+      }, {
+        "name" : "conf.client.oauth.tokenSecret",
+        "value" : null
+      }, {
+        "name" : "conf.client.oauth2.credentialsGrantType",
+        "value" : null
+      }, {
+        "name" : "conf.client.oauth2.tokenUrl",
+        "value" : null
+      }, {
+        "name" : "conf.client.oauth2.clientId",
+        "value" : null
+      }, {
+        "name" : "conf.client.oauth2.clientSecret",
+        "value" : null
+      }, {
+        "name" : "conf.client.oauth2.username",
+        "value" : null
+      }, {
+        "name" : "conf.client.oauth2.password",
+        "value" : null
+      }, {
+        "name" : "conf.client.oauth2.resourceOwnerClientId",
+        "value" : null
+      }, {
+        "name" : "conf.client.oauth2.resourceOwnerClientSecret",
+        "value" : null
+      }, {
+        "name" : "conf.client.oauth2.algorithm",
+        "value" : "NONE"
+      }, {
+        "name" : "conf.client.oauth2.key",
+        "value" : null
+      }, {
+        "name" : "conf.client.oauth2.jwtClaims",
+        "value" : null
+      }, {
+        "name" : "conf.client.oauth2.transferEncoding",
+        "value" : "BUFFERED"
+      }, {
+        "name" : "conf.client.oauth2.additionalValues",
+        "value" : [ ]
+      }, {
+        "name" : "conf.client.basicAuth.username",
+        "value" : null
+      }, {
+        "name" : "conf.client.basicAuth.password",
+        "value" : null
+      }, {
+        "name" : "conf.client.useProxy",
+        "value" : false
+      }, {
+        "name" : "conf.client.proxy.uri",
+        "value" : null
+      }, {
+        "name" : "conf.client.proxy.username",
+        "value" : null
+      }, {
+        "name" : "conf.client.proxy.password",
+        "value" : null
+      }, {
+        "name" : "conf.client.sslConfig.trustStorePath",
+        "value" : ""
+      }, {
+        "name" : "conf.client.sslConfig.trustStorePassword",
+        "value" : ""
+      }, {
+        "name" : "conf.client.sslConfig.keyStorePath",
+        "value" : ""
+      }, {
+        "name" : "conf.client.sslConfig.keyStorePassword",
+        "value" : ""
+      }, {
+        "name" : "conf.rateLimit",
+        "value" : 200
+      }, {
+        "name" : "conf.maxRequestCompletionSecs",
+        "value" : 60
+      }, {
+        "name" : "stageOnRecordError",
+        "value" : "TO_ERROR"
+      }, {
+        "name" : "stageRequiredFields",
+        "value" : [ ]
+      }, {
+        "name" : "stageRecordPreconditions",
+        "value" : [ ]
+      }, {
+        "name" : "conf.dataFormatConfig.csvEnableComments",
+        "value" : false
+      }, {
+        "name" : "conf.dataFormatConfig.csvCommentMarker",
+        "value" : "#"
+      }, {
+        "name" : "conf.dataFormatConfig.csvIgnoreEmptyLines",
+        "value" : true
+      } ],
+      "uiInfo" : {
+        "description" : "",
+        "label" : "BI API SEARCH",
+        "xPos" : 2066.0576171875,
+        "yPos" : -35.91457462310791,
+        "stageType" : "PROCESSOR"
+      },
+      "inputLanes" : [ "StreamSelector_04OutputLane1490179703747" ],
+      "outputLanes" : [ "HTTPClient_01OutputLane14876112452200" ],
+      "eventLanes" : [ ]
+    }, {
+      "instanceName" : "StreamSelector_03",
+      "library" : "streamsets-datacollector-basic-lib",
+      "stageName" : "com_streamsets_pipeline_stage_processor_selector_SelectorDProcessor",
+      "stageVersion" : "1",
+      "configuration" : [ {
+        "name" : "lanePredicates",
+        "value" : [ {
+          "outputLane" : "StreamSelector_03OutputLane1487856835497",
+          "predicate" : "${record:value('/response')[0] != NULL}"
+        }, {
+          "outputLane" : "StreamSelector_03OutputLane1487856820821",
+          "predicate" : "default"
+        } ]
+      }, {
+        "name" : "stageOnRecordError",
+        "value" : "TO_ERROR"
+      }, {
+        "name" : "stageRequiredFields",
+        "value" : [ ]
+      }, {
+        "name" : "stageRecordPreconditions",
+        "value" : [ ]
+      } ],
+      "uiInfo" : {
+        "description" : "",
+        "label" : "No Response",
+        "xPos" : 2260,
+        "yPos" : 30,
+        "stageType" : "PROCESSOR"
+      },
+      "inputLanes" : [ "HTTPClient_01OutputLane14876112452200" ],
+      "outputLanes" : [ "StreamSelector_03OutputLane1487856835497", "StreamSelector_03OutputLane1487856820821" ],
+      "eventLanes" : [ ]
+    }, {
+      "instanceName" : "FieldRemover_01",
+      "library" : "streamsets-datacollector-basic-lib",
+      "stageName" : "com_streamsets_pipeline_stage_processor_fieldfilter_FieldFilterDProcessor",
+      "stageVersion" : "1",
+      "configuration" : [ {
+        "name" : "filterOperation",
+        "value" : "REMOVE"
+      }, {
+        "name" : "fields",
+        "value" : [ "/dataRequest", "/countRequest", "/responseHeaders", "/organization", "/auth" ]
+      }, {
+        "name" : "stageRequiredFields",
+        "value" : [ ]
+      }, {
+        "name" : "stageRecordPreconditions",
+        "value" : [ ]
+      } ],
+      "uiInfo" : {
+        "description" : "",
+        "label" : "Drop Tech",
+        "xPos" : 2480,
+        "yPos" : 20,
+        "stageType" : "PROCESSOR"
+      },
+      "inputLanes" : [ "StreamSelector_03OutputLane1487856835497" ],
+      "outputLanes" : [ "FieldRemover_01OutputLane14877740224980" ],
+      "eventLanes" : [ ]
+    }, {
+      "instanceName" : "FieldPivoter_01",
+      "library" : "streamsets-datacollector-basic-lib",
+      "stageName" : "com_streamsets_pipeline_stage_processor_listpivot_ListPivotDProcessor",
+      "stageVersion" : "2",
+      "configuration" : [ {
+        "name" : "listPath",
+        "value" : "/response"
+      }, {
+        "name" : "copyFields",
+        "value" : true
+      }, {
+        "name" : "newPath",
+        "value" : null
+      }, {
+        "name" : "saveOriginalFieldName",
+        "value" : false
+      }, {
+        "name" : "originalFieldNamePath",
+        "value" : null
+      }, {
+        "name" : "onStagePreConditionFailure",
+        "value" : "TO_ERROR"
+      }, {
+        "name" : "stageOnRecordError",
+        "value" : "TO_ERROR"
+      }, {
+        "name" : "stageRequiredFields",
+        "value" : [ ]
+      }, {
+        "name" : "stageRecordPreconditions",
+        "value" : [ ]
+      } ],
+      "uiInfo" : {
+        "description" : "",
+        "label" : "Response Pivoter",
+        "xPos" : 2700,
+        "yPos" : 20,
+        "stageType" : "PROCESSOR"
+      },
+      "inputLanes" : [ "FieldRemover_01OutputLane14877740224980" ],
+      "outputLanes" : [ "FieldPivoter_01OutputLane14877753317630" ],
+      "eventLanes" : [ ]
+    }, {
+      "instanceName" : "FieldFlattener_01",
+      "library" : "streamsets-datacollector-basic-lib",
+      "stageName" : "com_streamsets_pipeline_stage_processor_fieldflattener_FieldFlattenerDProcessor",
+      "stageVersion" : "1",
+      "configuration" : [ {
+        "name" : "config.flattenType",
+        "value" : "ENTIRE_RECORD"
+      }, {
+        "name" : "config.fields",
+        "value" : [ ]
+      }, {
+        "name" : "config.nameSeparator",
+        "value" : "."
+      }, {
+        "name" : "stageOnRecordError",
+        "value" : "TO_ERROR"
+      }, {
+        "name" : "stageRequiredFields",
+        "value" : [ ]
+      }, {
+        "name" : "stageRecordPreconditions",
+        "value" : [ ]
+      } ],
+      "uiInfo" : {
+        "description" : "",
+        "label" : "Response Flattener",
+        "xPos" : 2903.523193359375,
+        "yPos" : -48.65281391143799,
+        "stageType" : "PROCESSOR"
+      },
+      "inputLanes" : [ "FieldPivoter_01OutputLane14877753317630" ],
+      "outputLanes" : [ "FieldFlattener_01OutputLane14877754324710" ],
+      "eventLanes" : [ ]
+    }, {
+      "instanceName" : "FieldRemover_02",
+      "library" : "streamsets-datacollector-basic-lib",
+      "stageName" : "com_streamsets_pipeline_stage_processor_fieldfilter_FieldFilterDProcessor",
+      "stageVersion" : "1",
+      "configuration" : [ {
+        "name" : "filterOperation",
+        "value" : "REMOVE"
+      }, {
+        "name" : "fields",
+        "value" : [ "/dataRequest", "/countRequest", "/response", "/responseHeaders", "/organization", "/auth" ]
+      }, {
+        "name" : "stageRequiredFields",
+        "value" : [ ]
+      }, {
+        "name" : "stageRecordPreconditions",
+        "value" : [ ]
+      } ],
+      "uiInfo" : {
+        "description" : "",
+        "label" : "Field Remover 1",
+        "xPos" : 2514.724365234375,
+        "yPos" : 371.50376892089844,
+        "stageType" : "PROCESSOR"
+      },
+      "inputLanes" : [ "StreamSelector_03OutputLane1487856820821", "StreamSelector_04OutputLane1490179587941", "StreamSelector_05OutputLane14907957176031" ],
+      "outputLanes" : [ "FieldRemover_02OutputLane14896810772900" ],
+      "eventLanes" : [ ]
+    }, {
+      "instanceName" : "HadoopFS_02",
+      "library" : "streamsets-datacollector-cdh_5_2-lib",
+      "stageName" : "com_streamsets_pipeline_stage_destination_hdfs_HdfsDTarget",
+      "stageVersion" : "4",
+      "configuration" : [ {
+        "name" : "hdfsTargetConfigBean.hdfsUri",
+        "value" : "file:///"
+      }, {
+        "name" : "hdfsTargetConfigBean.hdfsUser",
+        "value" : null
+      }, {
+        "name" : "hdfsTargetConfigBean.hdfsKerberos",
+        "value" : false
+      }, {
+        "name" : "hdfsTargetConfigBean.hdfsConfDir",
+        "value" : null
+      }, {
+        "name" : "hdfsTargetConfigBean.hdfsConfigs",
+        "value" : [ ]
+      }, {
+        "name" : "hdfsTargetConfigBean.uniquePrefix",
+        "value" : "csv_2_out_"
+      }, {
+        "name" : "hdfsTargetConfigBean.fileNameSuffix",
+        "value" : "csv"
+      }, {
+        "name" : "hdfsTargetConfigBean.dirPathTemplateInHeader",
+        "value" : false
+      }, {
+        "name" : "hdfsTargetConfigBean.dirPathTemplate",
+        "value" : "${DATA_HOME}/tmp/${record:attribute('outfile')}_err"
+      }, {
+        "name" : "hdfsTargetConfigBean.timeZoneID",
+        "value" : "UTC"
+      }, {
+        "name" : "hdfsTargetConfigBean.timeDriver",
+        "value" : "${time:now()}"
+      }, {
+        "name" : "hdfsTargetConfigBean.maxRecordsPerFile",
+        "value" : 200000
+      }, {
+        "name" : "hdfsTargetConfigBean.maxFileSize",
+        "value" : 100
+      }, {
+        "name" : "hdfsTargetConfigBean.idleTimeout",
+        "value" : "${30 * SECONDS}"
+      }, {
+        "name" : "hdfsTargetConfigBean.compression",
+        "value" : "NONE"
+      }, {
+        "name" : "hdfsTargetConfigBean.otherCompression",
+        "value" : null
+      }, {
+        "name" : "hdfsTargetConfigBean.fileType",
+        "value" : "TEXT"
+      }, {
+        "name" : "hdfsTargetConfigBean.keyEl",
+        "value" : "${uuid()}"
+      }, {
+        "name" : "hdfsTargetConfigBean.seqFileCompressionType",
+        "value" : "BLOCK"
+      }, {
+        "name" : "hdfsTargetConfigBean.lateRecordsLimit",
+        "value" : "${1 * HOURS}"
+      }, {
+        "name" : "hdfsTargetConfigBean.rollIfHeader",
+        "value" : false
+      }, {
+        "name" : "hdfsTargetConfigBean.rollHeaderName",
+        "value" : "roll"
+      }, {
+        "name" : "hdfsTargetConfigBean.lateRecordsAction",
+        "value" : "SEND_TO_ERROR"
+      }, {
+        "name" : "hdfsTargetConfigBean.lateRecordsDirPathTemplate",
+        "value" : "/tmp/late/${YYYY()}-${MM()}-${DD()}"
+      }, {
+        "name" : "hdfsTargetConfigBean.dataFormat",
+        "value" : "DELIMITED"
+      }, {
+        "name" : "hdfsTargetConfigBean.hdfsPermissionCheck",
+        "value" : true
+      }, {
+        "name" : "hdfsTargetConfigBean.permissionEL",
+        "value" : null
+      }, {
+        "name" : "hdfsTargetConfigBean.skipOldTempFileRecovery",
+        "value" : false
+      }, {
+        "name" : "hdfsTargetConfigBean.dataGeneratorFormatConfig.charset",
+        "value" : "UTF-8"
+      }, {
+        "name" : "hdfsTargetConfigBean.dataGeneratorFormatConfig.csvFileFormat",
+        "value" : "CUSTOM"
+      }, {
+        "name" : "hdfsTargetConfigBean.dataGeneratorFormatConfig.csvHeader",
+        "value" : "WITH_HEADER"
+      }, {
+        "name" : "hdfsTargetConfigBean.dataGeneratorFormatConfig.csvReplaceNewLines",
+        "value" : true
+      }, {
+        "name" : "hdfsTargetConfigBean.dataGeneratorFormatConfig.csvReplaceNewLinesString",
+        "value" : ""
+      }, {
+        "name" : "hdfsTargetConfigBean.dataGeneratorFormatConfig.csvCustomDelimiter",
+        "value" : ","
+      }, {
+        "name" : "hdfsTargetConfigBean.dataGeneratorFormatConfig.csvCustomEscape",
+        "value" : "\\"
+      }, {
+        "name" : "hdfsTargetConfigBean.dataGeneratorFormatConfig.csvCustomQuote",
+        "value" : "\""
+      }, {
+        "name" : "hdfsTargetConfigBean.dataGeneratorFormatConfig.jsonMode",
+        "value" : "ARRAY_OBJECTS"
+      }, {
+        "name" : "hdfsTargetConfigBean.dataGeneratorFormatConfig.textFieldPath",
+        "value" : "/text"
+      }, {
+        "name" : "hdfsTargetConfigBean.dataGeneratorFormatConfig.textRecordSeparator",
+        "value" : "\\n"
+      }, {
+        "name" : "hdfsTargetConfigBean.dataGeneratorFormatConfig.textEmptyLineIfNull",
+        "value" : false
+      }, {
+        "name" : "hdfsTargetConfigBean.dataGeneratorFormatConfig.avroSchemaSource",
+        "value" : null
+      }, {
+        "name" : "hdfsTargetConfigBean.dataGeneratorFormatConfig.avroSchema",
+        "value" : null
+      }, {
+        "name" : "hdfsTargetConfigBean.dataGeneratorFormatConfig.registerSchema",
+        "value" : false
+      }, {
+        "name" : "hdfsTargetConfigBean.dataGeneratorFormatConfig.schemaRegistryUrlsForRegistration",
+        "value" : [ ]
+      }, {
+        "name" : "hdfsTargetConfigBean.dataGeneratorFormatConfig.schemaRegistryUrls",
+        "value" : [ ]
+      }, {
+        "name" : "hdfsTargetConfigBean.dataGeneratorFormatConfig.schemaLookupMode",
+        "value" : "SUBJECT"
+      }, {
+        "name" : "hdfsTargetConfigBean.dataGeneratorFormatConfig.subject",
+        "value" : null
+      }, {
+        "name" : "hdfsTargetConfigBean.dataGeneratorFormatConfig.subjectToRegister",
+        "value" : null
+      }, {
+        "name" : "hdfsTargetConfigBean.dataGeneratorFormatConfig.schemaId",
+        "value" : null
+      }, {
+        "name" : "hdfsTargetConfigBean.dataGeneratorFormatConfig.avroCompression",
+        "value" : "NULL"
+      }, {
+        "name" : "hdfsTargetConfigBean.dataGeneratorFormatConfig.binaryFieldPath",
+        "value" : "/"
+      }, {
+        "name" : "hdfsTargetConfigBean.dataGeneratorFormatConfig.protoDescriptorFile",
+        "value" : null
+      }, {
+        "name" : "hdfsTargetConfigBean.dataGeneratorFormatConfig.messageType",
+        "value" : null
+      }, {
+        "name" : "hdfsTargetConfigBean.dataGeneratorFormatConfig.fileNameEL",
+        "value" : null
+      }, {
+        "name" : "hdfsTargetConfigBean.dataGeneratorFormatConfig.wholeFileExistsAction",
+        "value" : "TO_ERROR"
+      }, {
+        "name" : "hdfsTargetConfigBean.dataGeneratorFormatConfig.includeChecksumInTheEvents",
+        "value" : false
+      }, {
+        "name" : "hdfsTargetConfigBean.dataGeneratorFormatConfig.checksumAlgorithm",
+        "value" : "MD5"
+      }, {
+        "name" : "stageOnRecordError",
+        "value" : "TO_ERROR"
+      }, {
+        "name" : "stageRequiredFields",
+        "value" : [ ]
+      }, {
+        "name" : "stageRecordPreconditions",
+        "value" : [ ]
+      } ],
+      "uiInfo" : {
+        "description" : "",
+        "label" : "Err Data",
+        "xPos" : 2700,
+        "yPos" : 150,
+        "stageType" : "TARGET"
+      },
+      "inputLanes" : [ "FieldRemover_02OutputLane14896810772900" ],
+      "outputLanes" : [ ],
+      "eventLanes" : [ "HadoopFS_02_EventLane" ]
+    }, {
+      "instanceName" : "ExpressionEvaluator_05",
+      "library" : "streamsets-datacollector-basic-lib",
+      "stageName" : "com_streamsets_pipeline_stage_processor_expression_ExpressionDProcessor",
+      "stageVersion" : "2",
+      "configuration" : [ {
+        "name" : "expressionProcessorConfigs",
+        "value" : [ ]
+      }, {
+        "name" : "headerAttributeConfigs",
+        "value" : [ {
+          "headerAttributeExpression" : "${SFTPHOME}",
+          "attributeToSet" : "SFTPHOME"
+        }, {
+          "attributeToSet" : "SFTPHOST",
+          "headerAttributeExpression" : "${SFTPHOST}"
+        }, {
+          "attributeToSet" : "SFTPPASS",
+          "headerAttributeExpression" : "${SFTPPASS}"
+        }, {
+          "attributeToSet" : "SFTPPORT",
+          "headerAttributeExpression" : "${SFTPPORT}"
+        }, {
+          "attributeToSet" : "SFTPUSER",
+          "headerAttributeExpression" : "${SFTPUSER}"
+        } ]
+      }, {
+        "name" : "fieldAttributeConfigs",
+        "value" : [ {
+          "fieldToSet" : "/"
+        } ]
+      }, {
+        "name" : "stageOnRecordError",
+        "value" : "TO_ERROR"
+      }, {
+        "name" : "stageRequiredFields",
+        "value" : [ ]
+      }, {
+        "name" : "stageRecordPreconditions",
+        "value" : [ ]
+      } ],
+      "uiInfo" : {
+        "description" : "",
+        "label" : "CONSTS",
+        "xPos" : 2920,
+        "yPos" : 300,
+        "stageType" : "PROCESSOR"
+      },
+      "inputLanes" : [ "HadoopFS_02_EventLane" ],
+      "outputLanes" : [ "ExpressionEvaluator_05OutputLane14909447442750" ],
+      "eventLanes" : [ ]
+    }, {
+      "instanceName" : "GroovyEvaluator_03",
+      "library" : "streamsets-datacollector-groovy_2_4-lib",
+      "stageName" : "com_streamsets_pipeline_stage_processor_groovy_GroovyDProcessor",
+      "stageVersion" : "1",
+      "configuration" : [ {
+        "name" : "processingMode",
+        "value" : "BATCH"
+      }, {
+        "name" : "script",
+        "value" : "import javax.mail.*\nimport java.io.*\nimport com.jcraft.jsch.JSch\nimport com.jcraft.jsch.ChannelSftp\n\n/**\noriginal filepath contains real file name as root directory for file itself (see output dir building logic).\nwe take file name from this original path and ignore name generated by streamsets.\n\nout of one input file might generate set of outputs, that is why we're keeping in memory indx of last file that has been processed for this name.\n*/\n\nfor (record in records) {\n  try {\n    def path = record.value['filepath']\n    def group = (path =~ /.*tmp\\/(.+)\\/.*/)\n    def inFileName = group[0][1].replace('.csv', '')\n    def indx = 1\n    if (state.containsKey(inFileName)) {\n      indx = state.get(inFileName)\n      state.put(inFileName,indx + 1)\n    } else {\n      state.put(inFileName, 1)\n    }\n    \n    log.error('Is state contains ' + inFileName + ' > ' + state.containsKey(inFileName))\n   \n    record.value['newFilename'] = inFileName + '.' + indx + '.csv'  \n    output.write(record)\n\n     SFTPUSER = record.attributes[\"SFTPUSER\"]\n     SFTPHOST = record.attributes[\"SFTPHOST\"]\n     SFTPPORT = record.attributes[\"SFTPPORT\"].toInteger()\n     SFTPPASS = record.attributes[\"SFTPPASS\"]\n     SFTPWORKINGDIR = record.attributes[\"SFTPHOME\"] + \"/out\"\n     jsch = new JSch()\n     session = jsch.getSession(SFTPUSER, SFTPHOST, SFTPPORT)\n     session.setPassword(SFTPPASS)\n     java.util.Properties config = new java.util.Properties()\n     config.put(\"StrictHostKeyChecking\", \"no\")\n     config.put(\"PreferredAuthentications\", \"password\")\n     session.setConfig(config)\n     session.connect(2000)\n     channel = session.openChannel(\"sftp\")\n     channel.connect(2000)\n     channelSftp = (ChannelSftp) channel\n     channelSftp.cd(SFTPWORKINGDIR)\n\n     channelSftp.put(new FileInputStream( new File(path)), record.value['newFilename'])    \n    \n  } catch (e) {\n    log.error(e.toString(), e)\n    error.write(record, e.toString())\n  }\n}"
+      }, {
+        "name" : "stageOnRecordError",
+        "value" : "TO_ERROR"
+      }, {
+        "name" : "stageRequiredFields",
+        "value" : [ ]
+      }, {
+        "name" : "stageRecordPreconditions",
+        "value" : [ ]
+      }, {
+        "name" : "invokeDynamic",
+        "value" : false
+      } ],
+      "uiInfo" : {
+        "description" : "",
+        "label" : "Err Data",
+        "xPos" : 3140,
+        "yPos" : 300,
+        "stageType" : "PROCESSOR"
+      },
+      "inputLanes" : [ "ExpressionEvaluator_05OutputLane14909447442750" ],
+      "outputLanes" : [ "GroovyEvaluator_03OutputLane14896807927580" ],
+      "eventLanes" : [ ]
+    }, {
+      "instanceName" : "HDFSFileMetadata_02",
+      "library" : "streamsets-datacollector-cdh_5_2-lib",
+      "stageName" : "com_streamsets_pipeline_stage_destination_hdfs_metadataexecutor_HdfsMetadataDExecutor",
+      "stageVersion" : "1",
+      "configuration" : [ {
+        "name" : "connection.hdfsUri",
+        "value" : "file:///"
+      }, {
+        "name" : "connection.hdfsUser",
+        "value" : null
+      }, {
+        "name" : "connection.hdfsKerberos",
+        "value" : false
+      }, {
+        "name" : "connection.hdfsConfDir",
+        "value" : null
+      }, {
+        "name" : "connection.hdfsConfigs",
+        "value" : [ ]
+      }, {
+        "name" : "actions.filePath",
+        "value" : "${record:value('/filepath')}"
+      }, {
+        "name" : "actions.shouldMoveFile",
+        "value" : true
+      }, {
+        "name" : "actions.newLocation",
+        "value" : "${DATA_HOME}/destination"
+      }, {
+        "name" : "actions.shouldRename",
+        "value" : true
+      }, {
+        "name" : "actions.newName",
+        "value" : "${record:value('/newFilename')}"
+      }, {
+        "name" : "actions.shouldChangeOwnership",
+        "value" : false
+      }, {
+        "name" : "actions.newOwner",
+        "value" : "new_owner"
+      }, {
+        "name" : "actions.newGroup",
+        "value" : "new_group"
+      }, {
+        "name" : "actions.shouldSetPermissions",
+        "value" : false
+      }, {
+        "name" : "actions.newPermissions",
+        "value" : "700"
+      }, {
+        "name" : "actions.shouldSetAcls",
+        "value" : false
+      }, {
+        "name" : "actions.newAcls",
+        "value" : "user::rwx,user:foo:rw-,group::r--,other::---"
+      }, {
+        "name" : "stageOnRecordError",
+        "value" : "TO_ERROR"
+      }, {
+        "name" : "stageRequiredFields",
+        "value" : [ ]
+      }, {
+        "name" : "stageRecordPreconditions",
+        "value" : [ ]
+      } ],
+      "uiInfo" : {
+        "description" : "",
+        "label" : "Err Data",
+        "xPos" : 3360,
+        "yPos" : 294.5411376953125,
+        "stageType" : "EXECUTOR"
+      },
+      "inputLanes" : [ "GroovyEvaluator_03OutputLane14896807927580" ],
+      "outputLanes" : [ ],
+      "eventLanes" : [ ]
+    }, {
+      "instanceName" : "GroovyEvaluator_08",
+      "library" : "streamsets-datacollector-groovy_2_4-lib",
+      "stageName" : "com_streamsets_pipeline_stage_processor_groovy_GroovyDProcessor",
+      "stageVersion" : "1",
+      "configuration" : [ {
+        "name" : "processingMode",
+        "value" : "BATCH"
+      }, {
+        "name" : "script",
+        "value" : "for (record in records) {\n  try {\n    record.value = record.value.sort { x, y -> \n      !x.getKey().startsWith('response')? -1 : (!y.getKey().startsWith('response')?1: x.getKey() <=> y.getKey())\n    }.collectEntries { k, v ->  [k, v] }\n    record.value['response.businessName'] = '' + record.value['response.businessName'] + ''\n    \n    output.write(record)\n  } catch (e) {\n    // Write a record to the error pipeline\n    log.error(e.toString(), e)\n    error.write(record, e.toString())\n  }\n}"
+      }, {
+        "name" : "invokeDynamic",
+        "value" : false
+      }, {
+        "name" : "stageOnRecordError",
+        "value" : "TO_ERROR"
+      }, {
+        "name" : "stageRequiredFields",
+        "value" : [ ]
+      }, {
+        "name" : "stageRecordPreconditions",
+        "value" : [ ]
+      } ],
+      "uiInfo" : {
+        "description" : "",
+        "label" : "Sorting",
+        "xPos" : 3119.596936891752,
+        "yPos" : -85.36260117489815,
+        "stageType" : "PROCESSOR"
+      },
+      "inputLanes" : [ "FieldFlattener_01OutputLane14877754324710" ],
+      "outputLanes" : [ "GroovyEvaluator_08OutputLane14937365080440" ],
+      "eventLanes" : [ ]
+    }, {
+      "instanceName" : "ExpressionEvaluator_04",
+      "library" : "streamsets-datacollector-basic-lib",
+      "stageName" : "com_streamsets_pipeline_stage_processor_expression_ExpressionDProcessor",
+      "stageVersion" : "2",
+      "configuration" : [ {
+        "name" : "expressionProcessorConfigs",
+        "value" : [ {
+          "fieldToSet" : "/",
+          "expression" : "${record:value('/')}"
+        } ]
+      }, {
+        "name" : "headerAttributeConfigs",
+        "value" : [ ]
+      }, {
+        "name" : "fieldAttributeConfigs",
+        "value" : [ {
+          "fieldToSet" : "/"
+        } ]
+      }, {
+        "name" : "stageOnRecordError",
+        "value" : "TO_ERROR"
+      }, {
+        "name" : "stageRequiredFields",
+        "value" : [ ]
+      }, {
+        "name" : "stageRecordPreconditions",
+        "value" : [ ]
+      } ],
+      "uiInfo" : {
+        "description" : "",
+        "label" : "Map To List-Map",
+        "xPos" : 3318.497314453125,
+        "yPos" : -98.17098093032837,
+        "stageType" : "PROCESSOR"
+      },
+      "inputLanes" : [ "GroovyEvaluator_08OutputLane14937365080440" ],
+      "outputLanes" : [ "ExpressionEvaluator_04OutputLane14877759530360" ],
+      "eventLanes" : [ ]
+    }, {
+      "instanceName" : "HadoopFS_01",
+      "library" : "streamsets-datacollector-cdh_5_2-lib",
+      "stageName" : "com_streamsets_pipeline_stage_destination_hdfs_HdfsDTarget",
+      "stageVersion" : "4",
+      "configuration" : [ {
+        "name" : "hdfsTargetConfigBean.hdfsUri",
+        "value" : "file:///"
+      }, {
+        "name" : "hdfsTargetConfigBean.hdfsUser",
+        "value" : null
+      }, {
+        "name" : "hdfsTargetConfigBean.hdfsKerberos",
+        "value" : false
+      }, {
+        "name" : "hdfsTargetConfigBean.hdfsConfDir",
+        "value" : null
+      }, {
+        "name" : "hdfsTargetConfigBean.hdfsConfigs",
+        "value" : [ ]
+      }, {
+        "name" : "hdfsTargetConfigBean.uniquePrefix",
+        "value" : "csv_2_out_"
+      }, {
+        "name" : "hdfsTargetConfigBean.fileNameSuffix",
+        "value" : "csv"
+      }, {
+        "name" : "hdfsTargetConfigBean.dirPathTemplateInHeader",
+        "value" : false
+      }, {
+        "name" : "hdfsTargetConfigBean.dirPathTemplate",
+        "value" : "${DATA_HOME}/tmp/${record:attribute('outfile')}_out"
+      }, {
+        "name" : "hdfsTargetConfigBean.timeZoneID",
+        "value" : "UTC"
+      }, {
+        "name" : "hdfsTargetConfigBean.timeDriver",
+        "value" : "${time:now()}"
+      }, {
+        "name" : "hdfsTargetConfigBean.maxRecordsPerFile",
+        "value" : 200000
+      }, {
+        "name" : "hdfsTargetConfigBean.maxFileSize",
+        "value" : 100
+      }, {
+        "name" : "hdfsTargetConfigBean.idleTimeout",
+        "value" : "${5 * SECONDS}"
+      }, {
+        "name" : "hdfsTargetConfigBean.compression",
+        "value" : "NONE"
+      }, {
+        "name" : "hdfsTargetConfigBean.otherCompression",
+        "value" : null
+      }, {
+        "name" : "hdfsTargetConfigBean.fileType",
+        "value" : "TEXT"
+      }, {
+        "name" : "hdfsTargetConfigBean.keyEl",
+        "value" : "${uuid()}"
+      }, {
+        "name" : "hdfsTargetConfigBean.seqFileCompressionType",
+        "value" : "BLOCK"
+      }, {
+        "name" : "hdfsTargetConfigBean.lateRecordsLimit",
+        "value" : "${1 * HOURS}"
+      }, {
+        "name" : "hdfsTargetConfigBean.rollIfHeader",
+        "value" : false
+      }, {
+        "name" : "hdfsTargetConfigBean.rollHeaderName",
+        "value" : "roll"
+      }, {
+        "name" : "hdfsTargetConfigBean.lateRecordsAction",
+        "value" : "SEND_TO_ERROR"
+      }, {
+        "name" : "hdfsTargetConfigBean.lateRecordsDirPathTemplate",
+        "value" : "/tmp/late/${YYYY()}-${MM()}-${DD()}"
+      }, {
+        "name" : "hdfsTargetConfigBean.dataFormat",
+        "value" : "DELIMITED"
+      }, {
+        "name" : "hdfsTargetConfigBean.hdfsPermissionCheck",
+        "value" : true
+      }, {
+        "name" : "hdfsTargetConfigBean.permissionEL",
+        "value" : null
+      }, {
+        "name" : "hdfsTargetConfigBean.skipOldTempFileRecovery",
+        "value" : false
+      }, {
+        "name" : "hdfsTargetConfigBean.dataGeneratorFormatConfig.charset",
+        "value" : "UTF-8"
+      }, {
+        "name" : "hdfsTargetConfigBean.dataGeneratorFormatConfig.csvFileFormat",
+        "value" : "CSV"
+      }, {
+        "name" : "hdfsTargetConfigBean.dataGeneratorFormatConfig.csvHeader",
+        "value" : "WITH_HEADER"
+      }, {
+        "name" : "hdfsTargetConfigBean.dataGeneratorFormatConfig.csvReplaceNewLines",
+        "value" : true
+      }, {
+        "name" : "hdfsTargetConfigBean.dataGeneratorFormatConfig.csvReplaceNewLinesString",
+        "value" : ""
+      }, {
+        "name" : "hdfsTargetConfigBean.dataGeneratorFormatConfig.csvCustomDelimiter",
+        "value" : ","
+      }, {
+        "name" : "hdfsTargetConfigBean.dataGeneratorFormatConfig.csvCustomEscape",
+        "value" : "\\"
+      }, {
+        "name" : "hdfsTargetConfigBean.dataGeneratorFormatConfig.csvCustomQuote",
+        "value" : "\""
+      }, {
+        "name" : "hdfsTargetConfigBean.dataGeneratorFormatConfig.jsonMode",
+        "value" : "ARRAY_OBJECTS"
+      }, {
+        "name" : "hdfsTargetConfigBean.dataGeneratorFormatConfig.textFieldPath",
+        "value" : "/text"
+      }, {
+        "name" : "hdfsTargetConfigBean.dataGeneratorFormatConfig.textRecordSeparator",
+        "value" : "\\n"
+      }, {
+        "name" : "hdfsTargetConfigBean.dataGeneratorFormatConfig.textEmptyLineIfNull",
+        "value" : false
+      }, {
+        "name" : "hdfsTargetConfigBean.dataGeneratorFormatConfig.avroSchemaSource",
+        "value" : null
+      }, {
+        "name" : "hdfsTargetConfigBean.dataGeneratorFormatConfig.avroSchema",
+        "value" : null
+      }, {
+        "name" : "hdfsTargetConfigBean.dataGeneratorFormatConfig.registerSchema",
+        "value" : false
+      }, {
+        "name" : "hdfsTargetConfigBean.dataGeneratorFormatConfig.schemaRegistryUrlsForRegistration",
+        "value" : [ ]
+      }, {
+        "name" : "hdfsTargetConfigBean.dataGeneratorFormatConfig.schemaRegistryUrls",
+        "value" : [ ]
+      }, {
+        "name" : "hdfsTargetConfigBean.dataGeneratorFormatConfig.schemaLookupMode",
+        "value" : "SUBJECT"
+      }, {
+        "name" : "hdfsTargetConfigBean.dataGeneratorFormatConfig.subject",
+        "value" : null
+      }, {
+        "name" : "hdfsTargetConfigBean.dataGeneratorFormatConfig.subjectToRegister",
+        "value" : null
+      }, {
+        "name" : "hdfsTargetConfigBean.dataGeneratorFormatConfig.schemaId",
+        "value" : null
+      }, {
+        "name" : "hdfsTargetConfigBean.dataGeneratorFormatConfig.avroCompression",
+        "value" : "NULL"
+      }, {
+        "name" : "hdfsTargetConfigBean.dataGeneratorFormatConfig.binaryFieldPath",
+        "value" : "/"
+      }, {
+        "name" : "hdfsTargetConfigBean.dataGeneratorFormatConfig.protoDescriptorFile",
+        "value" : null
+      }, {
+        "name" : "hdfsTargetConfigBean.dataGeneratorFormatConfig.messageType",
+        "value" : null
+      }, {
+        "name" : "hdfsTargetConfigBean.dataGeneratorFormatConfig.fileNameEL",
+        "value" : null
+      }, {
+        "name" : "hdfsTargetConfigBean.dataGeneratorFormatConfig.wholeFileExistsAction",
+        "value" : "TO_ERROR"
+      }, {
+        "name" : "hdfsTargetConfigBean.dataGeneratorFormatConfig.includeChecksumInTheEvents",
+        "value" : false
+      }, {
+        "name" : "hdfsTargetConfigBean.dataGeneratorFormatConfig.checksumAlgorithm",
+        "value" : "MD5"
+      }, {
+        "name" : "stageOnRecordError",
+        "value" : "TO_ERROR"
+      }, {
+        "name" : "stageRequiredFields",
+        "value" : [ ]
+      }, {
+        "name" : "stageRecordPreconditions",
+        "value" : [ ]
+      } ],
+      "uiInfo" : {
+        "description" : "",
+        "label" : "Output TEMP",
+        "xPos" : 3541.243408203125,
+        "yPos" : -81.60617256164551,
+        "stageType" : "TARGET"
+      },
+      "inputLanes" : [ "ExpressionEvaluator_04OutputLane14877759530360" ],
+      "outputLanes" : [ ],
+      "eventLanes" : [ "HadoopFS_01_EventLane" ]
+    }, {
+      "instanceName" : "ExpressionEvaluator_06",
+      "library" : "streamsets-datacollector-basic-lib",
+      "stageName" : "com_streamsets_pipeline_stage_processor_expression_ExpressionDProcessor",
+      "stageVersion" : "2",
+      "configuration" : [ {
+        "name" : "expressionProcessorConfigs",
+        "value" : [ ]
+      }, {
+        "name" : "headerAttributeConfigs",
+        "value" : [ {
+          "headerAttributeExpression" : "${SFTPHOME}",
+          "attributeToSet" : "SFTPHOME"
+        }, {
+          "attributeToSet" : "SFTPHOST",
+          "headerAttributeExpression" : "${SFTPHOST}"
+        }, {
+          "attributeToSet" : "SFTPPASS",
+          "headerAttributeExpression" : "${SFTPPASS}"
+        }, {
+          "attributeToSet" : "SFTPPORT",
+          "headerAttributeExpression" : "${SFTPPORT}"
+        }, {
+          "attributeToSet" : "SFTPUSER",
+          "headerAttributeExpression" : "${SFTPUSER}"
+        }, {
+          "headerAttributeExpression" : "${SFTPIN}",
+          "attributeToSet" : "SFTPIN"
+        } ]
+      }, {
+        "name" : "fieldAttributeConfigs",
+        "value" : [ {
+          "fieldToSet" : "/"
+        } ]
+      }, {
+        "name" : "stageOnRecordError",
+        "value" : "TO_ERROR"
+      }, {
+        "name" : "stageRequiredFields",
+        "value" : [ ]
+      }, {
+        "name" : "stageRecordPreconditions",
+        "value" : [ ]
+      } ],
+      "uiInfo" : {
+        "description" : "",
+        "label" : "CONSTS",
+        "xPos" : 3647.85986328125,
+        "yPos" : 92.84443664550781,
+        "stageType" : "PROCESSOR"
+      },
+      "inputLanes" : [ "HadoopFS_01_EventLane" ],
+      "outputLanes" : [ "ExpressionEvaluator_06OutputLane14909462465420" ],
+      "eventLanes" : [ ]
+    }, {
+      "instanceName" : "GroovyEvaluator_01",
+      "library" : "streamsets-datacollector-groovy_2_4-lib",
+      "stageName" : "com_streamsets_pipeline_stage_processor_groovy_GroovyDProcessor",
+      "stageVersion" : "1",
+      "configuration" : [ {
+        "name" : "processingMode",
+        "value" : "BATCH"
+      }, {
+        "name" : "script",
+        "value" : "import java.io.*\nimport com.jcraft.jsch.JSch\nimport com.jcraft.jsch.ChannelSftp\n\n/**\noriginal filepath contains real file name as root directory for file itself (see output dir building logic).\nwe take file name from this original path and ignore name generated by streamsets.\n\nout of one input file might generate set of outputs, that is why we're keeping in memory indx of last file that has been processed for this name.\n*/\n\nfor (record in records) {\n  try {\n    def path = record.value['filepath']\n    def group = (path =~ /.*tmp\\/(.+)\\/.*/)\n    def inFileName = group[0][1].replace('.csv', '')\n\n    def indx = 1\n    if (state.containsKey(inFileName)) {\n      indx = state.get(inFileName)\n      state.put(inFileName,indx + 1)\n    } else {\n      state.put(inFileName, 1)\n    }\n    \n    log.error('Is state contains ' + inFileName + ' > ' + state.containsKey(inFileName))\n    \n    record.value['newFilename'] = inFileName + '.' + indx + '.csv'  \n    output.write(record)\n\n     SFTPUSER = record.attributes[\"SFTPUSER\"]\n     SFTPHOST = record.attributes[\"SFTPHOST\"]\n     SFTPPORT = record.attributes[\"SFTPPORT\"].toInteger()\n     SFTPPASS = record.attributes[\"SFTPPASS\"]\n     SFTPWORKINGDIR = record.attributes[\"SFTPHOME\"] + \"/out\"\n     jsch = new JSch()\n     session = jsch.getSession(SFTPUSER, SFTPHOST, SFTPPORT)\n     session.setPassword(SFTPPASS)\n     java.util.Properties config = new java.util.Properties()\n     config.put(\"StrictHostKeyChecking\", \"no\")\n     config.put(\"PreferredAuthentications\", \"password\")\n     session.setConfig(config)\n     session.connect(2000)\n     channel = session.openChannel(\"sftp\")\n     channel.connect(2000)\n     channelSftp = (ChannelSftp) channel\n     channelSftp.cd(SFTPWORKINGDIR)\n\n     channelSftp.put(new FileInputStream( new File(path)), record.value['newFilename'])\n   \n    \n  } catch (e) {\n    log.error(e.toString(), e)\n    error.write(record, e.toString())\n  }\n}"
+      }, {
+        "name" : "stageOnRecordError",
+        "value" : "TO_ERROR"
+      }, {
+        "name" : "stageRequiredFields",
+        "value" : [ ]
+      }, {
+        "name" : "stageRecordPreconditions",
+        "value" : [ ]
+      }, {
+        "name" : "invokeDynamic",
+        "value" : false
+      } ],
+      "uiInfo" : {
+        "description" : "",
+        "label" : "File Rename",
+        "xPos" : 3915.3369140625,
+        "yPos" : 95.85496520996094,
+        "stageType" : "PROCESSOR"
+      },
+      "inputLanes" : [ "ExpressionEvaluator_06OutputLane14909462465420" ],
+      "outputLanes" : [ "GroovyEvaluator_01OutputLane14878415690740" ],
+      "eventLanes" : [ ]
+    }, {
+      "instanceName" : "HDFSFileMetadata_01",
+      "library" : "streamsets-datacollector-cdh_5_2-lib",
+      "stageName" : "com_streamsets_pipeline_stage_destination_hdfs_metadataexecutor_HdfsMetadataDExecutor",
+      "stageVersion" : "1",
+      "configuration" : [ {
+        "name" : "connection.hdfsUri",
+        "value" : "file:///"
+      }, {
+        "name" : "connection.hdfsUser",
+        "value" : null
+      }, {
+        "name" : "connection.hdfsKerberos",
+        "value" : false
+      }, {
+        "name" : "connection.hdfsConfDir",
+        "value" : null
+      }, {
+        "name" : "connection.hdfsConfigs",
+        "value" : [ ]
+      }, {
+        "name" : "actions.filePath",
+        "value" : "${record:value('/filepath')}"
+      }, {
+        "name" : "actions.shouldMoveFile",
+        "value" : true
+      }, {
+        "name" : "actions.newLocation",
+        "value" : "${DATA_HOME}/destination"
+      }, {
+        "name" : "actions.shouldRename",
+        "value" : true
+      }, {
+        "name" : "actions.newName",
+        "value" : "${record:value('/newFilename')}"
+      }, {
+        "name" : "actions.shouldChangeOwnership",
+        "value" : false
+      }, {
+        "name" : "actions.newOwner",
+        "value" : "new_owner"
+      }, {
+        "name" : "actions.newGroup",
+        "value" : "new_group"
+      }, {
+        "name" : "actions.shouldSetPermissions",
+        "value" : false
+      }, {
+        "name" : "actions.newPermissions",
+        "value" : "700"
+      }, {
+        "name" : "actions.shouldSetAcls",
+        "value" : false
+      }, {
+        "name" : "actions.newAcls",
+        "value" : "user::rwx,user:foo:rw-,group::r--,other::---"
+      }, {
+        "name" : "stageOnRecordError",
+        "value" : "TO_ERROR"
+      }, {
+        "name" : "stageRequiredFields",
+        "value" : [ ]
+      }, {
+        "name" : "stageRecordPreconditions",
+        "value" : [ ]
+      } ],
+      "uiInfo" : {
+        "description" : "",
+        "label" : "Output DIR",
+        "xPos" : 4156.9677734375,
+        "yPos" : 101.34718322753906,
+        "stageType" : "EXECUTOR"
+      },
+      "inputLanes" : [ "GroovyEvaluator_01OutputLane14878415690740" ],
+      "outputLanes" : [ ],
+      "eventLanes" : [ ]
+    } ],
+    "errorStage" : {
+      "instanceName" : "WritetoFile_ErrorStage",
+      "library" : "streamsets-datacollector-basic-lib",
+      "stageName" : "com_streamsets_pipeline_stage_destination_recordstolocalfilesystem_ToErrorLocalFSDTarget",
+      "stageVersion" : "1",
+      "configuration" : [ {
+        "name" : "directory",
+        "value" : "${DATA_HOME}/tmp"
+      }, {
+        "name" : "uniquePrefix",
+        "value" : "sdc-${sdc:id()}"
+      }, {
+        "name" : "rotationIntervalSecs",
+        "value" : "${1 * HOURS}"
+      }, {
+        "name" : "maxFileSizeMbs",
+        "value" : 512
+      } ],
+      "uiInfo" : {
+        "description" : "",
+        "label" : "Error Records - Write to File",
+        "xPos" : 3807.368896484375,
+        "yPos" : 50,
+        "stageType" : "TARGET"
+      },
+      "inputLanes" : [ ],
+      "outputLanes" : [ ],
+      "eventLanes" : [ ]
+    },
+    "info" : {
+      "name" : "e335eda6-c2f2-4f59-a6a6-da37b106ab34",
+      "title" : "[ENV_VAR] BI Bulk Match",
+      "description" : "LIVE ENV_VAR SERVICE - DO NOT DELETE!",
+      "created" : 1492073827520,
+      "lastModified" : 1495788796610,
+      "creator" : "harria1",
+      "lastModifier" : "glushv",
+      "lastRev" : "0",
+      "uuid" : "24f8554f-0417-46c9-bc77-88873009301e",
+      "valid" : true,
+      "metadata" : {
+        "labels" : [ ]
+      }
+    },
+    "metadata" : {
+      "labels" : [ ]
+    },
+    "statsAggregatorStage" : null,
+    "valid" : true,
+    "issues" : {
+      "stageIssues" : { },
+      "pipelineIssues" : [ ],
+      "issueCount" : 0
+    },
+    "previewable" : true
+  },
+  "pipelineRules" : {
+    "metricsRuleDefinitions" : [ ],
+    "dataRuleDefinitions" : [ ],
+    "driftRuleDefinitions" : [ ],
+    "emailIds" : [ ],
+    "uuid" : "3ed6c2c6-5291-4280-8e19-691ff13abc09",
+    "ruleIssues" : [ ]
+  },
+  "libraryDefinitions" : null
+}
