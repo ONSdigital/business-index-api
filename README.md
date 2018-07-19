@@ -1,33 +1,52 @@
-# business-index-api [![Build Status](https://travis-ci.com/ONSdigital/business-index-api.svg?token=2Zb1TowL2ncxBWZtMQ5Q&branch=master)](https://travis-ci.com/ONSdigital/business-index-api)
+
+# business-index-api
+[![Build Status](https://travis-ci.org/ONSdigital/business-index-api.svg?branch=develop)](https://travis-ci.org/ONSdigital/business-index-api) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/75fd2f255d07447a9cd73fb9eb8381f1)](https://www.codacy.com/app/ONSDigital/business-index-api?utm_source=github.com&utm_medium=referral&utm_content=ONSdigital/business-index-api&utm_campaign=badger) [![Coverage Status](https://coveralls.io/repos/github/ONSdigital/business-index-api/badge.svg?branch=develop)](https://coveralls.io/github/ONSdigital/business-index-api?branch=develop) [![Dependency Status](https://www.versioneye.com/user/projects/58e23bf2d6c98d00417476cc/badge.svg?style=flat-square)](https://www.versioneye.com/user/projects/58e23bf2d6c98d00417476cc)
 
 ### Prerequisites
 
 * Java 8 or higher
 * SBT (http://www.scala-sbt.org/)
+* Docker (https://www.docker.com/)
 
 ### Development Setup
 
-To install/run ElasticSearch on MacOS Sierra, use Homebrew (http://brew.sh/):
+To run ElasticSearch, use Docker:
 
-- `brew install elasticsearch`
-- `elasticsearch`
-
-The last command runs an interactive Elasticsearch 2.4.1 session that the application can connect to using cluster name
-`elasticsearch_<your username>`. 
+```shell
+docker pull docker.elastic.co/elasticsearch/elasticsearch:5.6.9
+docker run -p 9200:9200 -p 9300:9300 -e "discovery.type=single-node" -e "xpack.security.enabled=false" docker.elastic.co/elasticsearch/elasticsearch:5.6.9
+```
 
 ### Running
 
-To compile, build and run the application (by default it will connect to your local ElasticSearch):
+To run the business-index-api locally, including the loading of 100,000 test records, run the following:
 
 ```shell
-sbt run
+sbt "run -DONS_BI_ES_RECREATE_INDEX=true -DONS_BI_ES_LOAD_TEST_DATA=true"
 ```
 
-To package the project in a runnable fat-jar:
+### Packaging
+
+To package the project into a runnable fat-jar:
 
 ```shell
 sbt assembly
 ```
+
+To package the project into a `.zip` file ready for deployment to CloudFoundry, run the following:
+
+```shell
+sbt universal:packageBin
+```
+
+### API Documentation: swagger-ui
+
+Swagger UI is integrated into business-api. Exposed API documented and available within url:
+ 
+ ``` http://localhost:9000/assets/lib/swagger-ui/index.html?/url=http://localhost:9000/swagger.json ```
+
+short path:
+ ``` http://localhost:9000/docs ```
 
 ### Response Time
 
@@ -36,18 +55,14 @@ compute time.
 
 ### Dependencies
 
-A graph detailing all project dependencies can be found [here](dependencies.png).
-
-#### Configuring Splunk Logging
-
-Edit [`conf/logback.xml`](conf/logback.xml) and edit the `SPLUNKSOCKET` appender configuration. By default, 
-the configuration assumes that you have Splunk running on your local machine (`127.0.0.1`) with a TCP input configured
-on port `15000`. Note that TCP inputs are *not* the same as Splunk's management port.
-
-You can control the format of what is logged by changing the encoder 
-(see http://logback.qos.ch/manual/layouts.html#ClassicPatternLayout for details), but the default pattern produces 
-a simple timestamp, followed by the full message and a newline, like the following:
-
+A graph detailing all project dependencies can be found [here](dependencies.txt). TODO: update
+If any sbt changes performed - please re-generate dependency graph by executing:
+```shell
+sbt -no-colors dependencyTree > dependencies.txt
 ```
-2016-10-26 14:54:38,461 [%thread] %level text of my event
-```
+
+### License
+
+Copyright © 2017, Office for National Statistics (https://www.ons.gov.uk)
+
+Released under MIT license, see [LICENSE](LICENSE.md) for details.

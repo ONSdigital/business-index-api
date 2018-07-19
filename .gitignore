@@ -4,10 +4,10 @@ src_managed/
 project/boot/
 .history
 .cache
-.idea
-
+.idea*
 *.class
 *.log
+*.DS_Store
 
 .cache
 .history
@@ -19,4 +19,4 @@ src_managed/
 project/boot/
 project/plugins/project/
 
-data/
+src/main/scala/data/
