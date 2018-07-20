@@ -101,7 +101,7 @@ pipeline {
 
         stage('Package'){
             agent any
-            when{ expression{ isBranch("master") }}
+            //when{ expression{ isBranch("master") }}
             environment{ 
                 STAGE = "Package" 
                 DEPLOY_TO = "dev"    
@@ -125,17 +125,17 @@ pipeline {
 
         stage('Deploy CF'){
             agent any
-            when{ expression{ isBranch("master") }}
+            //when{ expression{ isBranch("master") }}
             environment{ 
                 STAGE = "Deploy CF"
                 DEPLOY_TO = "dev" 
             }
             steps {
                 milestone(1)
-                lock('BI API Deployment Initiated') {
+                lock('Business Index API Deployment Initiated') {
                     colourText("info", "${env.DEPLOY_TO}-${CH_TABLE}-${MODULE_NAME} deployment in progress")
                     deploy()
-                    colourText("success", "${env.DEPLOY_TO}-${CH_TABLE}-${MODULE_NAME} Deployed.")
+                    colourText("success", "${env.DEPLOY_TO}-${CH_TABLE}-${MODULE_NAME} deployed")
                 }
             }
             post {
