@@ -63,7 +63,7 @@ pipeline {
             }
             post {
                 success {
-                    junit '**/target/test-reports/*.xml
+                    junit '**/target/test-reports/*.xml'
                     step([$class: 'CoberturaPublisher', coberturaReportFile: '**/target/*/coverage-report/cobertura.xml'])
                     colourText("info","Stage: ${env.STAGE} successful!")
                 }
