@@ -59,13 +59,12 @@ pipeline {
             environment{ STAGE = "Test"  }
             steps {
                 colourText("info", "Building ${env.BUILD_ID} on ${env.JENKINS_URL} from branch ${env.BRANCH_NAME}")
-
-                sh 'sbt coverage test coverageReport coverageAggregate'
+                sh 'sbt coverage test coverageReport'
             }
             post {
                 success {
-                    junit '**/target/test-reports/*.xml'
-                    step([$class: 'CoberturaPublisher', coberturaReportFile: '**/target/coverage-report/*.xml'])
+                    junit '**/target/test-reports/*.xml
+                    step([$class: 'CoberturaPublisher', coberturaReportFile: '**/target/*/coverage-report/cobertura.xml'])
                     colourText("info","Stage: ${env.STAGE} successful!")
                 }
                 failure {
