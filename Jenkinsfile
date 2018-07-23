@@ -107,7 +107,7 @@ pipeline {
                 DEPLOY_TO = "dev"    
             }
             steps {
-                dir('conf') {
+                dir('gitlab') {
                     git(url: "$GITLAB_URL/BusinessIndex/${MODULE_NAME}.git", credentialsId: GITLAB_CREDS, branch: "master")
                 }
                 sh 'sbt universal:packageBin'
@@ -172,5 +172,5 @@ def deploy () {
     CF_SPACE = "${env.DEPLOY_TO}".capitalize()
     CF_ORG = "${TEAM}".toUpperCase()
     echo "Deploying app to ${env.DEPLOY_TO}"
-    deployToCloudFoundry("${TEAM}-${env.DEPLOY_TO}-cf", "${CF_ORG}", "${CF_SPACE}", "${env.DEPLOY_TO}-${MODULE_NAME}", "${env.DEPLOY_TO}-${ORGANIZATION}-${MODULE_NAME}.zip", "conf/${env.DEPLOY_TO}/manifest.yml")
+    deployToCloudFoundry("${TEAM}-${env.DEPLOY_TO}-cf", "${CF_ORG}", "${CF_SPACE}", "${env.DEPLOY_TO}-${MODULE_NAME}", "${env.DEPLOY_TO}-${ORGANIZATION}-${MODULE_NAME}.zip", "gitlab/${env.DEPLOY_TO}/manifest.yml")
 }
