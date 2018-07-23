@@ -107,8 +107,8 @@ pipeline {
                 DEPLOY_TO = "dev"    
             }
             steps {
-                dir('gitlab') {
-                    git(url: "$GITLAB_URL/BusinessIndex/${MODULE_NAME}-api.git", credentialsId: GITLAB_CREDS, branch: "master")
+                dir('conf') {
+                    git(url: "$GITLAB_URL/BusinessIndex/${MODULE_NAME}.git", credentialsId: GITLAB_CREDS, branch: "master")
                 }
                 sh 'sbt universal:packageBin'
                 sh "cp target/universal/${ORGANIZATION}-${MODULE_NAME}-*.zip ${DEPLOY_TO}-${ORGANIZATION}-${MODULE_NAME}.zip"
@@ -133,9 +133,9 @@ pipeline {
             steps {
                 milestone(1)
                 lock('Business Index API Deployment Initiated') {
-                    colourText("info", "${env.DEPLOY_TO}-${CH_TABLE}-${MODULE_NAME} deployment in progress")
+                    colourText("info", "${env.DEPLOY_TO}-${MODULE_NAME} deployment in progress")
                     deploy()
-                    colourText("success", "${env.DEPLOY_TO}-${CH_TABLE}-${MODULE_NAME} deployed")
+                    colourText("success", "${env.DEPLOY_TO}-${MODULE_NAME} deployed")
                 }
             }
             post {
@@ -169,8 +169,8 @@ def isBranch(String branchName){
 }
 
 def deploy () {
-    CF_SPACE = "${env.DEPLOY_NAME}".capitalize()
+    CF_SPACE = "${env.DEPLOY_TO}".capitalize()
     CF_ORG = "${TEAM}".toUpperCase()
-    echo "Deploying app to ${env.DEPLOY_NAME}"
-    deployToCloudFoundry("${TEAM}-${env.DEPLOY_NAME}-cf", "${CF_ORG}", "${CF_SPACE}", "${env.DEPLOY_NAME}-${MODULE_NAME}", "${env.DEPLOY_NAME}-${ORGANIZATION}-${MODULE_NAME}.zip", "conf/${env.DEPLOY_NAME}/manifest.yml")
+    echo "Deploying app to ${env.DEPLOY_TO}"
+    deployToCloudFoundry("${TEAM}-${env.DEPLOY_TO}-cf", "${CF_ORG}", "${CF_SPACE}", "${env.DEPLOY_TO}-${MODULE_NAME}", "${env.DEPLOY_TO}-${ORGANIZATION}-${MODULE_NAME}.zip", "conf/${env.DEPLOY_TO}/manifest.yml")
 }
