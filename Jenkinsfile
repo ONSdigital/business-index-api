@@ -1,4 +1,4 @@
-#!groovy
+#!groovyF
 @Library('jenkins-pipeline-shared') _
 
 pipeline {
@@ -90,7 +90,7 @@ pipeline {
             }
             post {
                 success {
-                    step([$class: 'CheckStylePublisher', pattern: '**/target/code-quality/style/*scalastyle*.xml'])
+                    step([$class: 'CheckStylePublisher', pattern: '**/target/code-quality/style/*scalastyle*.xml, **/target/*/scapegoat-report/scapegoat-scalastyle.xml'])
                     colourText("info","Stage: ${env.STAGE} successful!")
                 }
                 failure {
@@ -101,7 +101,7 @@ pipeline {
 
         stage('Package'){
             agent any
-            //when{ expression{ isBranch("master") }}
+            when{ expression{ isBranch("master") }}
             environment{ 
                 STAGE = "Package" 
                 DEPLOY_TO = "dev"    
@@ -125,7 +125,7 @@ pipeline {
 
         stage('Deploy CF'){
             agent any
-            //when{ expression{ isBranch("master") }}
+            when{ expression{ isBranch("master") }}
             environment{ 
                 STAGE = "Deploy CF"
                 DEPLOY_TO = "dev" 
