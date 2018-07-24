@@ -1,4 +1,4 @@
-#!groovyF
+#!groovy
 @Library('jenkins-pipeline-shared') _
 
 pipeline {
@@ -32,7 +32,7 @@ pipeline {
                 stash name: 'app'
                 sh "sbt version"
                 script {
-                    version = '1.0.' + env.BUILD_NUMBER
+                    version env.BUILD_NUMBER
                     currentBuild.displayName = version
                 }
             }
@@ -74,19 +74,22 @@ pipeline {
         }
 
         stage('Static Analysis') {
-            agent any
             environment{ STAGE = "Static Analysis" }
-            steps {
-                parallel (
-                    "Scalastyle" : {
-                        colourText("info","Running scalastyle analysis")
+            parallel {
+                stage('Scalastyle') {
+                    agent any
+                    steps {
+                        colourText("info", "Running scalastyle analysis")
                         sh "sbt scalastyle"
-                    },
-                    "Scapegoat" : {
-                        colourText("info","Running scapegoat analysis")
+                    }
+                }
+                stage('Scapegoat') {
+                    agent any
+                    steps {
+                        colourText("info", "Running scapegoat analysis")
                         sh "sbt scapegoat"
                     }
-                )
+                }
             }
             post {
                 success {
@@ -103,15 +106,10 @@ pipeline {
             agent any
             when{ expression{ isBranch("master") }}
             environment{ 
-                STAGE = "Package" 
-                DEPLOY_TO = "dev"    
+                STAGE = "Package"
             }
             steps {
-                dir('gitlab') {
-                    git(url: "$GITLAB_URL/BusinessIndex/${MODULE_NAME}.git", credentialsId: GITLAB_CREDS, branch: "master")
-                }
                 sh 'sbt universal:packageBin'
-                sh "cp target/universal/${ORGANIZATION}-${MODULE_NAME}-*.zip ${DEPLOY_TO}-${ORGANIZATION}-${MODULE_NAME}.zip"
             }
             post {
                 success {
@@ -123,16 +121,20 @@ pipeline {
             }
         }
 
-        stage('Deploy CF'){
+        stage('Deploy - DEV'){
             agent any
             when{ expression{ isBranch("master") }}
             environment{ 
-                STAGE = "Deploy CF"
-                DEPLOY_TO = "dev" 
+                STAGE = "Deploy - DEV"
+                DEPLOY_TO = "dev"
+                CF_ROUTE = "${env.DEPLOY_TO}-${MODULE_NAME}"
             }
             steps {
                 milestone(1)
-                lock('Business Index API Deployment Initiated') {
+                dir('gitlab') {
+                    git(url: "$GITLAB_URL/BusinessIndex/${MODULE_NAME}.git", credentialsId: GITLAB_CREDS, branch: "master")
+                }
+                lock("${env.CF_ROUTE}") {
                     colourText("info", "${env.DEPLOY_TO}-${MODULE_NAME} deployment in progress")
                     deploy()
                     colourText("success", "${env.DEPLOY_TO}-${MODULE_NAME} deployed")
@@ -172,5 +174,5 @@ def deploy () {
     CF_SPACE = "${env.DEPLOY_TO}".capitalize()
     CF_ORG = "${TEAM}".toUpperCase()
     echo "Deploying app to ${env.DEPLOY_TO}"
-    deployToCloudFoundry("${TEAM}-${env.DEPLOY_TO}-cf", "${CF_ORG}", "${CF_SPACE}", "${env.DEPLOY_TO}-${MODULE_NAME}", "${env.DEPLOY_TO}-${ORGANIZATION}-${MODULE_NAME}.zip", "gitlab/${env.DEPLOY_TO}/manifest.yml")
+    deployToCloudFoundry("${TEAM}-${env.DEPLOY_TO}-cf", "${CF_ORG}", "${CF_SPACE}", "${env.CF_ROUTE}", "${env.DEPLOY_TO}-${ORGANIZATION}-${MODULE_NAME}.zip", "gitlab/${env.DEPLOY_TO}/manifest.yml")
 }

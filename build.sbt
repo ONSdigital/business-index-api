@@ -117,7 +117,9 @@ lazy val api = (project in file("."))
     sources in(Compile, doc) <<= sources in(Compile, doc) map {
       _.filterNot(_.getName endsWith ".scala")
     },
-
+    artifactName := { (sv: ScalaVersion, module: ModuleID, artifact: Artifact) =>
+      artifact.name + "." + artifact.extension
+    },
     assemblyJarName in assembly := "ons-bi-api.jar",
     assemblyMergeStrategy in assembly := {
       case PathList("META-INF", "io.netty.versions.properties", xs@_ *) => MergeStrategy.last
