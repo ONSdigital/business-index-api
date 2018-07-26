@@ -10,7 +10,7 @@ REQUIRED_NUM_ARGS=4
 # Fail fast if we get any errors
 set -e
 
-function usage {
+usage() {
     echo "usage: ${SCRIPT_NAME} host port index_name path_to_index_json"
     echo "  host                    elasticsearch host"
     echo "  port                    elasticsearch port"
@@ -20,7 +20,7 @@ function usage {
 }
 
 # Fail the script if we recieve an incorrect number of arguments
-if [[ $# -ne REQUIRED_NUM_ARGS ]] ; then
+if [ $# -ne $REQUIRED_NUM_ARGS ] ; then
     echo 'Error, you need to provide the correct number of arguments.'
     usage
 fi
@@ -36,4 +36,5 @@ curl --fail -XPUT "${HOST}:${PORT}/${INDEX_NAME}" -d @"${PATH_TO_INDEX_DEFINITIO
 echo
 
 echo "Successfully created ElasticSearch index [${INDEX_NAME}] with the following settings:"
-echo "$(cat ${PATH_TO_INDEX_DEFINITION})"
+cat ${PATH_TO_INDEX_DEFINITION}
+echo
