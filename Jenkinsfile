@@ -10,8 +10,7 @@ pipeline {
         ORGANIZATION = "ons"
         TEAM = "bi"
         MODULE_NAME = "business-index-api"
-	    
-    	STAGE = "NONE"
+
         SBT_HOME = tool name: 'sbt.13.13', type: 'org.jvnet.hudson.plugins.SbtPluginBuilder$SbtInstallation'
         PATH = "${env.SBT_HOME}/bin:${env.PATH}"
     }
@@ -25,81 +24,83 @@ pipeline {
     stages {
         stage('Checkout') {
             agent any
-            environment{ STAGE = "Checkout" }
             steps {
                 deleteDir()
                 checkout scm
                 stash name: 'app'
-                sh "sbt version"
-                script {
-                    version env.BUILD_NUMBER
-                    currentBuild.displayName = version
-                }
+                sh 'sbt version'
             }
         }
 
         stage('Build') {
             agent any
-            environment{ STAGE = "Build" }
             steps{
-                sh "sbt clean compile"
+                sh 'sbt clean compile'
             }
             post {
                 success {
-                    colourText("info","Stage: ${env.STAGE} successful!")
+                    colourText("info","Stage: ${env.STAGE_NAME} successful!")
                 }
                 failure {
-                    colourText("warn","Stage: ${env.STAGE} failed!")
+                    colourText("warn","Stage: ${env.STAGE_NAME} failed!")
                 }
             }
         }
 
         stage('Test'){
             agent any
-            environment{ STAGE = "Test"  }
             steps {
                 colourText("info", "Building ${env.BUILD_ID} on ${env.JENKINS_URL} from branch ${env.BRANCH_NAME}")
-                sh 'sbt coverage test coverageReport'
+                sh 'sbt coverage test coverageReport coverageOff'
             }
             post {
                 success {
                     junit '**/target/test-reports/*.xml'
                     step([$class: 'CoberturaPublisher', coberturaReportFile: '**/target/*/coverage-report/cobertura.xml'])
-                    colourText("info","Stage: ${env.STAGE} successful!")
+                    colourText("info","Stage: ${env.STAGE_NAME} successful!")
                 }
                 failure {
-                    colourText("warn","Stage: ${env.STAGE} failed!")
+                    colourText("warn","Stage: ${env.STAGE_NAME} failed!")
                 }
             }
         }
 
         stage('Static Analysis') {
-            environment{ STAGE = "Static Analysis" }
             parallel {
                 stage('Scalastyle') {
                     agent any
                     steps {
                         colourText("info", "Running scalastyle analysis")
-                        sh "sbt scalastyle"
+                        sh 'sbt scalastyle'
+                    }
+                }
+                post {
+                    success {
+                        step([$class: 'CheckStylePublisher', pattern: '**/target/code-quality/style/*scalastyle*.xml'])
+                        colourText("info","Stage: ${env.STAGE_NAME} successful!")
+                    }
+                    failure {
+                        colourText("warn","Stage: ${env.STAGE_NAME} failed!")
                     }
                 }
                 stage('Scapegoat') {
                     agent any
                     steps {
                         colourText("info", "Running scapegoat analysis")
-                        sh "sbt scapegoat"
+                        sh 'sbt scapegoat'
+                    }
+                }
+                post {
+                    success {
+                        step([$class: 'CheckStylePublisher', pattern: '**/target/*/scapegoat-report/scapegoat-scalastyle.xml'])
+                        colourText("info","Stage: ${env.STAGE_NAME} successful!")
+                    }
+                    failure {
+                        colourText("warn","Stage: ${env.STAGE_NAME} failed!")
                     }
                 }
             }
-            post {
-                success {
-                    step([$class: 'CheckStylePublisher', pattern: '**/target/code-quality/style/*scalastyle*.xml, **/target/*/scapegoat-report/scapegoat-scalastyle.xml'])
-                    colourText("info","Stage: ${env.STAGE} successful!")
-                }
-                failure {
-                    colourText("warn","Stage: ${env.STAGE} failed!")
-                }
-            }
+
         }
 
         stage('Package'){
@@ -113,10 +114,10 @@ pipeline {
             }
             post {
                 success {
-                    colourText("info","Stage: ${env.STAGE} successful!")
+                    colourText("info","Stage: ${env.STAGE_NAME} successful!")
                 }
                 failure {
-                    colourText("warn","Stage: ${env.STAGE} failed!")
+                    colourText("warn","Stage: ${env.STAGE_NAME} failed!")
                 }
             }
         }
@@ -142,10 +143,10 @@ pipeline {
             }
             post {
                 success {
-                    colourText("info","Stage: ${env.STAGE} successful!")
+                    colourText("info","Stage: ${env.STAGE_NAME} successful!")
                 }
                 failure {
-                    colourText("warn","Stage: ${env.STAGE} failed!")
+                    colourText("warn","Stage: ${env.STAGE_NAME} failed!")
                 }
             }
         }
@@ -157,11 +158,11 @@ pipeline {
         }
         unstable {
             colourText("warn", "Something went wrong, build finished with result ${currentResult}. This may be caused by failed tests, code violation or in some cases unexpected interrupt.")
-            sendNotifications currentBuild.result, "\$SBR_EMAIL_LIST", "${env.STAGE}"
+            sendNotifications currentBuild.result, "\$SBR_EMAIL_LIST", "${env.STAGE_NAME}"
         }
         failure {
             colourText("warn","Process failed at: ${env.STAGE}")
-            sendNotifications currentBuild.result, "\$SBR_EMAIL_LIST", "${env.STAGE}"
+            sendNotifications currentBuild.result, "\$SBR_EMAIL_LIST", "${env.STAGE_NAME}"
         }
     }
 }
