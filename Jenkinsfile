@@ -74,15 +74,6 @@ pipeline {
                         sh 'sbt scalastyle'
                     }
                 }
-                post {
-                    success {
-                        step([$class: 'CheckStylePublisher', pattern: '**/target/code-quality/style/*scalastyle*.xml'])
-                        colourText("info","Stage: ${env.STAGE_NAME} successful!")
-                    }
-                    failure {
-                        colourText("warn","Stage: ${env.STAGE_NAME} failed!")
-                    }
-                }
                 stage('Scapegoat') {
                     agent any
                     steps {
@@ -90,17 +81,16 @@ pipeline {
                         sh 'sbt scapegoat'
                     }
                 }
-                post {
-                    success {
-                        step([$class: 'CheckStylePublisher', pattern: '**/target/*/scapegoat-report/scapegoat-scalastyle.xml'])
-                        colourText("info","Stage: ${env.STAGE_NAME} successful!")
-                    }
-                    failure {
-                        colourText("warn","Stage: ${env.STAGE_NAME} failed!")
-                    }
+            }
+            post {
+                success {
+                    step([$class: 'CheckStylePublisher', pattern: '**/target/code-quality/style/*scalastyle*.xml, **/target/*/scapegoat-report/scapegoat-scalastyle.xml'])
+                    colourText("info","Stage: ${env.STAGE_NAME} successful!")
+                }
+                failure {
+                    colourText("warn","Stage: ${env.STAGE_NAME} failed!")
                 }
             }
-
         }
 
         stage('Package'){
