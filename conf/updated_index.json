@@ -47,7 +47,7 @@
           "type" : "string"
         },
         "BusinessName" : {
-          "type" : "text"
+          "type" : "string"
         },
         "UBRN" : {
           "type" : "string"
@@ -56,16 +56,20 @@
           "type" : "long"
         },
         "LegalStatus" : {
-          "type" : "keyword"
+          "type" : "string",
+          "index": "not_analyzed"
         },
         "TradingStatus" : {
-          "type" : "keyword"
+          "type" : "string",
+          "index": "not_analyzed"
         },
         "Turnover" : {
-          "type" : "keyword"
+          "type" : "string",
+          "index": "not_analyzed"
         },
         "EmploymentBands" : {
-          "type" : "keyword"
+          "type" : "string",
+          "index": "not_analyzed"
         },
         "PostCode" : {
           "type" : "string"
