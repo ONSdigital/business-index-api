@@ -1,0 +1,89 @@
+{
+  "settings": {
+    "index": {
+      "analysis": {
+        "analyzer": {
+          "synonym": {
+            "tokenizer": "standard",
+            "filter": [
+              "synonym",
+              "stemmer"
+            ]
+          }
+        },
+        "filter" : {
+          "synonym" : {
+            "type" : "synonym",
+            "synonyms" : [
+              "ltd, limited",
+              "bros, brothers",
+              "public limited company=>plc",
+              "community interest company=>cic",
+              "right to enfranchisement=>rte",
+              "right to manage=>rtm",
+              "european enonomic interest grouping=>eeig",
+              "limited partnership=>lp",
+              "Cwmni Cyfyngedig Cyhoeddus=>ccc",
+              "Cwmni Buddiant Cymunedol=>cbc",
+              "Partneriaeth Cyfyngedig=>pc",
+              "Partneriaeth Atebolrwydd Cyfyngedig=>pac",
+              "Sefydliad Elusennol Corfforedig=>sec",
+              "limited liability partnership=>llp"
+            ],
+            "ignore_case" : true
+          },
+          "stemmer" : {
+            "type" : "stemmer",
+            "name" : "possessive_english"
+          }
+        }
+      }
+    }
+  },
+  "mappings": {
+    "bi" : {
+      "properties" : {
+        "ID" : {
+          "type" : "string"
+        },
+        "BusinessName" : {
+          "type" : "string"
+        },
+        "UBRN" : {
+          "type" : "string"
+        },
+        "IndustryCode" : {
+          "type" : "long"
+        },
+        "LegalStatus" : {
+          "type" : "string",
+          "index": "not_analyzed"
+        },
+        "TradingStatus" : {
+          "type" : "string",
+          "index": "not_analyzed"
+        },
+        "Turnover" : {
+          "type" : "string",
+          "index": "not_analyzed"
+        },
+        "EmploymentBands" : {
+          "type" : "string",
+          "index": "not_analyzed"
+        },
+        "PostCode" : {
+          "type" : "string"
+        },
+        "VatRefs" : {
+          "type" : "string"
+        },
+        "PayeRefs" : {
+          "type" : "string"
+        },
+        "CompanyNo" : {
+          "type" : "string"
+        }
+      }
+    }
+  }
+}
