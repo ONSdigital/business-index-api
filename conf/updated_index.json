@@ -5,7 +5,7 @@
         "analyzer": {
           "synonym": {
             "tokenizer": "standard",
-            "filter": ["synonym", "uppercase"],
+            "filter": ["synonym"],
             "char_filter" : ["my_char_filter"]
           }
         },
@@ -29,10 +29,6 @@
               "limited liability partnership=>llp"
             ],
             "ignore_case" : true
-          },
-          "stemmer" : {
-            "type" : "stemmer",
-            "name" : "possessive_english"
           }
         },
         "char_filter" : {
@@ -50,7 +46,6 @@
               "!=>",
               "?=>",
               "/=>",
-              "!=>",
               "@=>",
               "$=>",
               "£=>",
@@ -64,6 +59,7 @@
               ":=>",
               ";=>",
               "*=>",
+              "'=>",
               "\\u0091=>",
               "\\u0092=>",
               "\\u2018=>",
