@@ -20,3 +20,4 @@ project/boot/
 project/plugins/project/
 
 src/main/scala/data/
+/manifest.yml
